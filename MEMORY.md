@@ -61,6 +61,10 @@
 | 2026-04-27 | researchMode: mock/real управляется через RESEARCH_MODE env var | mock = default без API-ключа; real = Perplexity sonar-pro с return_citations |
 | 2026-04-27 | Real mode создаёт source records (inferSourceType по hostname) | sourceId nullable — mock-факты без source, real-факты с source через sources таблицу |
 | 2026-04-27 | Perplexity response: content → абзацы → RawDataPoint[], citations → source field | RS:3 при citations, RS:2 без. Промпты по шаблону per ResearchType на русском |
+| 2026-04-27 | Validation Workspace /research/[id]/validation — ручная проверка фактов перед стратегией | Аналитик деактивирует нерелевантные факты; стратегия строится только по is_active=true |
+| 2026-04-27 | Фильтры в Validation Workspace — через URL search params, Server Components only | streams/factTypes/confidences/onlyActive в URL; isActive toggle — Server Action + revalidatePath |
+| 2026-04-27 | getFactsForJob() + setFactActive() — src/lib/reporting/validation.ts | Drizzle leftJoin facts→sources; onlyActive, streams, factTypes, confidences filters |
+| 2026-04-27 | Notification hook заменён на PreToolUse+PostToolUse с timestamp-логикой | Notification не срабатывал при табличке разрешения; PostToolUse пишет timestamp, PreToolUse проверяет > 3 сек |
 
 ## Ссылки
 

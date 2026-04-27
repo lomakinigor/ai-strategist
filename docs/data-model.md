@@ -147,6 +147,12 @@ ENUM research_type:    'business' | 'market' | 'audience' | 'channels'
 - `audience` — факты о целевой аудитории: сегменты, потребности, поведение, боли
 - `channels` — факты о каналах: присутствие, активность, охват
 
+**is_active и Validation Workspace (F-006/T-007):**
+- `is_active` (default true) — аналитик вручную деактивирует нерелевантные факты в Validation Workspace
+- Путь: `/research/[id]/validation` — страница с фильтрами по потоку/типу/достоверности и чекбоксами
+- Генерация стратегии (T-009) использует **только активные факты** (`is_active = true`)
+- Фильтрация в `getFactsForJob(jobId, filters)` через `src/lib/reporting/validation.ts`
+
 ---
 
 ### strategy_artifacts

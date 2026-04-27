@@ -177,11 +177,17 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
 
         {overallStatus === 'done' && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-            <p className="text-sm text-green-800">
+            <p className="text-sm text-green-800 mb-3">
               {researchMode === 'real'
-                ? 'Исследование Perplexity завершено. Данные с источниками готовы для генерации стратегии.'
-                : 'Mock-исследование завершено. Данные готовы для генерации стратегии (T-008).'}
+                ? 'Исследование Perplexity завершено. Данные с источниками готовы для валидации.'
+                : 'Mock-исследование завершено. Данные готовы для валидации фактов.'}
             </p>
+            <a
+              href={`/research/${params.id}/validation`}
+              className="inline-block w-full text-center bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
+            >
+              Перейти к валидации фактов →
+            </a>
           </div>
         )}
 
