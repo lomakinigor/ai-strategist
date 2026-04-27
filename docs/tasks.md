@@ -82,16 +82,16 @@
 
 ---
 
-## T-003 — Reliability Engine
+## T-003 — Reliability Engine + AI Provider Foundation
 
 | Поле | Значение |
 |------|----------|
-| **Статус** | Planned |
+| **Статус** | Done |
 | **Feature** | F-002 |
-| **Описание** | Реализовать модуль: присвоение RS (1–5), классификация ФАКТ / ГИПОТЕЗА / НЕДОСТАТОЧНО ДАННЫХ, уровень достоверности HIGH / MEDIUM / LOW. |
-| **Тест-критерий** | Unit-тесты покрывают все ветки классификации. Функции принимают `{ data, source, date, rs }` и возвращают корректную классификацию. |
+| **Описание** | Реализовать модуль: присвоение RS (1–5), классификация ФАКТ / ГИПОТЕЗА / НЕДОСТАТОЧНО ДАННЫХ, уровень достоверности HIGH / MEDIUM / LOW. Заложить AI provider abstraction layer с Perplexity как default research provider. |
+| **Тест-критерий** | Unit-тесты покрывают все ветки классификации. classify(RawDataPoint) → VerifiedFact. Perplexity зафиксирован как default. Router и config позволяют переключать провайдер. 25 тестов, tsc --noEmit без ошибок. |
 
-**Отчёт:** _(заполняется после выполнения)_
+**Отчёт:** Выполнено 2026-04-27. Создан `src/lib/reliability/` (classify, rules, index). Реализована функция classify(RawDataPoint): VerifiedFact. RS → ConfidenceLevel: RS 4–5 → HIGH, RS 3 → MEDIUM, RS 1–2 → LOW. FactType: FACT (RS ≥ 3 + source + date), HYPOTHESIS (RS 2 или нет даты), INSUFFICIENT_DATA (RS ≤ 1 / нет source / нет data). Создан `src/lib/ai/` (types, config, router, providers). Perplexity = default research provider (sonar-pro), placeholder без реальных API-вызовов. Vitest установлен, 25 unit-тестов, tsc --noEmit ✓.
 
 ---
 

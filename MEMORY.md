@@ -44,6 +44,10 @@
 | 2026-04-27 | Report/export layer — изолированный модуль | Можно переработать без ломки research pipeline и RAG |
 | 2026-04-27 | DB schema: 9 таблиц, facts.research_type покрывает 4 потока | Избегаем дублирующих таблиц market_insights/audience_insights |
 | 2026-04-27 | pgvector vector-колонка — отдельный шаг в T-007 | Требует CREATE EXTENSION vector перед alter table |
+| 2026-04-27 | Perplexity Sonar (sonar-pro) — default research provider | Real-time web + citations = соответствие RS-принципу; Anthropic — для стратегии |
+| 2026-04-27 | AI provider abstraction layer в src/lib/ai/ | Router + config — одна точка переключения провайдера/модели без ломки бизнес-логики |
+| 2026-04-27 | RS → Confidence: RS 4–5 HIGH, RS 3 MEDIUM, RS 1–2 LOW | Зафиксировано в rules.ts, покрыто тестами |
+| 2026-04-27 | Vitest установлен, test-скрипт добавлен в package.json | npm run test = vitest run |
 
 ## Ссылки
 

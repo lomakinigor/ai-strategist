@@ -34,16 +34,24 @@ ai-strategist — frontend-first SaaS-приложение. MVP строится
 
 ## Ключевые модули
 
-### Reliability Engine
-- Присваивает RS (1–5) каждому собранному факту
-- Классифицирует утверждения: ФАКТ / ГИПОТЕЗА / НЕДОСТАТОЧНО ДАННЫХ
+### Reliability Engine (`src/lib/reliability/`)
+- `classify(rawPoint: RawDataPoint): VerifiedFact` — единая точка входа
+- RS → ConfidenceLevel: RS 4–5 → HIGH, RS 3 → MEDIUM, RS 1–2 → LOW
+- FactType: FACT (RS ≥ 3 + source + date), HYPOTHESIS (RS 2 или нет даты), INSUFFICIENT_DATA (RS ≤ 1 / нет source / нет data)
 - Не допускает выводов без источников
 
+### AI Provider Abstraction (`src/lib/ai/`)
+- **Default research provider:** Perplexity Sonar (`sonar-pro`) — real-time web search с citations
+- **Strategy provider:** Anthropic Claude (`claude-sonnet-4-6`) через Vercel AI SDK
+- **Router:** `getResearchProvider(providerId?)` — возвращает провайдер, fallback → mock
+- **Config:** `AI_CONFIG` в `config.ts` — одна точка изменения провайдера/модели
+- **Принцип:** бизнес-логика не вызывает провайдера напрямую — только через router
+- **Perplexity placeholder:** интерфейс готов, реальные вызовы подключаются в T-005 (PERPLEXITY_API_KEY)
+
 ### Research Adapters
-- Абстракция над источниками данных
-- MVP: in-memory/mock
-- Следующие итерации: реальные провайдеры (веб, соцсети, реестры)
-- Каждый адаптер возвращает данные с источником, датой, RS
+- Абстракция над типами исследований (business/market/audience/channels)
+- MVP: mock-адаптеры; далее — реальные вызовы через AI Provider layer
+- Каждый адаптер возвращает `RawDataPoint[]` → classify() → `VerifiedFact[]`
 
 ### RAG Context Layer
 - pgvector для хранения и поиска по embeddings
