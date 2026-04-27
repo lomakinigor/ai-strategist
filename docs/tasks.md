@@ -125,12 +125,12 @@
 
 | Поле | Значение |
 |------|----------|
-| **Статус** | Planned |
+| **Статус** | Done |
 | **Feature** | F-004 |
 | **Описание** | Создать 4 mock-адаптера с единым интерфейсом `{ data, source, date, rs, research_type }`: business / market / audience / channels. Запускаются параллельно после intake. |
 | **Тест-критерий** | Все 4 адаптера возвращают данные нужного формата. `research_type` соответствует адаптеру. Интерфейс задокументирован. Структура готова для реальных провайдеров. |
 
-**Отчёт:** _(заполняется после выполнения)_
+**Отчёт:** Выполнено 2026-04-27. Созданы: `src/lib/research/business-adapter.mock.ts`, `market-adapter.mock.ts`, `audience-adapter.mock.ts`, `channels-adapter.mock.ts` — каждый реализует `ResearchAdapter`, возвращает 3 `RawDataPoint[]` с подстановкой данных компании. Создан `src/lib/research/orchestrator.ts`: `startResearchJob(jobId)` переводит research_job pending→running (все 4 stream)→запускает адаптеры через `Promise.all()`→сохраняет факты в таблицу `facts` через `classify()`→переводит в done. Создан `app/research/[id]/actions.ts`: Server Action `triggerMockResearch`. Обновлён `app/research/[id]/page.tsx`: кнопка запуска при pending, сообщение при running, mock-результаты (первый факт каждого потока) при done. 43 unit-теста (25 reliability + 18 adapter tests), `npm run build` ✓.
 
 ---
 

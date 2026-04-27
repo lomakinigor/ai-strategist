@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import { getDb } from '@/db'
-import { researchJobs, companies } from '@/db/schema'
-import type { ResearchStatus } from '@/lib/types'
+import { researchJobs, companies, facts } from '@/db/schema'
+import type { ResearchStatus, ResearchType } from '@/lib/types'
+import { triggerMockResearch } from './actions'
 
 const STATUS_LABELS: Record<ResearchStatus, string> = {
   pending: 'Ожидает запуска',
@@ -25,6 +26,8 @@ const STREAM_LABELS: Record<string, string> = {
   channels: 'Анализ каналов',
 }
 
+const RESEARCH_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels']
+
 export default async function ResearchStatusPage({ params }: { params: { id: string } }) {
   const db = getDb()
 
@@ -45,7 +48,21 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
 
   const company = comps[0]
 
-  const streams: Array<{ key: string; label: string; status: ResearchStatus }> = [
+  // Load first fact per research stream when job is done
+  let factsByStream: Partial<Record<ResearchType, string>> = {}
+  if (job.status === 'done') {
+    const jobFacts = await db
+      .select({ content: facts.content, researchType: facts.researchType })
+      .from(facts)
+      .where(eq(facts.researchJobId, job.id))
+
+    for (const type of RESEARCH_TYPES) {
+      const first = jobFacts.find((f) => f.researchType === type)
+      if (first) factsByStream[type] = first.content
+    }
+  }
+
+  const streams: Array<{ key: ResearchType; label: string; status: ResearchStatus }> = [
     { key: 'business', label: STREAM_LABELS.business, status: (job.businessStatus ?? 'pending') as ResearchStatus },
     { key: 'market', label: STREAM_LABELS.market, status: (job.marketStatus ?? 'pending') as ResearchStatus },
     { key: 'audience', label: STREAM_LABELS.audience, status: (job.audienceStatus ?? 'pending') as ResearchStatus },
@@ -69,16 +86,25 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
             <span className="text-sm font-medium text-gray-700">Общий статус</span>
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_COLORS[overallStatus]}`}>
               {STATUS_LABELS[overallStatus]}
+              {overallStatus === 'done' && ' (mock)'}
             </span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {streams.map(({ key, label, status }) => (
-              <div key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <span className="text-sm text-gray-700">{label}</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[status]}`}>
-                  {STATUS_LABELS[status]}
-                </span>
+              <div key={key}>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span className="text-sm text-gray-700">{label}</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[status]}`}>
+                    {STATUS_LABELS[status]}
+                    {status === 'done' && ' (mock)'}
+                  </span>
+                </div>
+                {status === 'done' && factsByStream[key] && (
+                  <p className="text-xs text-gray-500 mt-1 pl-1 italic">
+                    {factsByStream[key]}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -91,10 +117,45 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
           </div>
         )}
 
-        <p className="text-xs text-gray-400 text-center mt-6">
-          Автоматическое исследование по всем 4 направлениям будет реализовано в следующих
-          обновлениях. Статус обновляется по мере выполнения каждого потока.
-        </p>
+        {overallStatus === 'pending' && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-yellow-800 mb-3">
+              Исследование ещё не запущено. Нажмите кнопку, чтобы запустить имитацию всех 4 потоков (mock-режим, без реальных запросов в Perplexity).
+            </p>
+            <form action={triggerMockResearch}>
+              <input type="hidden" name="jobId" value={job.id} />
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                Запустить имитацию исследования (mock)
+              </button>
+            </form>
+          </div>
+        )}
+
+        {overallStatus === 'running' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-blue-800">
+              Идёт mock-исследование по всем 4 потокам… Обновите страницу для проверки статуса.
+            </p>
+          </div>
+        )}
+
+        {overallStatus === 'done' && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-green-800">
+              Mock-исследование завершено. Данные готовы для генерации стратегии (T-008).
+            </p>
+          </div>
+        )}
+
+        {overallStatus === 'error' && job.errorMessage && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <p className="text-xs font-medium text-red-700 mb-1">Ошибка</p>
+            <p className="text-sm text-red-800">{job.errorMessage}</p>
+          </div>
+        )}
 
         <div className="mt-4 text-center">
           <a href="/intake" className="text-sm text-blue-600 hover:underline">

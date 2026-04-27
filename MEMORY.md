@@ -54,6 +54,10 @@
 | 2026-04-27 | src/db/index.ts — ленивый getDb() вместо module-level throw | Без этого npm run build падает при импорте из server action |
 | 2026-04-27 | Intake flow: /intake → Server Action → redirect /research/[id] | Server Component + Server Action, нет client-side state |
 | 2026-04-27 | Intake создаёт: company → intake_submission → research_job (pending) | Единственный flow в MVP; один research_job на компанию |
+| 2026-04-27 | Mock adapters в src/lib/research/ — готовая структура под замену на Perplexity | Каждый адаптер реализует ResearchAdapter: collect(query) → RawDataPoint[] |
+| 2026-04-27 | Orchestrator: Promise.all() для параллельного запуска 4 адаптеров | Все потоки стартуют одновременно, факты вставляются после завершения всех |
+| 2026-04-27 | Факты от mock-адаптеров сохраняются в таблицу facts (без source record) | sourceId nullable — mock-факты вставляются без записи в sources |
+| 2026-04-27 | /research/[id] — Server Component, запуск через form + Server Action | Кнопка запуска mock = HTML form с hidden jobId + triggerMockResearch action |
 
 ## Ссылки
 
