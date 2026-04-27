@@ -51,6 +51,9 @@
 | 2026-04-27 | PreToolUse hooks удалены — давали ложные тройные сигналы | PreToolUse срабатывает при каждом вызове, не только при permission dialog |
 | 2026-04-27 | Тройной сигнал нисходящий: 784→659→523 Hz | Нет хука PermissionRequest в Claude Code; Notification — ближайший аналог |
 | 2026-04-27 | Обязательное резюме зафиксировано в CLAUDE.md как жёсткое правило | Задача не завершена без блока «РЕЗЮМЕ ДЛЯ ПЕРЕДАЧИ В ЧАТ» |
+| 2026-04-27 | src/db/index.ts — ленивый getDb() вместо module-level throw | Без этого npm run build падает при импорте из server action |
+| 2026-04-27 | Intake flow: /intake → Server Action → redirect /research/[id] | Server Component + Server Action, нет client-side state |
+| 2026-04-27 | Intake создаёт: company → intake_submission → research_job (pending) | Единственный flow в MVP; один research_job на компанию |
 
 ## Ссылки
 
