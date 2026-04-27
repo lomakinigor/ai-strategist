@@ -65,6 +65,9 @@
 | 2026-04-27 | Фильтры в Validation Workspace — через URL search params, Server Components only | streams/factTypes/confidences/onlyActive в URL; isActive toggle — Server Action + revalidatePath |
 | 2026-04-27 | getFactsForJob() + setFactActive() — src/lib/reporting/validation.ts | Drizzle leftJoin facts→sources; onlyActive, streams, factTypes, confidences filters |
 | 2026-04-27 | Notification hook заменён на PreToolUse+PostToolUse с timestamp-логикой | Notification не срабатывал при табличке разрешения; PostToolUse пишет timestamp, PreToolUse проверяет > 3 сек |
+| 2026-04-27 | RAG Context Layer MVP: SQL-based retrieval без pgvector | При малом объёме фактов vector search не нужен; buildResearchContext(jobId) форматирует контекст для LLM по research_type |
+| 2026-04-27 | serializeContext(ctx) — единая точка сборки LLM-промпта из всех 4 потоков | T-009 (AI Strategy Generation) вызывает эту функцию для формирования system-контекста |
+| 2026-04-27 | src/lib/rag/context.ts: buildResearchContext, getBlockByType, serializeContext | RAG module; на вход jobId, на выходе ResearchContext с 4 блоками contextText |
 
 ## Ссылки
 
