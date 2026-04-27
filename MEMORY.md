@@ -48,6 +48,9 @@
 | 2026-04-27 | AI provider abstraction layer в src/lib/ai/ | Router + config — одна точка переключения провайдера/модели без ломки бизнес-логики |
 | 2026-04-27 | RS → Confidence: RS 4–5 HIGH, RS 3 MEDIUM, RS 1–2 LOW | Зафиксировано в rules.ts, покрыто тестами |
 | 2026-04-27 | Vitest установлен, test-скрипт добавлен в package.json | npm run test = vitest run |
+| 2026-04-27 | PreToolUse hooks удалены — давали ложные тройные сигналы | PreToolUse срабатывает при каждом вызове, не только при permission dialog |
+| 2026-04-27 | Тройной сигнал нисходящий: 784→659→523 Hz | Нет хука PermissionRequest в Claude Code; Notification — ближайший аналог |
+| 2026-04-27 | Обязательное резюме зафиксировано в CLAUDE.md как жёсткое правило | Задача не завершена без блока «РЕЗЮМЕ ДЛЯ ПЕРЕДАЧИ В ЧАТ» |
 
 ## Ссылки
 

@@ -17,6 +17,19 @@
 
 ---
 
+## T-000C — Fix Permission Notification Hooks and Enforce Final Summary
+
+| Поле | Значение |
+|------|----------|
+| **Статус** | Done |
+| **Feature** | F-000 (dev tooling) |
+| **Описание** | Убрать ложные PreToolUse-сигналы. Переключить тройной сигнал на Notification hook. Сменить паттерн тройного сигнала на нисходящий. Зафиксировать обязательное резюме в CLAUDE.md. |
+| **Тест-критерий** | PreToolUse убран. Тройной сигнал нисходящий (784→659→523 Hz). Правило резюме в CLAUDE.md. knowledge/notifications.md обновлён. |
+
+**Отчёт:** Выполнено 2026-04-27. Удалены PreToolUse hooks (Bash/Edit/Write/MultiEdit) из settings.json — они давали ложные сигналы. Тройной нисходящий паттерн: 784→659→523 Hz (соль-ми-до). Правило обязательного резюме добавлено в CLAUDE.md как жёсткое. knowledge/notifications.md актуализирован. Задокументировано: нет хука PermissionRequest в Claude Code — Notification является ближайшим аналогом.
+
+---
+
 ## T-000A — Product Logic Correction
 
 | Поле | Значение |

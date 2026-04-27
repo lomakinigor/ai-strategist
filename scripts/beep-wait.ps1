@@ -1,5 +1,5 @@
-# Тройной сигнал разными тонами — ожидание подтверждения (Notification hook)
-# Тоны: 523 Hz → 659 Hz → 784 Hz (до-ми-соль, восходящее мажорное трезвучие)
+# Тройной нисходящий сигнал — ожидание подтверждения (Notification hook)
+# Тоны: 784 Hz → 659 Hz → 523 Hz (соль-ми-до, нисходящее мажорное трезвучие)
 
 function Play-Tone($freq, $dur) {
     $rate = 44100
@@ -31,8 +31,8 @@ function Play-Tone($freq, $dur) {
     $bw.Dispose(); $ms.Dispose()
 }
 
-Play-Tone 523 250
+Play-Tone 784 350
 Start-Sleep -Milliseconds 100
 Play-Tone 659 250
 Start-Sleep -Milliseconds 100
-Play-Tone 784 350
+Play-Tone 523 250
