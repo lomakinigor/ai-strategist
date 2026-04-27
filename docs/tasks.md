@@ -47,12 +47,12 @@
 
 | Поле | Значение |
 |------|----------|
-| **Статус** | Partial |
+| **Статус** | Done |
 | **Feature** | F-001 |
 | **Описание** | Настроить git remote origin, выполнить push всех коммитов на GitHub, задеплоить проект на Vercel. |
 | **Тест-критерий** | remote origin настроен. Все коммиты запушены. Проект открывается по deploy URL без ошибок. DATABASE_URL добавлен в Vercel env vars. |
 
-**Отчёт:** Выполнено 2026-04-27. Remote origin добавлен: `https://github.com/lomakinigor/ai-strategist.git`. Push выполнен успешно — все 4 коммита на GitHub. Vercel CLI не установлен — деплой не выполнен. Требует ручного шага: `npm i -g vercel` + `vercel --prod` или подключение GitHub repo в Vercel UI. DATABASE_URL не задан — необходимо добавить в Vercel env vars перед production-запуском.
+**Отчёт:** Выполнено 2026-04-27. Remote origin: `https://github.com/lomakinigor/ai-strategist.git`. Push выполнен — все коммиты на GitHub. Deploy: Vercel UI (Import Git Repository). Production URL: `https://ai-strategist-bice.vercel.app`. Status: Ready, Source: `14f69b4`. Smoke-check: страница открывается, отображается заглушка AI-Стратег. DATABASE_URL не задан — добавить в Vercel env vars перед подключением БД.
 
 ---
 
