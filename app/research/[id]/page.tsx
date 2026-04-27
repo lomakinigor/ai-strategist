@@ -1,10 +1,11 @@
 import { eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import { getDb } from '@/db'
-import { researchJobs, companies, facts, sources } from '@/db/schema'
+import { researchJobs, companies, facts, sources, reportArtifacts } from '@/db/schema'
 import type { ResearchStatus, ResearchType } from '@/lib/types'
 import { AI_CONFIG } from '@/lib/ai/config'
 import { triggerResearch } from './actions'
+import { generateStrategyAction } from './generate/actions'
 
 const STATUS_LABELS: Record<ResearchStatus, string> = {
   pending: 'Ожидает запуска',
@@ -52,6 +53,7 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
 
   let factsByStream: Partial<Record<ResearchType, string>> = {}
   let jobSources: Array<{ sourceUrl: string | null; sourceName: string }> = []
+  let existingReportArtifact: { id: string; status: string } | null = null
 
   if (job.status === 'done') {
     const jobFacts = await db
@@ -77,6 +79,17 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
         .where(eq(sources.companyId, job.companyId))
         .limit(8)
       jobSources = sourceRows.filter((s) => s.sourceUrl != null)
+    }
+
+    // Check if a strategy report already exists for this job
+    const existingReports = await db
+      .select({ id: reportArtifacts.id, status: reportArtifacts.status })
+      .from(reportArtifacts)
+      .where(eq(reportArtifacts.researchJobId, job.id))
+      .limit(1)
+
+    if (existingReports[0]) {
+      existingReportArtifact = existingReports[0] as { id: string; status: string }
     }
   }
 
@@ -176,8 +189,8 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
         )}
 
         {overallStatus === 'done' && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-            <p className="text-sm text-green-800 mb-3">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 space-y-3">
+            <p className="text-sm text-green-800">
               {researchMode === 'real'
                 ? 'Исследование Perplexity завершено. Данные с источниками готовы для валидации.'
                 : 'Mock-исследование завершено. Данные готовы для валидации фактов.'}
@@ -188,6 +201,27 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
             >
               Перейти к валидации фактов →
             </a>
+
+            {existingReportArtifact ? (
+              <a
+                href={`/research/${params.id}/report?artifactId=${existingReportArtifact.id}`}
+                className="inline-block w-full text-center bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              >
+                {existingReportArtifact.status === 'done'
+                  ? 'Смотреть стратегический анализ →'
+                  : 'Стратегия генерируется… →'}
+              </a>
+            ) : (
+              <form action={generateStrategyAction}>
+                <input type="hidden" name="jobId" value={job.id} />
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Сгенерировать стратегический анализ →
+                </button>
+              </form>
+            )}
           </div>
         )}
 

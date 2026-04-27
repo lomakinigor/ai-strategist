@@ -68,6 +68,11 @@
 | 2026-04-27 | RAG Context Layer MVP: SQL-based retrieval без pgvector | При малом объёме фактов vector search не нужен; buildResearchContext(jobId) форматирует контекст для LLM по research_type |
 | 2026-04-27 | serializeContext(ctx) — единая точка сборки LLM-промпта из всех 4 потоков | T-009 (AI Strategy Generation) вызывает эту функцию для формирования system-контекста |
 | 2026-04-27 | src/lib/rag/context.ts: buildResearchContext, getBlockByType, serializeContext | RAG module; на вход jobId, на выходе ResearchContext с 4 блоками contextText |
+| 2026-04-28 | Strategy generation: direct Anthropic API fetch (не Vercel AI SDK provider) | @ai-sdk/anthropic не в deps; используем fetch как в Perplexity; ANTHROPIC_API_KEY → real, иначе mock |
+| 2026-04-28 | generateStrategyDraft: insert artifact first, then buildResearchContext inside try | Чтобы ошибки RAG/API всегда помечали artifact status=error (не теряли запись) |
+| 2026-04-28 | report_artifacts: статус pending→generating→done/error; contentMarkdown = финальный markdown | Схема уже была в T-002; T-009 реализует запись; T-010 дорабатывает UI |
+| 2026-04-28 | /research/[id]/report — minimal viewer: 5 цветных секций из parseSections() | T-010 добавит полноценный Strategy Workspace; T-009 = достаточный MVP viewer |
+| 2026-04-28 | Антигаллюцинационные правила в STRATEGY_SYSTEM_PROMPT: только факты из контекста, [ФАКТ]/[ГИПОТЕЗА]/[НЕДОСТАТОЧНО ДАННЫХ] обязательны | Ключевой guardrail против LLM-домыслов о конкретной компании |
 
 ## Ссылки
 
