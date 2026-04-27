@@ -4,6 +4,9 @@ export interface ResearchProviderConfig {
   defaultProvider: AIProviderId
   defaultModel: AIModelId
   fallbackProvider: AIProviderId
+  // Controls whether research runs against real Perplexity API or uses mock adapters.
+  // Set RESEARCH_MODE=real in environment to enable live research.
+  mode: 'mock' | 'real'
 }
 
 export interface StrategyProviderConfig {
@@ -24,6 +27,7 @@ export const AI_CONFIG: AIConfig = {
     defaultProvider: 'perplexity',
     defaultModel: 'sonar-pro',
     fallbackProvider: 'mock',
+    mode: process.env.RESEARCH_MODE === 'real' ? 'real' : 'mock',
   },
   strategy: {
     defaultProvider: 'anthropic',

@@ -57,7 +57,10 @@
 | 2026-04-27 | Mock adapters в src/lib/research/ — готовая структура под замену на Perplexity | Каждый адаптер реализует ResearchAdapter: collect(query) → RawDataPoint[] |
 | 2026-04-27 | Orchestrator: Promise.all() для параллельного запуска 4 адаптеров | Все потоки стартуют одновременно, факты вставляются после завершения всех |
 | 2026-04-27 | Факты от mock-адаптеров сохраняются в таблицу facts (без source record) | sourceId nullable — mock-факты вставляются без записи в sources |
-| 2026-04-27 | /research/[id] — Server Component, запуск через form + Server Action | Кнопка запуска mock = HTML form с hidden jobId + triggerMockResearch action |
+| 2026-04-27 | /research/[id] — Server Component, запуск через form + Server Action | Кнопка запуска = HTML form с hidden jobId + triggerResearch action |
+| 2026-04-27 | researchMode: mock/real управляется через RESEARCH_MODE env var | mock = default без API-ключа; real = Perplexity sonar-pro с return_citations |
+| 2026-04-27 | Real mode создаёт source records (inferSourceType по hostname) | sourceId nullable — mock-факты без source, real-факты с source через sources таблицу |
+| 2026-04-27 | Perplexity response: content → абзацы → RawDataPoint[], citations → source field | RS:3 при citations, RS:2 без. Промпты по шаблону per ResearchType на русском |
 
 ## Ссылки
 

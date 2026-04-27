@@ -134,16 +134,16 @@
 
 ---
 
-## T-006 — Validation Workspace UI
+## T-006 — Perplexity Real Research Integration
 
 | Поле | Значение |
 |------|----------|
-| **Статус** | Planned |
+| **Статус** | Done |
 | **Feature** | F-005 |
-| **Описание** | Страница с фактами, сгруппированными по 4 категориям (бизнес / рынок / аудитория / каналы). Фильтрация по RS и типу факта. Клиент может отметить факты как неактуальные. |
-| **Тест-критерий** | Все 4 категории отображаются. Деактивация факта сохраняется. Кнопка «Сформировать отчёт» активна. |
+| **Описание** | Подключить реальный Perplexity API к AI-слою. Добавить researchMode: mock/real. Orchestrator переключается между mock-адаптерами и Perplexity по флагу. UI отражает режим и sources. |
+| **Тест-критерий** | PerplexityResearchProvider вызывает реальный API (mock-fetch в тестах). AI_CONFIG.research.mode управляется через RESEARCH_MODE. Orchestrator поддерживает оба режима. UI показывает режим, источники при real mode. |
 
-**Отчёт:** _(заполняется после выполнения)_
+**Отчёт:** Выполнено 2026-04-27. Endpoint: `POST https://api.perplexity.ai/chat/completions`, model: `sonar-pro`, `return_citations: true`. Запрос: `messages[system + user]` с промптом по шаблону research_type + данные компании. Ответ: `choices[0].message.content` разбивается на абзацы → `RawDataPoint[]` (RS:3 при наличии citations, RS:2 без); `citations[]` → `source` поле. `AI_CONFIG.research.mode`: `process.env.RESEARCH_MODE === 'real' ? 'real' : 'mock'`. Orchestrator: `startResearchJob()` → dispatch на `runMockResearch()` или `runRealResearch()`. Real mode создаёт записи в `sources` (inferSourceType по hostname) и линкует через `facts.sourceId`. При ошибке (нет API-ключа, HTTP-ошибка) → job.status=error с errorMessage. UI: badge «Режим: mock/Perplexity (real)», mode-aware кнопка и тексты, блок источников при done+real. 57 unit-тестов (+14 PerplexityProvider), `npm run build` ✓.
 
 ---
 
