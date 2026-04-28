@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { getDb } from '@/db'
 import { reportArtifacts, researchJobs, companies } from '@/db/schema'
 import { parseSections } from '@/lib/strategy/generator'
+import { CopyButton } from './CopyButton'
+
+// ─── Section metadata ─────────────────────────────────────────────────────────
 
 const SECTION_LABELS: Record<string, string> = {
   business: 'Анализ бизнеса',
@@ -12,21 +15,105 @@ const SECTION_LABELS: Record<string, string> = {
   strategy: 'Стратегия и рекомендации',
 }
 
-const SECTION_COLORS: Record<string, string> = {
-  business: 'border-blue-200 bg-blue-50',
-  market: 'border-purple-200 bg-purple-50',
-  audience: 'border-orange-200 bg-orange-50',
-  channels: 'border-teal-200 bg-teal-50',
-  strategy: 'border-green-200 bg-green-50',
+const SECTION_BORDER: Record<string, string> = {
+  business: 'border-blue-200',
+  market: 'border-purple-200',
+  audience: 'border-orange-200',
+  channels: 'border-teal-200',
+  strategy: 'border-green-200',
 }
 
-const SECTION_HEADER_COLORS: Record<string, string> = {
+const SECTION_BG: Record<string, string> = {
+  business: 'bg-blue-50',
+  market: 'bg-purple-50',
+  audience: 'bg-orange-50',
+  channels: 'bg-teal-50',
+  strategy: 'bg-green-50',
+}
+
+const SECTION_HEADING: Record<string, string> = {
   business: 'text-blue-800',
   market: 'text-purple-800',
   audience: 'text-orange-800',
   channels: 'text-teal-800',
   strategy: 'text-green-800',
 }
+
+// ─── Section content renderer ─────────────────────────────────────────────────
+
+/**
+ * Renders section text with visual highlighting for reliability markers.
+ * Lines containing [ФАКТ], [ГИПОТЕЗА], [НЕДОСТАТОЧНО ДАННЫХ] get coloured treatment.
+ */
+function renderSectionContent(content: string) {
+  const lines = content.split('\n')
+  return (
+    <div className="space-y-0.5">
+      {lines.map((line, i) => {
+        const hasFact = line.includes('[ФАКТ]')
+        const hasHypothesis = line.includes('[ГИПОТЕЗА]')
+        const hasInsufficient =
+          line.includes('НЕДОСТАТОЧНО ДАННЫХ') || line.includes('[НЕДОСТАТОЧНО')
+
+        if (hasInsufficient) {
+          return (
+            <p
+              key={i}
+              className="text-sm text-red-700 bg-red-50 border-l-2 border-red-300 pl-2 py-0.5 rounded-r leading-relaxed"
+            >
+              {line}
+            </p>
+          )
+        }
+        if (hasFact) {
+          return (
+            <p
+              key={i}
+              className="text-sm text-gray-800 border-l-2 border-green-400 pl-2 py-0.5 leading-relaxed"
+            >
+              {line}
+            </p>
+          )
+        }
+        if (hasHypothesis) {
+          return (
+            <p
+              key={i}
+              className="text-sm text-gray-800 border-l-2 border-yellow-400 pl-2 py-0.5 leading-relaxed"
+            >
+              {line}
+            </p>
+          )
+        }
+        if (line.startsWith('### ')) {
+          return (
+            <h4 key={i} className="text-sm font-semibold text-gray-900 mt-3 mb-1">
+              {line.slice(4)}
+            </h4>
+          )
+        }
+        if (line.startsWith('- ') || line.startsWith('• ')) {
+          return (
+            <p key={i} className="text-sm text-gray-800 pl-3 leading-relaxed">
+              {'• '}
+              {line.slice(2)}
+            </p>
+          )
+        }
+        if (line.trim() === '') {
+          return <div key={i} className="h-1.5" />
+        }
+        return (
+          <p key={i} className="text-sm text-gray-800 leading-relaxed">
+            {line}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ReportPage({
   params,
@@ -39,7 +126,6 @@ export default async function ReportPage({
   const { id: jobId } = params
   const { artifactId } = searchParams
 
-  // Load research job and company
   const jobs = await db
     .select()
     .from(researchJobs)
@@ -57,7 +143,6 @@ export default async function ReportPage({
 
   const company = comps[0]
 
-  // Load artifact — prefer artifactId param, else most recent for this job
   let artifacts
   if (artifactId) {
     artifacts = await db
@@ -79,12 +164,17 @@ export default async function ReportPage({
   const sections = artifact.contentMarkdown ? parseSections(artifact.contentMarkdown) : []
   const isGenerating = artifact.status === 'generating'
   const isError = artifact.status === 'error'
+  const isDone = artifact.status === 'done'
+  const isMock = isDone && artifact.contentMarkdown?.includes('Mock-режим активен')
+
+  const currentArtifactId = artifact.id
 
   return (
     <main className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-6">
-        {/* Header */}
-        <div className="mb-8">
+
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <div className="mb-6">
           <div className="flex items-start justify-between mb-2">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -96,18 +186,14 @@ export default async function ReportPage({
             </div>
             <span
               className={`text-xs font-medium px-2.5 py-1 rounded-full mt-1 ${
-                artifact.status === 'done'
+                isDone
                   ? 'text-green-700 bg-green-100'
-                  : artifact.status === 'error'
+                  : isError
                     ? 'text-red-700 bg-red-100'
                     : 'text-yellow-700 bg-yellow-100'
               }`}
             >
-              {artifact.status === 'done'
-                ? 'Готово'
-                : artifact.status === 'error'
-                  ? 'Ошибка'
-                  : 'Генерируется...'}
+              {isDone ? 'Готово' : isError ? 'Ошибка' : 'Генерируется...'}
             </span>
           </div>
           <p className="text-xs text-gray-400">
@@ -115,7 +201,53 @@ export default async function ReportPage({
           </p>
         </div>
 
-        {/* Generating state */}
+        {/* ── Export actions ──────────────────────────────────────── */}
+        {isDone && artifact.contentMarkdown && (
+          <div className="flex gap-3 mb-6 flex-wrap">
+            <CopyButton text={artifact.contentMarkdown} />
+            <a
+              href={`/api/export/${currentArtifactId}`}
+              className="text-sm px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+            >
+              Скачать .md
+            </a>
+          </div>
+        )}
+
+        {/* ── Mock mode notice ────────────────────────────────────── */}
+        {isMock && (
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-5 text-xs text-gray-600">
+            Стратегия сгенерирована в <strong>mock-режиме</strong>. Для реального анализа задайте{' '}
+            <code className="font-mono">ANTHROPIC_API_KEY</code>.
+          </div>
+        )}
+
+        {/* ── Reliability disclaimer ──────────────────────────────── */}
+        {isDone && !isMock && (
+          <div className="border border-amber-200 bg-amber-50 rounded-lg p-4 mb-6 text-xs text-amber-800">
+            <p className="font-semibold mb-1">О достоверности данных</p>
+            <p className="mb-1.5">
+              Каждое ключевое утверждение маркировано по типу:
+            </p>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <span className="inline-block border-l-2 border-green-400 pl-1.5 text-gray-700">
+                [ФАКТ] — подтверждено источником (RS ≥ 3)
+              </span>
+              <span className="inline-block border-l-2 border-yellow-400 pl-1.5 text-gray-700">
+                [ГИПОТЕЗА] — вероятно, не подтверждено напрямую
+              </span>
+              <span className="inline-block border-l-2 border-red-300 pl-1.5 text-red-700">
+                [НЕДОСТАТОЧНО ДАННЫХ] — данных нет, вывод не делается
+              </span>
+            </div>
+            <p className="text-amber-700">
+              Документ носит аналитический характер и не заменяет профессиональную консультацию.
+              Качество анализа зависит от объёма и достоверности собранных фактов.
+            </p>
+          </div>
+        )}
+
+        {/* ── Generating state ────────────────────────────────────── */}
         {isGenerating && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <p className="text-sm text-yellow-800">
@@ -124,7 +256,7 @@ export default async function ReportPage({
           </div>
         )}
 
-        {/* Error state */}
+        {/* ── Error state ─────────────────────────────────────────── */}
         {isError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <p className="text-xs font-medium text-red-700 mb-1">Ошибка генерации</p>
@@ -132,37 +264,27 @@ export default async function ReportPage({
           </div>
         )}
 
-        {/* Mock mode notice */}
-        {artifact.status === 'done' && artifact.contentMarkdown?.includes('Mock-режим активен') && (
-          <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-6 text-xs text-gray-600">
-            Стратегия сгенерирована в <strong>mock-режиме</strong>. Для реального анализа задайте{' '}
-            <code className="font-mono">ANTHROPIC_API_KEY</code>.
-          </div>
-        )}
-
-        {/* Sections */}
+        {/* ── Sections ────────────────────────────────────────────── */}
         {sections.length > 0 && (
           <div className="space-y-6">
             {sections.map((section, i) => (
               <div
                 key={section.id}
-                className={`border rounded-lg p-6 ${SECTION_COLORS[section.id] ?? 'border-gray-200 bg-white'}`}
+                className={`border rounded-lg p-6 ${SECTION_BORDER[section.id] ?? 'border-gray-200'} ${SECTION_BG[section.id] ?? 'bg-white'}`}
               >
                 <h2
-                  className={`text-base font-semibold mb-3 ${SECTION_HEADER_COLORS[section.id] ?? 'text-gray-800'}`}
+                  className={`text-base font-semibold mb-4 ${SECTION_HEADING[section.id] ?? 'text-gray-800'}`}
                 >
                   {i + 1}. {SECTION_LABELS[section.id] ?? section.title}
                 </h2>
-                <div className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
-                  {section.content}
-                </div>
+                {renderSectionContent(section.content)}
               </div>
             ))}
           </div>
         )}
 
-        {/* Raw markdown fallback (error case with content) */}
-        {sections.length === 0 && artifact.status === 'done' && artifact.contentMarkdown && (
+        {/* ── Raw markdown fallback ───────────────────────────────── */}
+        {sections.length === 0 && isDone && artifact.contentMarkdown && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
               {artifact.contentMarkdown}
@@ -170,8 +292,8 @@ export default async function ReportPage({
           </div>
         )}
 
-        {/* Navigation */}
-        <div className="mt-8 flex gap-4">
+        {/* ── Navigation ──────────────────────────────────────────── */}
+        <div className="mt-8 flex gap-4 flex-wrap">
           <a
             href={`/research/${jobId}/validation`}
             className="text-sm text-blue-600 hover:underline"

@@ -71,7 +71,10 @@
 | 2026-04-28 | Strategy generation: direct Anthropic API fetch (не Vercel AI SDK provider) | @ai-sdk/anthropic не в deps; используем fetch как в Perplexity; ANTHROPIC_API_KEY → real, иначе mock |
 | 2026-04-28 | generateStrategyDraft: insert artifact first, then buildResearchContext inside try | Чтобы ошибки RAG/API всегда помечали artifact status=error (не теряли запись) |
 | 2026-04-28 | report_artifacts: статус pending→generating→done/error; contentMarkdown = финальный markdown | Схема уже была в T-002; T-009 реализует запись; T-010 дорабатывает UI |
-| 2026-04-28 | /research/[id]/report — minimal viewer: 5 цветных секций из parseSections() | T-010 добавит полноценный Strategy Workspace; T-009 = достаточный MVP viewer |
+| 2026-04-28 | /research/[id]/report — полноценный Strategy Workspace: 5 секций, построчный renderer с цветной маркировкой, дисклеймер, CopyButton, ссылка Скачать .md | T-010 Done; T-009 viewer заменён |
+| 2026-04-28 | /api/export/[artifactId] — GET-endpoint, отдаёт contentMarkdown как text/markdown attachment | F-009 Export Foundation; filename формируется по имени компании |
+| 2026-04-28 | renderSectionContent — построчный renderer: [ФАКТ] зелёный border-l, [ГИПОТЕЗА] жёлтый, [НЕДОСТАТОЧНО ДАННЫХ] красный bg, ### → h4 | Визуальный guardrail прямо в Strategy Workspace |
+| 2026-04-28 | Дисклеймер о достоверности: показывается только в real mode (не mock), содержит легенду маркировок | Явное предупреждение про ограничения AI-анализа |
 | 2026-04-28 | Антигаллюцинационные правила в STRATEGY_SYSTEM_PROMPT: только факты из контекста, [ФАКТ]/[ГИПОТЕЗА]/[НЕДОСТАТОЧНО ДАННЫХ] обязательны | Ключевой guardrail против LLM-домыслов о конкретной компании |
 
 ## Ссылки
