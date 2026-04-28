@@ -62,68 +62,66 @@ function getMockDraft(factCount: number): string {
       : 'Контекст не содержит фактов. Запустите research pipeline перед генерацией стратегии.'
 
   return `## 1. Анализ бизнеса
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Для генерации реального анализа настройте ANTHROPIC_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Для генерации реального анализа настройте DEEPSEEK_API_KEY.]
 
 ${dataNote} В реальном режиме этот раздел содержал бы анализ компании на основе верифицированных фактов с указанием типов утверждений.
 
 ## 2. Анализ рынка
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ рынка требует ANTHROPIC_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ рынка требует DEEPSEEK_API_KEY.]
 
 В реальном режиме этот раздел содержал бы анализ отраслевых трендов, объёма рынка и динамики с РФ-релевантными данными.
 
 ## 3. Анализ целевой аудитории
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ аудитории требует ANTHROPIC_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ аудитории требует DEEPSEEK_API_KEY.]
 
 В реальном режиме этот раздел содержал бы анализ целевых сегментов, потребностей и поведения аудитории.
 
 ## 4. Анализ каналов
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ каналов требует ANTHROPIC_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ каналов требует DEEPSEEK_API_KEY.]
 
 В реальном режиме этот раздел содержал бы анализ каналов присутствия (ВКонтакте, Telegram, YouTube и др.) с оценкой активности.
 
 ## 5. Стратегия и рекомендации
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальные рекомендации требуют ANTHROPIC_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальные рекомендации требуют DEEPSEEK_API_KEY.]
 
 В реальном режиме этот раздел содержал бы конкретные рекомендации по развитию с уклоном в автоматизацию и AI, с оценкой стоимости в рублях.`
 }
 
-// ─── Anthropic API call ───────────────────────────────────────────────────────
+// ─── Perplexity API call (strategy generation) ───────────────────────────────
 
-interface AnthropicResponse {
-  content: Array<{ type: string; text: string }>
+interface PerplexityChatResponse {
+  choices: Array<{ message: { content: string } }>
 }
 
-export async function callAnthropicAPI(systemPrompt: string, userPrompt: string): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
+export async function callDeepSeekAPI(systemPrompt: string, userPrompt: string): Promise<string> {
+  const apiKey = process.env.PERPLEXITY_API_KEY
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not configured')
+    throw new Error('PERPLEXITY_API_KEY is not configured')
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
+      'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: 'sonar-pro',
       max_tokens: 8000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
     }),
   })
 
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(`Anthropic API error ${response.status}: ${text}`)
+    throw new Error(`Perplexity API error ${response.status}: ${text}`)
   }
 
-  const data = (await response.json()) as AnthropicResponse
-  return data.content
-    .filter((c) => c.type === 'text')
-    .map((c) => c.text)
-    .join('')
+  const data = (await response.json()) as PerplexityChatResponse
+  return data.choices[0]?.message?.content ?? ''
 }
 
 // ─── Main generation function ─────────────────────────────────────────────────
@@ -155,7 +153,7 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
 
   const artifactId = inserted[0].id
 
-  const hasApiKey = Boolean(process.env.ANTHROPIC_API_KEY)
+  const hasApiKey = Boolean(process.env.PERPLEXITY_API_KEY)
   let contentMarkdown: string
   let modelId: string
   let mode: 'mock' | 'real'
@@ -166,8 +164,8 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
 
     if (hasApiKey) {
       const userPrompt = buildStrategyUserPrompt(context)
-      contentMarkdown = await callAnthropicAPI(STRATEGY_SYSTEM_PROMPT, userPrompt)
-      modelId = 'claude-sonnet-4-6'
+      contentMarkdown = await callDeepSeekAPI(STRATEGY_SYSTEM_PROMPT, userPrompt)
+      modelId = 'sonar-pro'
       mode = 'real'
     } else {
       contentMarkdown = getMockDraft(context.totalFactCount)

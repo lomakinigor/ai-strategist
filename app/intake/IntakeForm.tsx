@@ -3,17 +3,14 @@
 import { useState } from 'react'
 import { createResearchJob } from './actions'
 
-const RF_CHANNELS = [
-  'ВКонтакте',
-  'Telegram',
-  'YouTube',
-  'Instagram',
-  'TikTok',
-  'Одноклассники',
-  'Яндекс.Дзен',
-  'Авито',
-  'MAX',
-]
+function Spinner() {
+  return (
+    <svg className="animate-spin h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  )
+}
 
 export default function IntakeForm() {
   const [companyName, setCompanyName] = useState('')
@@ -23,10 +20,13 @@ export default function IntakeForm() {
   const [goals, setGoals] = useState('')
   const [competitors, setCompetitors] = useState('')
   const [contextNotes, setContextNotes] = useState('')
-  const [channels, setChannels] = useState<string[]>([])
-  const [channelsOther, setChannelsOther] = useState('')
+  const [channelLinks, setChannelLinks] = useState<string[]>([''])
+  const [isChain, setIsChain] = useState(false)
+  const [chainScope, setChainScope] = useState<'network' | 'location'>('network')
+  const [city, setCity] = useState('')
   const [isParsing, setIsParsing] = useState(false)
   const [parseError, setParseError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleParse() {
     if (!contextNotes.trim()) return
@@ -39,7 +39,7 @@ export default function IntakeForm() {
         body: JSON.stringify({ text: contextNotes }),
       })
       if (res.status === 503) {
-        setParseError('ANTHROPIC_API_KEY не задан — заполните поля вручную')
+        setParseError('PERPLEXITY_API_KEY не задан — заполните поля вручную')
         return
       }
       if (!res.ok) {
@@ -53,10 +53,6 @@ export default function IntakeForm() {
       if (parsed.website && !website) setWebsite(parsed.website)
       if (parsed.goals && !goals) setGoals(parsed.goals)
       if (parsed.competitors && !competitors) setCompetitors(parsed.competitors)
-      if (Array.isArray(parsed.channels) && parsed.channels.length > 0) {
-        const valid = parsed.channels.filter((ch: string) => RF_CHANNELS.includes(ch))
-        setChannels((prev) => [...new Set([...prev, ...valid])])
-      }
     } catch {
       setParseError('Ошибка парсинга — заполните поля вручную')
     } finally {
@@ -64,15 +60,39 @@ export default function IntakeForm() {
     }
   }
 
-  function toggleChannel(ch: string) {
-    setChannels((prev) =>
-      prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch],
-    )
+  function updateChannelLink(index: number, value: string) {
+    setChannelLinks((prev) => prev.map((l, i) => (i === index ? value : l)))
+  }
+
+  function addChannelLink() {
+    setChannelLinks((prev) => [...prev, ''])
+  }
+
+  function removeChannelLink(index: number) {
+    setChannelLinks((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    channelLinks.filter((l) => l.trim()).forEach((l) => formData.append('channel_link', l.trim()))
+    formData.set('is_chain', isChain ? '1' : '0')
+    if (isChain) {
+      formData.set('chain_scope', chainScope)
+      if (chainScope === 'location') formData.set('city', city)
+    }
+    try {
+      await createResearchJob(formData)
+    } catch {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <form action={createResearchJob} className="space-y-5 bg-white p-6 rounded-lg border border-gray-200">
-      {/* ── Context notes (AI parse) — top of form ── */}
+    <form onSubmit={handleSubmit} className="space-y-5 bg-white p-6 rounded-lg border border-gray-200">
+
+      {/* ── Context notes (AI parse) ── */}
       <div>
         <label htmlFor="context_notes" className="block text-sm font-medium text-gray-700 mb-1">
           Дополнительная информация о компании
@@ -86,19 +106,20 @@ export default function IntakeForm() {
           placeholder="Вставьте любую информацию: описание продуктов, данные о клиентах, конкурентах, метрики, КП, отзывы — система сама разберёт и заполнит поля ниже."
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
-        <div className="mt-2 flex items-center gap-3">
+        <div className="mt-2 flex items-center gap-3 flex-wrap">
           <button
             type="button"
             onClick={handleParse}
             disabled={isParsing || !contextNotes.trim()}
-            className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 active:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
           >
+            {isParsing ? <Spinner /> : null}
             {isParsing ? 'Разбираю…' : 'Разобрать с помощью AI →'}
           </button>
-          {parseError && (
-            <span className="text-xs text-red-500">{parseError}</span>
+          {parseError && <span className="text-xs text-red-500">{parseError}</span>}
+          {!parseError && (
+            <span className="text-xs text-gray-400">Необязательно. Чем больше данных — тем точнее стратегия.</span>
           )}
-          <span className="text-xs text-gray-400">Необязательно. Чем больше данных — тем точнее стратегия.</span>
         </div>
       </div>
 
@@ -119,6 +140,55 @@ export default function IntakeForm() {
           placeholder="ООО «Ромашка»"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      {/* ── Chain / network ── */}
+      <div>
+        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={isChain}
+            onChange={(e) => setIsChain(e.target.checked)}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+          />
+          Это сетевая компания или франшиза
+        </label>
+        {isChain && (
+          <div className="mt-3 ml-6 space-y-2">
+            <p className="text-xs font-medium text-gray-600">Что анализировать?</p>
+            <div className="flex gap-5">
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="chain_scope_ui"
+                  checked={chainScope === 'network'}
+                  onChange={() => setChainScope('network')}
+                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                Всю сеть целиком
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="chain_scope_ui"
+                  checked={chainScope === 'location'}
+                  onChange={() => setChainScope('location')}
+                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                Одну конкретную точку
+              </label>
+            </div>
+            {chainScope === 'location' && (
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Город и/или адрес точки"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Industry ── */}
@@ -187,36 +257,49 @@ export default function IntakeForm() {
         <p className="mt-1 text-xs text-gray-400">Через запятую. Будут включены в анализ рынка.</p>
       </div>
 
-      {/* ── Channels ── */}
+      {/* ── Channel links ── */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Каналы присутствия компании
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Каналы присутствия — ссылки
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          {RF_CHANNELS.map((ch) => (
-            <label key={ch} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <p className="text-xs text-gray-400 mb-3">
+          Укажите прямые ссылки: Telegram-каналы, боты, группы ВКонтакте, YouTube-канал, Instagram и т.д. Можно несколько.
+        </p>
+        <div className="space-y-2">
+          {channelLinks.map((link, i) => (
+            <div key={i} className="flex items-center gap-2">
               <input
-                type="checkbox"
-                name="channels"
-                value={ch}
-                checked={channels.includes(ch)}
-                onChange={() => toggleChannel(ch)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                type="url"
+                value={link}
+                onChange={(e) => updateChannelLink(i, e.target.value)}
+                placeholder="https://t.me/channel, https://vk.com/company, https://linku.su/…"
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              {ch}
-            </label>
+              {channelLinks.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeChannelLink(i)}
+                  title="Удалить"
+                  className="p-1.5 text-gray-400 hover:text-red-500 cursor-pointer transition-colors rounded"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           ))}
         </div>
-        <div className="mt-2">
-          <input
-            name="channels_other"
-            type="text"
-            value={channelsOther}
-            onChange={(e) => setChannelsOther(e.target.value)}
-            placeholder="Другие каналы (через запятую)"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <button
+          type="button"
+          onClick={addChannelLink}
+          className="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Добавить ещё канал
+        </button>
       </div>
 
       {/* ── Research goal ── */}
@@ -237,9 +320,11 @@ export default function IntakeForm() {
 
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+        disabled={isSubmitting}
+        className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
       >
-        Запустить исследование
+        {isSubmitting ? <Spinner /> : null}
+        {isSubmitting ? 'Запускаю исследование…' : 'Запустить исследование'}
       </button>
     </form>
   )

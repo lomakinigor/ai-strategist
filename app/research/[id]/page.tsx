@@ -4,8 +4,7 @@ import { getDb } from '@/db'
 import { researchJobs, companies, facts, sources, reportArtifacts } from '@/db/schema'
 import type { ResearchStatus, ResearchType } from '@/lib/types'
 import { AI_CONFIG } from '@/lib/ai/config'
-import { triggerResearch } from './actions'
-import { generateStrategyAction } from './generate/actions'
+import { TriggerResearchButton, GenerateStrategyButton, NavButton } from './ResearchActions'
 
 const STATUS_LABELS: Record<ResearchStatus, string> = {
   pending: 'Ожидает запуска',
@@ -167,17 +166,10 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
                 ? 'Запустить реальное исследование через Perplexity Sonar по всем 4 потокам.'
                 : 'Запустить имитацию исследования (mock-режим, без реальных запросов в Perplexity).'}
             </p>
-            <form action={triggerResearch}>
-              <input type="hidden" name="jobId" value={job.id} />
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                {researchMode === 'real'
-                  ? 'Запустить исследование Perplexity'
-                  : 'Запустить имитацию исследования (mock)'}
-              </button>
-            </form>
+            <TriggerResearchButton
+              jobId={job.id}
+              label={researchMode === 'real' ? 'Запустить исследование Perplexity' : 'Запустить имитацию исследования (mock)'}
+            />
           </div>
         )}
 
@@ -198,32 +190,24 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
                 ? 'Исследование Perplexity завершено. Данные с источниками готовы для валидации.'
                 : 'Mock-исследование завершено. Данные готовы для валидации фактов.'}
             </p>
-            <a
+            <NavButton
               href={`/research/${params.id}/validation`}
-              className="inline-block w-full text-center bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
+              className="w-full bg-green-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-green-800 active:bg-green-900 transition-colors"
             >
               Перейти к валидации фактов →
-            </a>
+            </NavButton>
 
             {existingReportArtifact ? (
-              <a
+              <NavButton
                 href={`/research/${params.id}/report?artifactId=${existingReportArtifact.id}`}
-                className="inline-block w-full text-center bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors"
               >
                 {existingReportArtifact.status === 'done'
                   ? 'Смотреть стратегический анализ →'
                   : 'Стратегия генерируется… →'}
-              </a>
+              </NavButton>
             ) : (
-              <form action={generateStrategyAction}>
-                <input type="hidden" name="jobId" value={job.id} />
-                <button
-                  type="submit"
-                  className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-                >
-                  Сгенерировать стратегический анализ →
-                </button>
-              </form>
+              <GenerateStrategyButton jobId={job.id} />
             )}
           </div>
         )}

@@ -30,7 +30,7 @@ export const AI_CONFIG: AIConfig = {
     mode: process.env.RESEARCH_MODE === 'real' ? 'real' : 'mock',
   },
   strategy: {
-    defaultProvider: 'anthropic',
-    defaultModel: 'claude-sonnet-4-6',
+    defaultProvider: 'deepseek',
+    defaultModel: 'deepseek-v4-pro',
   },
 }

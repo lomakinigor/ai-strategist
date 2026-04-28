@@ -59,7 +59,7 @@ vi.mock('@/db', () => ({ getDb: () => mockDb }))
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
-import { parseSections, generateStrategyDraft, callAnthropicAPI } from '../generator'
+import { parseSections, generateStrategyDraft, callDeepSeekAPI } from '../generator'
 import { buildResearchContext } from '@/lib/rag/context'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -253,34 +253,31 @@ describe('generateStrategyDraft — real mode (with API key)', () => {
   })
 })
 
-// ─── callAnthropicAPI ─────────────────────────────────────────────────────────
+// ─── callDeepSeekAPI ─────────────────────────────────────────────────────────
 
-describe('callAnthropicAPI', () => {
+describe('callDeepSeekAPI', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('throws when ANTHROPIC_API_KEY is missing', async () => {
-    delete process.env.ANTHROPIC_API_KEY
-    await expect(callAnthropicAPI('sys', 'user')).rejects.toThrow('ANTHROPIC_API_KEY is not configured')
+  it('throws when PERPLEXITY_API_KEY is missing', async () => {
+    delete process.env.PERPLEXITY_API_KEY
+    await expect(callDeepSeekAPI('sys', 'user')).rejects.toThrow('PERPLEXITY_API_KEY is not configured')
   })
 
-  it('joins multiple text content blocks', async () => {
-    process.env.ANTHROPIC_API_KEY = 'key'
+  it('returns content from choices[0].message.content', async () => {
+    process.env.PERPLEXITY_API_KEY = 'key'
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
         json: () =>
           Promise.resolve({
-            content: [
-              { type: 'text', text: 'Part 1 ' },
-              { type: 'text', text: 'Part 2' },
-            ],
+            choices: [{ message: { content: 'Generated strategy' } }],
           }),
       }),
     )
-    const result = await callAnthropicAPI('sys', 'user')
-    expect(result).toBe('Part 1 Part 2')
+    const result = await callDeepSeekAPI('sys', 'user')
+    expect(result).toBe('Generated strategy')
   })
 })

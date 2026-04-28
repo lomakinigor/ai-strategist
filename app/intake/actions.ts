@@ -13,11 +13,13 @@ export async function createResearchJob(formData: FormData) {
   const contextNotes = ((formData.get('context_notes') as string | null) ?? '').trim() || null
   const competitors = ((formData.get('competitors') as string | null) ?? '').trim() || null
 
-  // Collect channels: checkboxes + free-text field
-  const checkedChannels = (formData.getAll('channels') as string[]).filter(Boolean)
-  const otherRaw = ((formData.get('channels_other') as string | null) ?? '').trim()
-  const otherChannels = otherRaw ? otherRaw.split(',').map((s) => s.trim()).filter(Boolean) : []
-  const channels = [...checkedChannels, ...otherChannels]
+  // Collect channel links (direct URLs)
+  const channels = (formData.getAll('channel_link') as string[]).filter(Boolean)
+
+  // Chain / network info
+  const isChain = formData.get('is_chain') === '1'
+  const chainScope = isChain ? ((formData.get('chain_scope') as string | null) ?? 'network') : null
+  const city = (chainScope === 'location' ? ((formData.get('city') as string | null) ?? '').trim() : '') || null
 
   if (!name || !industry) {
     throw new Error('Название компании и отрасль обязательны')
@@ -50,6 +52,9 @@ export async function createResearchJob(formData: FormData) {
       channels,
       competitors,
       context_notes: contextNotes,
+      is_chain: isChain,
+      chain_scope: chainScope,
+      city,
     },
     fallbackQuestionsNeeded: false,
   })

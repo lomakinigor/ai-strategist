@@ -6,7 +6,7 @@ import { AI_CONFIG } from '@/lib/ai/config'
 import { getFactsForJob } from '@/lib/reporting/validation'
 import type { ResearchType, FactType, ConfidenceLevel } from '@/lib/types'
 import { updateFactActiveAction } from './actions'
-import { generateStrategyAction } from '../generate/actions'
+import { GenerateStrategyButton } from '../ResearchActions'
 
 // ─── Label maps ──────────────────────────────────────────────────────────────
 
@@ -424,20 +424,17 @@ export default async function ValidationPage({
               <p className="text-xs text-gray-500">
                 Активных фактов для отчёта: <span className="font-medium text-gray-700">{totalActive}</span>
               </p>
-              <form action={generateStrategyAction}>
-                <input type="hidden" name="jobId" value={params.id} />
+              {totalActive === 0 ? (
                 <button
-                  type="submit"
-                  disabled={totalActive === 0}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    totalActive === 0
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
-                  }`}
+                  type="button"
+                  disabled
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-400 cursor-not-allowed"
                 >
                   Сформировать стратегию →
                 </button>
-              </form>
+              ) : (
+                <GenerateStrategyButton jobId={params.id} />
+              )}
             </div>
           </>
         )}
