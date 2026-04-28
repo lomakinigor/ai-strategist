@@ -1,20 +1,8 @@
-import { createResearchJob } from './actions'
+import IntakeForm from './IntakeForm'
 
 export const metadata = {
   title: 'Новое исследование — AI-Стратег',
 }
-
-const RF_CHANNELS = [
-  'ВКонтакте',
-  'Telegram',
-  'YouTube',
-  'Instagram',
-  'TikTok',
-  'Одноклассники',
-  'Яндекс.Дзен',
-  'Авито',
-  'MAX',
-]
 
 export default function IntakePage() {
   return (
@@ -28,124 +16,7 @@ export default function IntakePage() {
           </p>
         </div>
 
-        <form action={createResearchJob} className="space-y-5 bg-white p-6 rounded-lg border border-gray-200">
-          <div>
-            <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
-              Название компании <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="company_name"
-              name="company_name"
-              type="text"
-              required
-              placeholder="ООО «Ромашка»"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
-              Отрасль / ниша <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="industry"
-              name="industry"
-              type="text"
-              required
-              placeholder="например: B2B SaaS, e-commerce, строительство"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Краткое описание бизнеса
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={3}
-              placeholder="Чем занимается компания, какой продукт или услугу предлагает"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
-              Сайт компании
-            </label>
-            <input
-              id="website"
-              name="website"
-              type="url"
-              placeholder="https://example.ru"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Каналы присутствия компании
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {RF_CHANNELS.map((ch) => (
-                <label key={ch} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="channels"
-                    value={ch}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  {ch}
-                </label>
-              ))}
-            </div>
-            <div className="mt-2">
-              <input
-                name="channels_other"
-                type="text"
-                placeholder="Другие каналы (через запятую)"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="context_notes" className="block text-sm font-medium text-gray-700 mb-1">
-              Дополнительная информация о компании
-            </label>
-            <textarea
-              id="context_notes"
-              name="context_notes"
-              rows={5}
-              placeholder="Вставьте любую информацию: описания продуктов, данные о клиентах, конкурентах, метрики, коммерческие предложения, отзывы — система сама разберёт и включит в исследование."
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              Необязательно. Чем больше данных — тем точнее стратегия.
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="research_goal" className="block text-sm font-medium text-gray-700 mb-1">
-              Цель исследования
-            </label>
-            <textarea
-              id="research_goal"
-              name="research_goal"
-              rows={2}
-              placeholder="Что хотите понять или получить от исследования"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-          >
-            Запустить исследование
-          </button>
-        </form>
+        <IntakeForm />
 
         <p className="mt-4 text-xs text-center text-gray-400">
           После отправки система автоматически запустит исследование по 4 направлениям:

@@ -11,6 +11,7 @@ export async function createResearchJob(formData: FormData) {
   const website = ((formData.get('website') as string | null) ?? '').trim() || null
   const goals = ((formData.get('research_goal') as string | null) ?? '').trim() || null
   const contextNotes = ((formData.get('context_notes') as string | null) ?? '').trim() || null
+  const competitors = ((formData.get('competitors') as string | null) ?? '').trim() || null
 
   // Collect channels: checkboxes + free-text field
   const checkedChannels = (formData.getAll('channels') as string[]).filter(Boolean)
@@ -47,6 +48,7 @@ export async function createResearchJob(formData: FormData) {
       website,
       research_goal: goals,
       channels,
+      competitors,
       context_notes: contextNotes,
     },
     fallbackQuestionsNeeded: false,

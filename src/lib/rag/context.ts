@@ -73,6 +73,9 @@ export async function buildResearchContext(jobId: string): Promise<ResearchConte
   const contextNotes = typeof intakePayload?.context_notes === 'string' && intakePayload.context_notes
     ? intakePayload.context_notes
     : null
+  const competitorsNotes = typeof intakePayload?.competitors === 'string' && intakePayload.competitors
+    ? intakePayload.competitors
+    : null
 
   // Fetch all active facts with source info
   const rows = await db
@@ -100,10 +103,11 @@ export async function buildResearchContext(jobId: string): Promise<ResearchConte
 
   const blocks: ResearchContextBlock[] = []
 
-  // Prepend client-provided context to business block header
-  const clientContextHeader = contextNotes
-    ? `=== Дополнительный контекст от клиента ===\n${contextNotes}\n\n`
-    : ''
+  // Prepend client-provided context and competitors to business block header
+  const headerParts: string[] = []
+  if (contextNotes) headerParts.push(`=== Дополнительный контекст от клиента ===\n${contextNotes}`)
+  if (competitorsNotes) headerParts.push(`=== Конкуренты (указаны клиентом) ===\n${competitorsNotes}`)
+  const clientContextHeader = headerParts.length > 0 ? headerParts.join('\n\n') + '\n\n' : ''
 
   for (const rt of RESEARCH_TYPES) {
     const typeRows = grouped[rt] ?? []

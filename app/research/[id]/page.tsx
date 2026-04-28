@@ -108,6 +108,9 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
     <main className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-lg mx-auto px-6">
         <div className="mb-6">
+          <a href="/intake" className="inline-flex items-center text-xs text-gray-400 hover:text-gray-600 mb-4 transition-colors">
+            ← Новое исследование
+          </a>
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{company?.name ?? 'Компания'}</h1>
