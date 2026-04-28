@@ -21,36 +21,36 @@
 ### Основной пользовательский flow
 
 ```
-/intake          → клиент заполняет минимальную форму
-/research/[id]   → страница прогресса auto-research (4 потока)
-/workspace/[id]/validation  → просмотр и проверка собранных фактов
-/workspace/[id]/report      → готовый структурированный отчёт
+/intake                        → клиент заполняет минимальную форму
+/research/[id]                 → страница прогресса auto-research (4 потока)
+/research/[id]/validation      → просмотр и проверка собранных фактов
+/research/[id]/report          → готовый структурированный отчёт (Strategy Workspace)
 ```
 
-### App Router структура
+### App Router структура (реализованная)
 
 ```
 app/
-  (public)/
-    page.tsx                  — лендинг
-  (app)/
-    intake/
-      page.tsx                — F-003: минимальная форма
-    research/
-      [id]/
-        page.tsx              — F-004: прогресс auto-research pipeline
-    workspace/
-      [id]/
-        validation/
-          page.tsx            — F-005: проверка данных
-        report/
-          page.tsx            — F-008: отчёт
+  page.tsx                              — лендинг
+  intake/
+    page.tsx                            — F-003: минимальная форма
+    actions.ts                          — Server Action: создание company/job, редирект
+  research/
+    [id]/
+      page.tsx                          — F-004: прогресс auto-research pipeline
+      actions.ts                        — Server Action: triggerResearch
+      generate/
+        actions.ts                      — Server Action: generateStrategyAction → redirect report
+      validation/
+        page.tsx                        — F-005: проверка фактов (фильтры, isActive toggle)
+        actions.ts                      — Server Action: setFactActive
+      report/
+        page.tsx                        — F-008: Strategy Workspace (5 секций, маркировка)
+        CopyButton.tsx                  — 'use client': копирование markdown в буфер
   api/
-    research/
-      start/route.ts          — запуск pipeline после intake
-      status/[id]/route.ts    — статус research_job
-    generate/route.ts         — генерация отчёта (F-007)
-    export/route.ts           — экспорт (F-009, mock)
+    export/
+      [artifactId]/
+        route.ts                        — F-009: GET → contentMarkdown как .md attachment
 ```
 
 ### Серверные компоненты и Server Actions
@@ -94,8 +94,9 @@ intake submit
 - `research_jobs` — задания на исследование с 4 потоками и статусами
 - `sources` — источники данных (URL, тип, дата, RS)
 - `facts` — верифицированные факты с research_type и привязкой к источнику
-- `reports` — сгенерированные отчёты
-- `embeddings` — векторные представления фактов (pgvector)
+- `report_artifacts` — сгенерированные отчёты (статус pending/generating/done/error, contentMarkdown)
+- `strategy_artifacts` — промежуточные AI-артефакты по типу
+- `embeddings` — векторные представления фактов (pgvector; MVP: колонка добавляется post-MVP)
 
 ## Reliability Engine
 
@@ -140,23 +141,22 @@ interface RawDataPoint {
 
 MVP: все 4 адаптера — mock. Структура готова для реальных реализаций.
 
-## RAG Pipeline
+## RAG Pipeline (MVP — SQL-based)
 
 ```
-facts → embed(fact.content) → store in pgvector (с research_type)
-query → embed(query) → similarity search (фильтр по company_id, research_type) → top-K → LLM context
+facts (is_active=true) → группировка по research_type → текстовые блоки для LLM
 ```
 
-Embeddings: Vercel AI SDK `embed()` (провайдер — уточнить при реализации).
+MVP реализован через SQL-retrieval (`buildResearchContext(jobId)` в `src/lib/rag/context.ts`) без pgvector/embeddings. При малом объёме фактов vector search не нужен. pgvector-колонка в таблице `embeddings` добавляется отдельным шагом после MVP при реальной нагрузке.
 
 ## AI Generation
 
-Vercel AI SDK `streamText()`:
-- System prompt включает методологию RS, правила достоверности, список допустимых РФ-каналов
-- User context формируется только из RAG-фактов компании (по всем 4 потокам)
+Direct `fetch` к Anthropic API (`https://api.anthropic.com/v1/messages`, модель `claude-sonnet-4-6`):
+- System prompt включает 7 антигаллюцинационных правил, методологию RS, список допустимых РФ-каналов
+- User context формируется из `serializeContext(buildResearchContext(jobId))` — только активные факты
 - LLM не добавляет неверифицированных утверждений
 - При нехватке данных — явно выводить «НЕДОСТАТОЧНО ДАННЫХ»
-- Fallback-уточнение клиенту: только при критическом пробеле, не в процессе обычной генерации
+- Mock-режим при отсутствии `ANTHROPIC_API_KEY`: безопасный дефолт с явными метками
 
 ## Report / Export Layer
 
@@ -174,8 +174,10 @@ Vercel AI SDK `streamText()`:
 ## Переменные окружения
 
 ```env
-DATABASE_URL=
-OPENAI_API_KEY=         # или другой AI провайдер
+DATABASE_URL=                 # Postgres connection string
+ANTHROPIC_API_KEY=            # Anthropic API (claude-sonnet-4-6); без ключа — mock mode
+PERPLEXITY_API_KEY=           # Perplexity sonar-pro; без ключа — mock research
+RESEARCH_MODE=real            # 'real' = Perplexity; иначе mock adapters (default)
 ```
 
 ## Требования к производительности
@@ -188,5 +190,5 @@ OPENAI_API_KEY=         # или другой AI провайдер
 
 - Один пользователь, одна компания (авторизация добавляется позже)
 - Все данные — публичные (нет закрытых API в MVP)
-- Формат отчёта будет уточнён в отдельном промпте после MVP
-- 4 потока research в MVP запускаются последовательно (не параллельно) для простоты, параллельность — в следующей итерации
+- Формат отчёта будет уточнён в отдельном промпте после MVP (F-010/T-011)
+- 4 потока research запускаются параллельно через `Promise.all()` в `orchestrator.ts`

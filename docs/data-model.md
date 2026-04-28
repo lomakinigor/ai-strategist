@@ -1,6 +1,6 @@
 # Модель данных — ai-strategist MVP
 
-> Реализована в `src/db/schema.ts`. Версия: T-001/T-002 (2026-04-27).
+> Реализована в `src/db/schema.ts`. Версия: T-001/T-002 (2026-04-27). MVP schema финальна — расширение через pgvector post-MVP.
 
 ## Таблицы
 
@@ -147,7 +147,7 @@ ENUM research_type:    'business' | 'market' | 'audience' | 'channels'
 - `audience` — факты о целевой аудитории: сегменты, потребности, поведение, боли
 - `channels` — факты о каналах: присутствие, активность, охват
 
-**is_active и Validation Workspace (F-006/T-007):**
+**is_active и Validation Workspace (F-005/T-007):**
 - `is_active` (default true) — аналитик вручную деактивирует нерелевантные факты в Validation Workspace
 - Путь: `/research/[id]/validation` — страница с фильтрами по потоку/типу/достоверности и чекбоксами
 - Генерация стратегии (T-009) использует **только активные факты** (`is_active = true`)
@@ -216,7 +216,7 @@ embeddings (
 INDEX: embeddings_company_id_idx ON (company_id)
 ```
 
-**pgvector setup (T-007):**
+**pgvector setup (post-MVP, после первых реальных тестов):**
 1. `CREATE EXTENSION IF NOT EXISTS vector;`
 2. Добавить колонку: `ALTER TABLE embeddings ADD COLUMN embedding vector(1536);`
 3. Добавить HNSW-индекс: `CREATE INDEX ON embeddings USING hnsw (embedding vector_cosine_ops);`
