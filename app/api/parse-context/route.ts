@@ -7,6 +7,10 @@ const RF_CHANNELS = [
 ]
 
 export async function POST(req: NextRequest) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: 'no_key' }, { status: 503 })
+  }
+
   const { text } = await req.json()
   if (!text?.trim()) return NextResponse.json({})
 
@@ -37,6 +41,6 @@ ${text}`,
     const parsed = JSON.parse(raw)
     return NextResponse.json(parsed)
   } catch {
-    return NextResponse.json({})
+    return NextResponse.json({ error: true }, { status: 500 })
   }
 }

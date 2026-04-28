@@ -26,18 +26,26 @@ export default function IntakeForm() {
   const [channels, setChannels] = useState<string[]>([])
   const [channelsOther, setChannelsOther] = useState('')
   const [isParsing, setIsParsing] = useState(false)
-  const [parseError, setParseError] = useState(false)
+  const [parseError, setParseError] = useState<string | null>(null)
 
   async function handleParse() {
     if (!contextNotes.trim()) return
     setIsParsing(true)
-    setParseError(false)
+    setParseError(null)
     try {
       const res = await fetch('/api/parse-context', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: contextNotes }),
       })
+      if (res.status === 503) {
+        setParseError('ANTHROPIC_API_KEY не задан — заполните поля вручную')
+        return
+      }
+      if (!res.ok) {
+        setParseError('Ошибка парсинга — заполните поля вручную')
+        return
+      }
       const parsed = await res.json()
       if (parsed.company_name && !companyName) setCompanyName(parsed.company_name)
       if (parsed.industry && !industry) setIndustry(parsed.industry)
@@ -50,7 +58,7 @@ export default function IntakeForm() {
         setChannels((prev) => [...new Set([...prev, ...valid])])
       }
     } catch {
-      setParseError(true)
+      setParseError('Ошибка парсинга — заполните поля вручную')
     } finally {
       setIsParsing(false)
     }
@@ -88,7 +96,7 @@ export default function IntakeForm() {
             {isParsing ? 'Разбираю…' : 'Разобрать с помощью AI →'}
           </button>
           {parseError && (
-            <span className="text-xs text-red-500">Ошибка парсинга, заполните поля вручную</span>
+            <span className="text-xs text-red-500">{parseError}</span>
           )}
           <span className="text-xs text-gray-400">Необязательно. Чем больше данных — тем точнее стратегия.</span>
         </div>
