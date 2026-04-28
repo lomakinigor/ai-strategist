@@ -77,6 +77,7 @@
 | 2026-04-28 | Дисклеймер о достоверности: показывается только в real mode (не mock), содержит легенду маркировок | Явное предупреждение про ограничения AI-анализа |
 | 2026-04-28 | Антигаллюцинационные правила в STRATEGY_SYSTEM_PROMPT: только факты из контекста, [ФАКТ]/[ГИПОТЕЗА]/[НЕДОСТАТОЧНО ДАННЫХ] обязательны | Ключевой guardrail против LLM-домыслов о конкретной компании |
 | 2026-04-28 | MVP-stabilization-pass-01: features F-001..F-009 → Done, plan stages 1..6 → Done, tasks T-006/T-007/T-008/T-011 feature ID исправлены, tech-spec полностью приведён к реальному MVP | Docs были заморожены на Planned, tech-spec описывал устаревшие пути и технологии |
+| 2026-04-28 | beep-pre-tool.ps1 переписан: тройной сигнал строго по hook_event_name == "onShellCommandConfirmationRequested", убрана timestamp-эвристика; в settings.json добавлен хук onShellCommandConfirmationRequested | Timestamp-порог давал ложные срабатывания и пропуски; теперь привязка к реальному событию |
 
 ## Ссылки
 
