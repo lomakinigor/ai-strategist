@@ -30,24 +30,31 @@ vi.mock('@/db/schema', () => ({
     id: 'research_jobs.id',
     companyId: 'research_jobs.company_id',
   },
+  intakeSubmissions: {
+    companyId: 'intake_submissions.company_id',
+    inputPayload: 'intake_submissions.input_payload',
+  },
 }))
 
-// ─── DB mock (two separate select chains) ────────────────────────────────────
+// ─── DB mock (three separate select chains) ──────────────────────────────────
 
 // Chain 1: select({ companyId }).from(researchJobs).where().limit()
 const mockJobLimit = vi.fn()
 const mockJobWhere = vi.fn().mockReturnValue({ limit: mockJobLimit })
 const mockJobFrom = vi.fn().mockReturnValue({ where: mockJobWhere })
-const mockJobSelect = vi.fn().mockReturnValue({ from: mockJobFrom })
 
-// Chain 2: select({...}).from(facts).leftJoin().where().orderBy()
+// Chain 2: select({ inputPayload }).from(intakeSubmissions).where().limit()
+const mockIntakeLimit = vi.fn()
+const mockIntakeWhere = vi.fn().mockReturnValue({ limit: mockIntakeLimit })
+const mockIntakeFrom = vi.fn().mockReturnValue({ where: mockIntakeWhere })
+
+// Chain 3: select({...}).from(facts).leftJoin().where().orderBy()
 const mockOrderBy = vi.fn()
 const mockFactsWhere = vi.fn().mockReturnValue({ orderBy: mockOrderBy })
 const mockLeftJoin = vi.fn().mockReturnValue({ where: mockFactsWhere })
 const mockFactsFrom = vi.fn().mockReturnValue({ leftJoin: mockLeftJoin })
-const mockFactsSelect = vi.fn().mockReturnValue({ from: mockFactsFrom })
 
-// getDb().select() returns different chains on call 1 (jobs) and call 2 (facts)
+// getDb().select() returns different chains per call
 const mockSelect = vi.fn()
 const mockDb = { select: mockSelect }
 
@@ -59,12 +66,14 @@ import { buildResearchContext, getBlockByType, serializeContext } from '../conte
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function setupDb(jobRows: unknown[], factRows: unknown[]) {
+function setupDb(jobRows: unknown[], factRows: unknown[], intakeRows: unknown[] = []) {
   mockSelect.mockReset()
   mockSelect
-    .mockReturnValueOnce({ from: mockJobFrom })
-    .mockReturnValueOnce({ from: mockFactsFrom })
+    .mockReturnValueOnce({ from: mockJobFrom })      // call 1: researchJobs
+    .mockReturnValueOnce({ from: mockIntakeFrom })   // call 2: intakeSubmissions
+    .mockReturnValueOnce({ from: mockFactsFrom })    // call 3: facts
   mockJobLimit.mockResolvedValue(jobRows)
+  mockIntakeLimit.mockResolvedValue(intakeRows)
   mockOrderBy.mockResolvedValue(factRows)
 }
 

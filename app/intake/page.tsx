@@ -4,6 +4,18 @@ export const metadata = {
   title: 'Новое исследование — AI-Стратег',
 }
 
+const RF_CHANNELS = [
+  'ВКонтакте',
+  'Telegram',
+  'YouTube',
+  'Instagram',
+  'TikTok',
+  'Одноклассники',
+  'Яндекс.Дзен',
+  'Авито',
+  'MAX',
+]
+
 export default function IntakePage() {
   return (
     <main className="min-h-screen bg-gray-50 py-12">
@@ -69,6 +81,49 @@ export default function IntakePage() {
               placeholder="https://example.ru"
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Каналы присутствия компании
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {RF_CHANNELS.map((ch) => (
+                <label key={ch} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="channels"
+                    value={ch}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  {ch}
+                </label>
+              ))}
+            </div>
+            <div className="mt-2">
+              <input
+                name="channels_other"
+                type="text"
+                placeholder="Другие каналы (через запятую)"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="context_notes" className="block text-sm font-medium text-gray-700 mb-1">
+              Дополнительная информация о компании
+            </label>
+            <textarea
+              id="context_notes"
+              name="context_notes"
+              rows={5}
+              placeholder="Вставьте любую информацию: описания продуктов, данные о клиентах, конкурентах, метрики, коммерческие предложения, отзывы — система сама разберёт и включит в исследование."
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Необязательно. Чем больше данных — тем точнее стратегия.
+            </p>
           </div>
 
           <div>

@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm'
 import { getDb } from '@/db'
-import { facts, sources, researchJobs } from '@/db/schema'
+import { facts, sources, researchJobs, intakeSubmissions } from '@/db/schema'
 import type { ResearchType, FactType, ConfidenceLevel } from '@/lib/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -62,6 +62,18 @@ export async function buildResearchContext(jobId: string): Promise<ResearchConte
 
   const companyId = jobRows[0]?.companyId ?? ''
 
+  // Fetch context notes from intake submission (if client provided extra info)
+  const intakeRows = await db
+    .select({ inputPayload: intakeSubmissions.inputPayload })
+    .from(intakeSubmissions)
+    .where(eq(intakeSubmissions.companyId, companyId))
+    .limit(1)
+
+  const intakePayload = intakeRows[0]?.inputPayload as Record<string, unknown> | null
+  const contextNotes = typeof intakePayload?.context_notes === 'string' && intakePayload.context_notes
+    ? intakePayload.context_notes
+    : null
+
   // Fetch all active facts with source info
   const rows = await db
     .select({
@@ -88,11 +100,16 @@ export async function buildResearchContext(jobId: string): Promise<ResearchConte
 
   const blocks: ResearchContextBlock[] = []
 
+  // Prepend client-provided context to business block header
+  const clientContextHeader = contextNotes
+    ? `=== Дополнительный контекст от клиента ===\n${contextNotes}\n\n`
+    : ''
+
   for (const rt of RESEARCH_TYPES) {
     const typeRows = grouped[rt] ?? []
     const label = STREAM_LABELS[rt]
 
-    const lines: string[] = [`=== ${label} ===`]
+    const lines: string[] = [rt === 'business' && clientContextHeader ? clientContextHeader + `=== ${label} ===` : `=== ${label} ===`]
 
     for (const row of typeRows) {
       const factLabel = FACT_TYPE_LABELS[row.factType as FactType] ?? row.factType
