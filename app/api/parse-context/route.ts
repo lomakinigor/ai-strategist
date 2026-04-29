@@ -5,7 +5,8 @@ const RF_CHANNELS = [
   'TikTok', 'Одноклассники', 'Яндекс.Дзен', 'Авито', 'MAX',
 ]
 
-const PARSE_MODEL = process.env.OPENROUTER_PARSE_MODEL ?? 'deepseek/deepseek-v4-pro'
+// Flash variant has much higher throughput limits and is more than enough for JSON extraction.
+const PARSE_MODEL = process.env.OPENROUTER_PARSE_MODEL ?? 'deepseek/deepseek-v4-flash'
 
 interface OpenRouterResponse {
   choices: Array<{ message: { content: string } }>
@@ -48,11 +49,17 @@ async function callOpenRouterParse(text: string, attempt = 1): Promise<Response>
       messages: [
         {
           role: 'system',
-          content: 'Ты извлекаешь структурированные данные о компании из произвольного текста. Заполняй ВСЕ поля схемы, даже если ставишь пустую строку или пустой массив. Особое внимание уделяй полю channel_urls — извлекай все URL вида https://t.me/..., https://vk.com/..., https://linku.su/..., https://youtube.com/... и подобные.',
+          content: `Ты извлекаешь структурированные данные о компании из произвольного текста. Заполняй ВСЕ поля схемы, даже если ставишь пустую строку или пустой массив.
+
+Правила для channel_urls:
+- Извлекай ВСЕ ссылки на каналы присутствия: https://t.me/..., https://vk.com/..., https://linku.su/..., https://youtube.com/... и подобные
+- Telegram-хендлы вида @имя_бота или @канал — преобразуй в полный URL https://t.me/имя_бота (без @)
+- Включай и каналы, и боты, и чаты, и агрегаторы ссылок
+- НЕ включай основной сайт компании (он идёт в поле website)`,
         },
         {
           role: 'user',
-          content: `Извлеки информацию о компании. channel_urls — все ссылки на каналы (Telegram, ВКонтакте, YouTube, боты, агрегаторы) кроме основного сайта. channels — только названия из списка: ${RF_CHANNELS.join(', ')}.
+          content: `Извлеки информацию о компании. channel_urls — ВСЕ ссылки на каналы (Telegram-каналы, боты, чаты, ВКонтакте, YouTube, агрегаторы), включая Telegram-хендлы вида @имя (преобразуй их в https://t.me/имя). channels — только названия из списка: ${RF_CHANNELS.join(', ')}.
 
 Текст:
 ${text}`,
