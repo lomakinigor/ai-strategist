@@ -24,7 +24,7 @@ export async function GET(
       )
     }
 
-    let companySlug = 'strategy'
+    let companyName = 'strategy'
     const jobs = artifact.researchJobId
       ? await db
           .select({ companyId: researchJobs.companyId })
@@ -39,21 +39,17 @@ export async function GET(
         .from(companies)
         .where(eq(companies.id, jobs[0].companyId))
         .limit(1)
-      if (comps[0]) {
-        companySlug = comps[0].name
-          .toLowerCase()
-          .replace(/[^a-zа-яё0-9]+/gi, '-')
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 40)
-      }
+      if (comps[0]) companyName = comps[0].name
     }
 
-    const filename = `strategy-${companySlug}-${params.artifactId.slice(0, 8)}.md`
+    // Russian-friendly filename for modern browsers, ASCII fallback for legacy ones
+    const utf8Filename = `Стратегия — ${companyName}.md`
+    const asciiFallback = `strategy-${params.artifactId.slice(0, 8)}.md`
 
     return new Response(artifact.contentMarkdown, {
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodeURIComponent(utf8Filename)}`,
       },
     })
   } catch (error) {

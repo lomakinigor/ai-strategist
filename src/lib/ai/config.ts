@@ -19,9 +19,8 @@ export interface AIConfig {
   strategy: StrategyProviderConfig
 }
 
-// Perplexity Sonar is the default research provider — real-time web search
-// optimised for factual retrieval, which aligns with the reliability-first principle.
-// Strategy generation uses Anthropic Claude (already integrated via Vercel AI SDK).
+// Perplexity Sonar — research provider (real-time web + citations).
+// OpenRouter + DeepSeek V4 Pro — strategy/analytics (low-cost, large context).
 export const AI_CONFIG: AIConfig = {
   research: {
     defaultProvider: 'perplexity',
@@ -30,7 +29,7 @@ export const AI_CONFIG: AIConfig = {
     mode: process.env.RESEARCH_MODE === 'real' ? 'real' : 'mock',
   },
   strategy: {
-    defaultProvider: 'deepseek',
-    defaultModel: 'deepseek-v4-pro',
+    defaultProvider: 'openrouter',
+    defaultModel: process.env.OPENROUTER_STRATEGY_MODEL ?? 'deepseek/deepseek-v4-pro',
   },
 }

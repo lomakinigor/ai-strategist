@@ -101,7 +101,7 @@ describe('GET /api/export/[artifactId]', () => {
     expect(text).toBe(ARTIFACT_DONE.contentMarkdown)
   })
 
-  it('uses default slug when company lookup returns empty', async () => {
+  it('uses ascii fallback filename when company lookup returns empty', async () => {
     mockLimit
       .mockResolvedValueOnce([ARTIFACT_DONE])
       .mockResolvedValueOnce([]) // no job found
@@ -110,6 +110,7 @@ describe('GET /api/export/[artifactId]', () => {
 
     expect(response.status).toBe(200)
     const disposition = response.headers.get('Content-Disposition') ?? ''
-    expect(disposition).toContain('strategy-strategy')
+    expect(disposition).toContain('filename="strategy-art-abc1.md"')
+    expect(disposition).toContain("filename*=UTF-8''")
   })
 })

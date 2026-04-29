@@ -1,6 +1,6 @@
 import type { RawDataPoint, ResearchQuery, ResearchType } from '../types'
 
-export type AIProviderId = 'perplexity' | 'anthropic' | 'openai' | 'deepseek' | 'mock'
+export type AIProviderId = 'perplexity' | 'anthropic' | 'openai' | 'deepseek' | 'openrouter' | 'mock'
 export type AIModelId = string
 
 export interface ResearchRequest {

@@ -5,12 +5,14 @@ const RF_CHANNELS = [
   'TikTok', 'Одноклассники', 'Яндекс.Дзен', 'Авито', 'MAX',
 ]
 
-interface DeepSeekResponse {
+const PARSE_MODEL = process.env.OPENROUTER_PARSE_MODEL ?? 'deepseek/deepseek-v4-pro'
+
+interface OpenRouterResponse {
   choices: Array<{ message: { content: string } }>
 }
 
 export async function POST(req: NextRequest) {
-  if (!process.env.PERPLEXITY_API_KEY) {
+  if (!process.env.OPENROUTER_API_KEY) {
     return NextResponse.json({ error: 'no_key' }, { status: 503 })
   }
 
@@ -18,14 +20,16 @@ export async function POST(req: NextRequest) {
   if (!text?.trim()) return NextResponse.json({})
 
   try {
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
+        'X-Title': 'ai-strategist',
       },
       body: JSON.stringify({
-        model: 'sonar',
+        model: PARSE_MODEL,
         max_tokens: 1024,
         messages: [
           {
@@ -48,11 +52,11 @@ ${text}`,
 
     if (!response.ok) {
       const errText = await response.text()
-      console.error('[parse-context] DeepSeek error', response.status, errText)
+      console.error('[parse-context] OpenRouter error', response.status, errText)
       return NextResponse.json({ error: true, detail: errText, status: response.status }, { status: 500 })
     }
 
-    const data = (await response.json()) as DeepSeekResponse
+    const data = (await response.json()) as OpenRouterResponse
     const raw = data.choices[0]?.message?.content?.trim() ?? '{}'
     const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
     const parsed = JSON.parse(cleaned)

@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
 import { reportArtifacts, researchJobs } from '@/db/schema'
 import { buildResearchContext } from '@/lib/rag/context'
+import { AI_CONFIG } from '@/lib/ai/config'
 import { buildStrategyUserPrompt, STRATEGY_SYSTEM_PROMPT } from './prompts'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -62,51 +63,55 @@ function getMockDraft(factCount: number): string {
       : 'Контекст не содержит фактов. Запустите research pipeline перед генерацией стратегии.'
 
   return `## 1. Анализ бизнеса
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Для генерации реального анализа настройте DEEPSEEK_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Для генерации реального анализа настройте OPENROUTER_API_KEY.]
 
 ${dataNote} В реальном режиме этот раздел содержал бы анализ компании на основе верифицированных фактов с указанием типов утверждений.
 
 ## 2. Анализ рынка
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ рынка требует DEEPSEEK_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ рынка требует OPENROUTER_API_KEY.]
 
 В реальном режиме этот раздел содержал бы анализ отраслевых трендов, объёма рынка и динамики с РФ-релевантными данными.
 
 ## 3. Анализ целевой аудитории
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ аудитории требует DEEPSEEK_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ аудитории требует OPENROUTER_API_KEY.]
 
 В реальном режиме этот раздел содержал бы анализ целевых сегментов, потребностей и поведения аудитории.
 
 ## 4. Анализ каналов
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ каналов требует DEEPSEEK_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальный анализ каналов требует OPENROUTER_API_KEY.]
 
 В реальном режиме этот раздел содержал бы анализ каналов присутствия (ВКонтакте, Telegram, YouTube и др.) с оценкой активности.
 
 ## 5. Стратегия и рекомендации
-[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальные рекомендации требуют DEEPSEEK_API_KEY.]
+[НЕДОСТАТОЧНО ДАННЫХ: Mock-режим активен. Реальные рекомендации требуют OPENROUTER_API_KEY.]
 
 В реальном режиме этот раздел содержал бы конкретные рекомендации по развитию с уклоном в автоматизацию и AI, с оценкой стоимости в рублях.`
 }
 
-// ─── Perplexity API call (strategy generation) ───────────────────────────────
+// ─── OpenRouter API call (strategy generation) ───────────────────────────────
 
-interface PerplexityChatResponse {
+interface OpenRouterChatResponse {
   choices: Array<{ message: { content: string } }>
 }
 
-export async function callDeepSeekAPI(systemPrompt: string, userPrompt: string): Promise<string> {
-  const apiKey = process.env.PERPLEXITY_API_KEY
+export async function callStrategyLLM(systemPrompt: string, userPrompt: string): Promise<{ content: string; modelId: string }> {
+  const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) {
-    throw new Error('PERPLEXITY_API_KEY is not configured')
+    throw new Error('OPENROUTER_API_KEY is not configured')
   }
 
-  const response = await fetch('https://api.perplexity.ai/chat/completions', {
+  const model = AI_CONFIG.strategy.defaultModel
+
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
+      'X-Title': 'ai-strategist',
     },
     body: JSON.stringify({
-      model: 'sonar-pro',
+      model,
       max_tokens: 8000,
       messages: [
         { role: 'system', content: systemPrompt },
@@ -117,11 +122,14 @@ export async function callDeepSeekAPI(systemPrompt: string, userPrompt: string):
 
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(`Perplexity API error ${response.status}: ${text}`)
+    throw new Error(`OpenRouter API error ${response.status}: ${text}`)
   }
 
-  const data = (await response.json()) as PerplexityChatResponse
-  return data.choices[0]?.message?.content ?? ''
+  const data = (await response.json()) as OpenRouterChatResponse
+  return {
+    content: data.choices[0]?.message?.content ?? '',
+    modelId: model,
+  }
 }
 
 // ─── Main generation function ─────────────────────────────────────────────────
@@ -153,7 +161,7 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
 
   const artifactId = inserted[0].id
 
-  const hasApiKey = Boolean(process.env.PERPLEXITY_API_KEY)
+  const hasApiKey = Boolean(process.env.OPENROUTER_API_KEY)
   let contentMarkdown: string
   let modelId: string
   let mode: 'mock' | 'real'
@@ -164,8 +172,9 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
 
     if (hasApiKey) {
       const userPrompt = buildStrategyUserPrompt(context)
-      contentMarkdown = await callDeepSeekAPI(STRATEGY_SYSTEM_PROMPT, userPrompt)
-      modelId = 'sonar-pro'
+      const result = await callStrategyLLM(STRATEGY_SYSTEM_PROMPT, userPrompt)
+      contentMarkdown = result.content
+      modelId = result.modelId
       mode = 'real'
     } else {
       contentMarkdown = getMockDraft(context.totalFactCount)

@@ -14,6 +14,17 @@ vi.mock('../prompts', () => ({
   buildStrategyUserPrompt: vi.fn(() => 'mock user prompt'),
 }))
 
+// ─── AI config mock ───────────────────────────────────────────────────────────
+
+vi.mock('@/lib/ai/config', () => ({
+  AI_CONFIG: {
+    strategy: {
+      defaultProvider: 'openrouter',
+      defaultModel: 'deepseek/deepseek-v4-pro',
+    },
+  },
+}))
+
 // ─── Drizzle ORM mock ─────────────────────────────────────────────────────────
 
 vi.mock('drizzle-orm', () => ({
@@ -59,7 +70,7 @@ vi.mock('@/db', () => ({ getDb: () => mockDb }))
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
-import { parseSections, generateStrategyDraft, callDeepSeekAPI } from '../generator'
+import { parseSections, generateStrategyDraft, callStrategyLLM } from '../generator'
 import { buildResearchContext } from '@/lib/rag/context'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -136,7 +147,7 @@ describe('generateStrategyDraft — mock mode (no API key)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setupDb()
-    delete process.env.ANTHROPIC_API_KEY
+    delete process.env.OPENROUTER_API_KEY
   })
 
   it('returns StrategyDraftResult with mode=mock when no API key', async () => {
@@ -198,7 +209,7 @@ describe('generateStrategyDraft — real mode (with API key)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setupDb()
-    process.env.ANTHROPIC_API_KEY = 'test-key'
+    process.env.OPENROUTER_API_KEY = 'test-key'
 
     vi.stubGlobal(
       'fetch',
@@ -206,30 +217,30 @@ describe('generateStrategyDraft — real mode (with API key)', () => {
         ok: true,
         json: () =>
           Promise.resolve({
-            content: [{ type: 'text', text: MOCK_MARKDOWN }],
+            choices: [{ message: { content: MOCK_MARKDOWN } }],
           }),
       }),
     )
   })
 
-  it('calls Anthropic API with correct endpoint and headers', async () => {
+  it('calls OpenRouter API with correct endpoint and headers', async () => {
     await generateStrategyDraft('job-1')
     expect(fetch).toHaveBeenCalledWith(
-      'https://api.anthropic.com/v1/messages',
+      'https://openrouter.ai/api/v1/chat/completions',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
-          'x-api-key': 'test-key',
-          'anthropic-version': '2023-06-01',
+          'Authorization': 'Bearer test-key',
+          'X-Title': 'ai-strategist',
         }),
       }),
     )
   })
 
-  it('returns mode=real and model=claude-sonnet-4-6', async () => {
+  it('returns mode=real and model from AI_CONFIG.strategy.defaultModel', async () => {
     const result = await generateStrategyDraft('job-1')
     expect(result.mode).toBe('real')
-    expect(result.modelId).toBe('claude-sonnet-4-6')
+    expect(result.modelId).toContain('deepseek')
   })
 
   it('parses 5 sections from API response', async () => {
@@ -246,27 +257,27 @@ describe('generateStrategyDraft — real mode (with API key)', () => {
         text: () => Promise.resolve('Unauthorized'),
       }),
     )
-    await expect(generateStrategyDraft('job-1')).rejects.toThrow('Anthropic API error 401')
+    await expect(generateStrategyDraft('job-1')).rejects.toThrow('OpenRouter API error 401')
     expect(mockUpdateSet).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'error' }),
     )
   })
 })
 
-// ─── callDeepSeekAPI ─────────────────────────────────────────────────────────
+// ─── callStrategyLLM ─────────────────────────────────────────────────────────
 
-describe('callDeepSeekAPI', () => {
+describe('callStrategyLLM', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('throws when PERPLEXITY_API_KEY is missing', async () => {
-    delete process.env.PERPLEXITY_API_KEY
-    await expect(callDeepSeekAPI('sys', 'user')).rejects.toThrow('PERPLEXITY_API_KEY is not configured')
+  it('throws when OPENROUTER_API_KEY is missing', async () => {
+    delete process.env.OPENROUTER_API_KEY
+    await expect(callStrategyLLM('sys', 'user')).rejects.toThrow('OPENROUTER_API_KEY is not configured')
   })
 
-  it('returns content from choices[0].message.content', async () => {
-    process.env.PERPLEXITY_API_KEY = 'key'
+  it('returns content and modelId from response', async () => {
+    process.env.OPENROUTER_API_KEY = 'key'
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -277,7 +288,8 @@ describe('callDeepSeekAPI', () => {
           }),
       }),
     )
-    const result = await callDeepSeekAPI('sys', 'user')
-    expect(result).toBe('Generated strategy')
+    const result = await callStrategyLLM('sys', 'user')
+    expect(result.content).toBe('Generated strategy')
+    expect(result.modelId).toContain('deepseek')
   })
 })

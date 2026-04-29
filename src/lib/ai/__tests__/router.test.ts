@@ -15,8 +15,12 @@ describe('AI config', () => {
     expect(AI_CONFIG.research.defaultModel).toBe('sonar-pro')
   })
 
-  it('strategy provider is anthropic', () => {
-    expect(AI_CONFIG.strategy.defaultProvider).toBe('anthropic')
+  it('strategy provider is openrouter', () => {
+    expect(AI_CONFIG.strategy.defaultProvider).toBe('openrouter')
+  })
+
+  it('strategy default model is deepseek-v4-pro', () => {
+    expect(AI_CONFIG.strategy.defaultModel).toContain('deepseek')
   })
 })
 
