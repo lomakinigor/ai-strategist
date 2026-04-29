@@ -39,11 +39,16 @@ export default function IntakeForm() {
         body: JSON.stringify({ text: contextNotes }),
       })
       if (res.status === 503) {
-        setParseError('PERPLEXITY_API_KEY не задан — заполните поля вручную')
+        setParseError('OPENROUTER_API_KEY не задан — заполните поля вручную')
         return
       }
       if (!res.ok) {
-        setParseError('Ошибка парсинга — заполните поля вручную')
+        const body = await res.json().catch(() => ({}))
+        if (body.error === 'provider_unavailable') {
+          setParseError('OpenRouter временно недоступен — повторите через минуту')
+        } else {
+          setParseError('Ошибка парсинга — заполните поля вручную')
+        }
         return
       }
       const parsed = await res.json()
@@ -53,6 +58,21 @@ export default function IntakeForm() {
       if (parsed.website && !website) setWebsite(parsed.website)
       if (parsed.goals && !goals) setGoals(parsed.goals)
       if (parsed.competitors && !competitors) setCompetitors(parsed.competitors)
+
+      // Merge AI-extracted channel URLs into existing list (skip duplicates and empty current)
+      if (Array.isArray(parsed.channel_urls) && parsed.channel_urls.length > 0) {
+        const aiUrls = parsed.channel_urls.filter((u: unknown): u is string => typeof u === 'string' && u.trim().length > 0)
+        if (aiUrls.length > 0) {
+          setChannelLinks((prev) => {
+            const existing = prev.filter((l) => l.trim().length > 0)
+            const merged = [...existing]
+            for (const url of aiUrls) {
+              if (!merged.includes(url)) merged.push(url)
+            }
+            return merged.length > 0 ? merged : ['']
+          })
+        }
+      }
     } catch {
       setParseError('Ошибка парсинга — заполните поля вручную')
     } finally {
