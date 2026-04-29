@@ -5,7 +5,7 @@ import { researchJobs, companies } from '@/db/schema'
 import { AI_CONFIG } from '@/lib/ai/config'
 import { getFactsForJob } from '@/lib/reporting/validation'
 import type { ResearchType, FactType, ConfidenceLevel } from '@/lib/types'
-import { updateFactActiveAction } from './actions'
+import { FactToggleButton } from './FactToggleButton'
 import { GenerateStrategyButton } from '../ResearchActions'
 
 // ─── Label maps ──────────────────────────────────────────────────────────────
@@ -346,23 +346,9 @@ export default async function ValidationPage({
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      {/* Toggle checkbox */}
-                      <form action={updateFactActiveAction} className="mt-0.5 flex-shrink-0">
-                        <input type="hidden" name="jobId" value={params.id} />
-                        <input type="hidden" name="factId" value={fact.id} />
-                        <input type="hidden" name="isActive" value={fact.isActive ? '0' : '1'} />
-                        <button
-                          type="submit"
-                          title={fact.isActive ? 'Отключить факт' : 'Включить факт'}
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center text-xs font-bold transition-colors ${
-                            fact.isActive
-                              ? 'bg-blue-600 border-blue-600 text-white'
-                              : 'bg-white border-gray-300 hover:border-blue-400'
-                          }`}
-                        >
-                          {fact.isActive ? '✓' : ''}
-                        </button>
-                      </form>
+                      <div className="mt-0.5 flex-shrink-0">
+                        <FactToggleButton jobId={params.id} factId={fact.id} isActive={fact.isActive} />
+                      </div>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
