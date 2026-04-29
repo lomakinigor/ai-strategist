@@ -9,6 +9,21 @@
 4. Анализ каналов и присутствия
 5. Стратегию развития компании с рекомендациями по автоматизации и AI
 
+## Звуковые сигналы (хуки)
+
+Скрипты хранятся в [`scripts/`](scripts/). Хуки зарегистрированы в `~/.claude/settings.json` (глобально).
+
+| Скрипт | Hook | Сигнал | Когда |
+|--------|------|--------|-------|
+| `beep-pre-tool.ps1` | `PreToolUse` (tool=Bash) | Тройной ↓ 784→659→523 Hz | Диалог "Allow this bash command?" |
+| `beep-done.ps1` | `Stop` | Двойной ↑ 660→880 Hz | Задача завершена |
+| `beep-confirm.ps1` | `onShellCommandConfirmationRequested` | Тройной ↓ (legacy, не срабатывает в VSCode extension) | — |
+
+**Инвариант:** `PreToolUse + tool=Bash + не --dangerously-skip-permissions` → тройной сигнал.  
+`onShellCommandConfirmationRequested` не срабатывает в VSCode extension — правильный триггер именно `PreToolUse`.
+
+Подробнее: глобальный `~/.claude/CLAUDE.md` → раздел «Звуковые сигналы».
+
 ## Ключевой принцип
 
 > Каждый факт — с источником, датой и reliability score. Нет данных — нет вывода.
