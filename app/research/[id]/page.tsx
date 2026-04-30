@@ -6,6 +6,9 @@ import type { ResearchStatus, ResearchType } from '@/lib/types'
 import { AI_CONFIG } from '@/lib/ai/config'
 import { TriggerResearchButton, GenerateStrategyButton, NavButton } from './ResearchActions'
 
+// Research-trigger and strategy-generate actions run on this segment; need >10s budget.
+export const maxDuration = 60
+
 const STATUS_LABELS: Record<ResearchStatus, string> = {
   pending: 'Ожидает запуска',
   running: 'Выполняется',

@@ -30,6 +30,8 @@ export const AI_CONFIG: AIConfig = {
   },
   strategy: {
     defaultProvider: 'openrouter',
-    defaultModel: process.env.OPENROUTER_STRATEGY_MODEL ?? 'deepseek/deepseek-v4-pro',
+    // Flash fits in Vercel's 60s function timeout; -pro takes 90+s and triggers 504.
+    // Switch back to -pro once strategy generation moves to async/background processing.
+    defaultModel: process.env.OPENROUTER_STRATEGY_MODEL ?? 'deepseek/deepseek-v4-flash',
   },
 }

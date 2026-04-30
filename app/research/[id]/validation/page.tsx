@@ -1,5 +1,10 @@
 import { eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
+
+// Strategy generation server action runs on this route segment; needs >10s.
+// 60 is the Vercel Hobby/Pro default cap; Pro plan allows up to 300.
+export const maxDuration = 60
+
 import { getDb } from '@/db'
 import { researchJobs, companies } from '@/db/schema'
 import { AI_CONFIG } from '@/lib/ai/config'
