@@ -42,14 +42,96 @@ const SECTION_HEADING: Record<string, string> = {
 // ─── Section content renderer ─────────────────────────────────────────────────
 
 /**
- * Renders section text with visual highlighting for reliability markers.
- * Lines containing [ФАКТ], [ГИПОТЕЗА], [НЕДОСТАТОЧНО ДАННЫХ] get coloured treatment.
+ * Renders inline markdown bold (**text**) preserving emoji.
+ */
+function renderInlineBold(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={i} className="font-semibold text-gray-900">
+          {part.slice(2, -2)}
+        </strong>
+      )
+    }
+    return <span key={i}>{part}</span>
+  })
+}
+
+/**
+ * Renders section content with visual treatment for:
+ * - Reliability markers: [ФАКТ] (green) / [ГИПОТЕЗА] (yellow) / [НЕДОСТАТОЧНО ДАННЫХ] (red)
+ * - Asset cards: 🏢 / 🏆 — large bold headers
+ * - Status lines: ✅ / ❌ / 🎯 — subtle coloured borders
+ * - AI-rÑchag block: lines starting with 🤖 — prominent gradient block (this is the conversion driver)
+ * - Roadmap horizons: 🔴 / 🟡 / 🟢 — coloured headers
  */
 function renderSectionContent(content: string) {
   const lines = content.split('\n')
   return (
-    <div className="space-y-0.5">
+    <div className="space-y-1">
       {lines.map((line, i) => {
+        const trimmed = line.trim()
+
+        // ═══ AI lever — the conversion driver, visually loudest ═══
+        if (trimmed.startsWith('🤖')) {
+          return (
+            <div
+              key={i}
+              className="my-2 px-3 py-2.5 rounded-lg border border-indigo-300 bg-gradient-to-r from-indigo-50 to-purple-50 shadow-sm"
+            >
+              <p className="text-sm text-indigo-900 font-medium leading-relaxed">
+                {renderInlineBold(line)}
+              </p>
+            </div>
+          )
+        }
+
+        // ═══ Asset card headers ═══
+        if (/^\*\*🏢|^\*\*🏆/.test(trimmed)) {
+          return (
+            <h5
+              key={i}
+              className="text-base font-semibold text-gray-900 mt-4 mb-1.5 pt-2 border-t border-gray-100"
+            >
+              {renderInlineBold(line)}
+            </h5>
+          )
+        }
+
+        // ═══ Roadmap horizon headers ═══
+        if (/^\*\*🔴|^\*\*🟡|^\*\*🟢/.test(trimmed)) {
+          return (
+            <h5 key={i} className="text-sm font-semibold text-gray-800 mt-3 mb-1">
+              {renderInlineBold(line)}
+            </h5>
+          )
+        }
+
+        // ═══ Card status lines ═══
+        if (trimmed.startsWith('✅')) {
+          return (
+            <p key={i} className="text-sm text-emerald-900 pl-2 leading-relaxed">
+              {renderInlineBold(line)}
+            </p>
+          )
+        }
+        if (trimmed.startsWith('❌')) {
+          return (
+            <p key={i} className="text-sm text-rose-900 pl-2 leading-relaxed">
+              {renderInlineBold(line)}
+            </p>
+          )
+        }
+        if (trimmed.startsWith('🎯')) {
+          return (
+            <p key={i} className="text-sm text-blue-900 pl-2 leading-relaxed">
+              {renderInlineBold(line)}
+            </p>
+          )
+        }
+
+        // ═══ Reliability markers ═══
         const hasFact = line.includes('[ФАКТ]')
         const hasHypothesis = line.includes('[ГИПОТЕЗА]')
         const hasInsufficient =
@@ -61,7 +143,7 @@ function renderSectionContent(content: string) {
               key={i}
               className="text-sm text-red-700 bg-red-50 border-l-2 border-red-300 pl-2 py-0.5 rounded-r leading-relaxed"
             >
-              {line}
+              {renderInlineBold(line)}
             </p>
           )
         }
@@ -71,7 +153,7 @@ function renderSectionContent(content: string) {
               key={i}
               className="text-sm text-gray-800 border-l-2 border-green-400 pl-2 py-0.5 leading-relaxed"
             >
-              {line}
+              {renderInlineBold(line)}
             </p>
           )
         }
@@ -81,31 +163,37 @@ function renderSectionContent(content: string) {
               key={i}
               className="text-sm text-gray-800 border-l-2 border-yellow-400 pl-2 py-0.5 leading-relaxed"
             >
-              {line}
+              {renderInlineBold(line)}
             </p>
           )
         }
-        if (line.startsWith('### ')) {
+
+        // ═══ Markdown headers ═══
+        if (trimmed.startsWith('### ')) {
           return (
             <h4 key={i} className="text-sm font-semibold text-gray-900 mt-3 mb-1">
-              {line.slice(4)}
+              {trimmed.slice(4)}
             </h4>
           )
         }
-        if (line.startsWith('- ') || line.startsWith('• ')) {
+
+        // ═══ Bullet points ═══
+        if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
           return (
             <p key={i} className="text-sm text-gray-800 pl-3 leading-relaxed">
               {'• '}
-              {line.slice(2)}
+              {renderInlineBold(trimmed.slice(2))}
             </p>
           )
         }
-        if (line.trim() === '') {
-          return <div key={i} className="h-1.5" />
+
+        if (trimmed === '') {
+          return <div key={i} className="h-1" />
         }
+
         return (
           <p key={i} className="text-sm text-gray-800 leading-relaxed">
-            {line}
+            {renderInlineBold(line)}
           </p>
         )
       })}
