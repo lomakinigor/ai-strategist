@@ -35,3 +35,7 @@ next-env.d.ts
 
 # Drizzle
 drizzle/meta/
+
+# Claude Code (personal/local settings only — settings.json is shared)
+.claude/settings.local.json
+.claude/logs/

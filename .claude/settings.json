@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm run test)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run start)",
+      "Bash(npx vitest *)",
+      "Bash(npx vitest)",
+      "Bash(npx tsc *)",
+      "Bash(npx tsc)",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(npx drizzle-kit generate*)",
+      "Bash(npx drizzle-kit migrate*)",
+      "Bash(npx drizzle-kit studio*)",
+      "Bash(node scripts/*)",
+      "Read(memory/**)",
+      "Read(docs/**)",
+      "Read(.claude/**)",
+      "Write(memory/**)",
+      "Write(docs/**)",
+      "Edit(memory/**)",
+      "Edit(docs/**)"
+    ],
+    "deny": [
+      "Bash(npx drizzle-kit drop*)",
+      "Bash(npx drizzle-kit push *--force*)",
+      "Bash(rm -rf src*)",
+      "Bash(rm -rf docs*)",
+      "Bash(rm -rf memory*)"
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+# Зависимости и сборка
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Системные / IDE
+.git/
+.vscode/
+.idea/
+.cache/
+.vercel/
+
+# Артефакты
+*.log
+*.tmp
+*.lock
+*.tsbuildinfo
+*.sqlite
+*.db
+
+# Бинарники / медиа
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.mp4
+*.mp3
+*.zip
+*.pdf
+
+# Drizzle migrations metadata
+drizzle/meta/
+
+# Env
+.env
+.env.*
