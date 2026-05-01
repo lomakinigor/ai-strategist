@@ -12,6 +12,10 @@ export interface ResearchProviderConfig {
 export interface StrategyProviderConfig {
   defaultProvider: AIProviderId
   defaultModel: AIModelId
+  // Two-stage review mode: Stage 1 generates 5 parallel section drafts (status='partial'),
+  // user reviews them on the report page, then explicitly triggers Stage 2 synthesis.
+  // Disable to fall back to single-call generation (one LLM round-trip).
+  twoStageReview: boolean
 }
 
 export interface AIConfig {
@@ -33,5 +37,6 @@ export const AI_CONFIG: AIConfig = {
     // Flash fits in Vercel's 60s function timeout; -pro takes 90+s and triggers 504.
     // Switch back to -pro once strategy generation moves to async/background processing.
     defaultModel: process.env.OPENROUTER_STRATEGY_MODEL ?? 'deepseek/deepseek-v4-flash',
+    twoStageReview: process.env.STRATEGY_TWO_STAGE_REVIEW === 'true',
   },
 }

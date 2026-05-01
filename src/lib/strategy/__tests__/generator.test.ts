@@ -11,7 +11,18 @@ vi.mock('@/lib/rag/context', () => ({
 
 vi.mock('../prompts', () => ({
   STRATEGY_SYSTEM_PROMPT: 'mock system prompt',
+  STRATEGY_SYNTHESIS_SYSTEM_PROMPT: 'mock synthesis system prompt',
+  SECTION_TITLES: {
+    business: 'Анализ бизнеса',
+    market: 'Анализ рынка',
+    audience: 'Анализ целевой аудитории',
+    channels: 'Анализ каналов',
+    competitors: 'Анализ конкурентов',
+  },
   buildStrategyUserPrompt: vi.fn(() => 'mock user prompt'),
+  buildSectionSystemPrompt: vi.fn((t: string) => `system for ${t}`),
+  buildSectionUserPrompt: vi.fn((t: string) => `user for ${t}`),
+  buildSynthesisUserPrompt: vi.fn(() => 'synthesis user prompt'),
 }))
 
 // ─── AI config mock ───────────────────────────────────────────────────────────
@@ -21,6 +32,7 @@ vi.mock('@/lib/ai/config', () => ({
     strategy: {
       defaultProvider: 'openrouter',
       defaultModel: 'deepseek/deepseek-v4-pro',
+      twoStageReview: false,
     },
   },
 }))
@@ -39,6 +51,7 @@ vi.mock('@/db/schema', () => ({
     companyId: 'report_artifacts.company_id',
     researchJobId: 'report_artifacts.research_job_id',
     status: 'report_artifacts.status',
+    contentJson: 'report_artifacts.content_json',
     contentMarkdown: 'report_artifacts.content_markdown',
     updatedAt: 'report_artifacts.updated_at',
   },

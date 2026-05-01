@@ -53,6 +53,7 @@ export const sourceRegionEnum = pgEnum('source_region', ['RU', 'GLOBAL'])
 export const artifactStatusEnum = pgEnum('artifact_status', [
   'pending',
   'generating',
+  'partial',
   'done',
   'error',
 ])

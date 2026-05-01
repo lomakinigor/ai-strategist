@@ -7,7 +7,27 @@ export type ReliabilityScore = 1 | 2 | 3 | 4 | 5
 export type ResearchType = 'business' | 'market' | 'audience' | 'channels' | 'competitors'
 export type SourceType = 'registry' | 'official_site' | 'social' | 'ad' | 'aggregator'
 export type SourceRegion = 'RU' | 'GLOBAL'
-export type ArtifactStatus = 'pending' | 'generating' | 'done' | 'error'
+export type ArtifactStatus = 'pending' | 'generating' | 'partial' | 'done' | 'error'
+
+// Strategy section types — the 5 streams + the final synthesis
+export type StrategySectionType = ResearchType // 'business' | 'market' | 'audience' | 'channels' | 'competitors'
+
+// One section produced by Stage 1 of two-stage strategy generation.
+// Persisted in report_artifacts.content_json while artifact.status === 'partial'.
+export interface StrategySection {
+  id: StrategySectionType
+  title: string
+  content: string // markdown body (no leading "## N. Title" — page renders heading)
+  generatedAt: string // ISO
+  modelId: string
+  error: string | null
+}
+
+// Full content_json shape during Stage 1 review pause.
+export interface PartialStrategyContent {
+  stage: 1
+  sections: StrategySection[]
+}
 
 // Fact verified by Reliability Engine
 export interface VerifiedFact {
