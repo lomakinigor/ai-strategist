@@ -37,6 +37,7 @@ export const researchTypeEnum = pgEnum('research_type', [
   'market',
   'audience',
   'channels',
+  'competitors',
 ])
 
 export const sourceTypeEnum = pgEnum('source_type', [
@@ -115,6 +116,7 @@ export const researchJobs = pgTable(
     marketStatus: researchStatusEnum('market_status').default('pending'),
     audienceStatus: researchStatusEnum('audience_status').default('pending'),
     channelsStatus: researchStatusEnum('channels_status').default('pending'),
+    competitorsStatus: researchStatusEnum('competitors_status').default('pending').notNull(),
     errorMessage: text('error_message'),
     startedAt: timestamp('started_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),

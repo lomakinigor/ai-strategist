@@ -6,13 +6,17 @@ export function classify(rawPoint: RawDataPoint): VerifiedFact {
   const hasDate = rawPoint.date.trim().length > 0
   const hasData = rawPoint.data.trim().length > 0
 
+  const type = classifyFactType(rawPoint.rs, hasSource, hasDate, hasData)
+
   return {
     content: rawPoint.data,
     source: rawPoint.source,
     date: rawPoint.date,
     rs: rawPoint.rs,
-    type: classifyFactType(rawPoint.rs, hasSource, hasDate, hasData),
+    type,
     confidence: rsToConfidence(rawPoint.rs),
     researchType: rawPoint.researchType,
+    // INSUFFICIENT_DATA never reaches strategy by default — operator can re-enable in validation
+    isActive: type !== 'INSUFFICIENT_DATA',
   }
 }

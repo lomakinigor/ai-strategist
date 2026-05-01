@@ -3,6 +3,7 @@ import { businessAdapterMock } from '../business-adapter.mock'
 import { marketAdapterMock } from '../market-adapter.mock'
 import { audienceAdapterMock } from '../audience-adapter.mock'
 import { channelsAdapterMock } from '../channels-adapter.mock'
+import { competitorsAdapterMock } from '../competitors-adapter.mock'
 import { classify } from '../../reliability/classify'
 import type { ResearchQuery, ResearchAdapter } from '../../types'
 
@@ -139,13 +140,52 @@ describe('channelsAdapterMock', () => {
   })
 })
 
+describe('competitorsAdapterMock', () => {
+  it('returns correct researchType and valid structure', async () => {
+    expect(competitorsAdapterMock.researchType).toBe('competitors')
+    const points = await competitorsAdapterMock.collect(baseQuery)
+    assertValidRawDataPoints(competitorsAdapterMock, points)
+  })
+
+  it('returns at least 3 points', async () => {
+    const points = await competitorsAdapterMock.collect(baseQuery)
+    expect(points.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('mentions company name to anchor analysis', async () => {
+    const points = await competitorsAdapterMock.collect(baseQuery)
+    const combined = points.map((p) => p.data).join(' ')
+    expect(combined).toContain('Тест-Компания')
+  })
+
+  it('all points survive classify()', async () => {
+    const points = await competitorsAdapterMock.collect(baseQuery)
+    for (const point of points) {
+      expect(() => classify(point)).not.toThrow()
+    }
+  })
+
+  it('mock points have RS <= 2 (no real source verification)', async () => {
+    const points = await competitorsAdapterMock.collect(baseQuery)
+    for (const point of points) {
+      expect(point.rs).toBeLessThanOrEqual(2)
+    }
+  })
+})
+
 describe('all adapters', () => {
-  const adapters = [businessAdapterMock, marketAdapterMock, audienceAdapterMock, channelsAdapterMock]
+  const adapters = [
+    businessAdapterMock,
+    marketAdapterMock,
+    audienceAdapterMock,
+    channelsAdapterMock,
+    competitorsAdapterMock,
+  ]
 
   it('each adapter has unique researchType matching its name', () => {
     const types = adapters.map((a) => a.researchType)
-    expect(types).toEqual(['business', 'market', 'audience', 'channels'])
-    expect(new Set(types).size).toBe(4)
+    expect(types).toEqual(['business', 'market', 'audience', 'channels', 'competitors'])
+    expect(new Set(types).size).toBe(5)
   })
 
   it('each adapter returns at least 2 points', async () => {

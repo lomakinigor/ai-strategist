@@ -27,6 +27,7 @@ const STREAM_LABELS: Record<ResearchType, string> = {
   market: 'Анализ рынка',
   audience: 'Анализ аудитории',
   channels: 'Анализ каналов',
+  competitors: 'Анализ конкурентов',
 }
 
 const FACT_TYPE_LABELS: Record<FactType, string> = {
@@ -41,7 +42,7 @@ const CONFIDENCE_LABELS: Record<ConfidenceLevel, string> = {
   LOW: 'LOW',
 }
 
-const RESEARCH_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels']
+const RESEARCH_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels', 'competitors']
 
 // ─── Core function ────────────────────────────────────────────────────────────
 
@@ -103,17 +104,24 @@ export async function buildResearchContext(jobId: string): Promise<ResearchConte
 
   const blocks: ResearchContextBlock[] = []
 
-  // Prepend client-provided context and competitors to business block header
-  const headerParts: string[] = []
-  if (contextNotes) headerParts.push(`=== Дополнительный контекст от клиента ===\n${contextNotes}`)
-  if (competitorsNotes) headerParts.push(`=== Конкуренты (указаны клиентом) ===\n${competitorsNotes}`)
-  const clientContextHeader = headerParts.length > 0 ? headerParts.join('\n\n') + '\n\n' : ''
+  // Client-supplied free-text context goes into business block header.
+  // Client-supplied competitor list goes into competitors block header.
+  const businessClientHeader = contextNotes
+    ? `=== Дополнительный контекст от клиента ===\n${contextNotes}\n\n`
+    : ''
+  const competitorsClientHeader = competitorsNotes
+    ? `=== Конкуренты (указаны клиентом) ===\n${competitorsNotes}\n\n`
+    : ''
 
   for (const rt of RESEARCH_TYPES) {
     const typeRows = grouped[rt] ?? []
     const label = STREAM_LABELS[rt]
 
-    const lines: string[] = [rt === 'business' && clientContextHeader ? clientContextHeader + `=== ${label} ===` : `=== ${label} ===`]
+    let header = `=== ${label} ===`
+    if (rt === 'business' && businessClientHeader) header = businessClientHeader + header
+    if (rt === 'competitors' && competitorsClientHeader) header = competitorsClientHeader + header
+
+    const lines: string[] = [header]
 
     for (const row of typeRows) {
       const factLabel = FACT_TYPE_LABELS[row.factType as FactType] ?? row.factType

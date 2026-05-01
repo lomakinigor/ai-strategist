@@ -91,16 +91,16 @@ describe('buildResearchContext', () => {
     const ctx = await buildResearchContext('job-1')
     expect(ctx.jobId).toBe('job-1')
     expect(ctx.companyId).toBe('company-1')
-    expect(ctx.blocks).toHaveLength(4)
+    expect(ctx.blocks).toHaveLength(5)
     expect(ctx.totalFactCount).toBe(0)
     expect(ctx.builtAt).toBeInstanceOf(Date)
   })
 
-  it('returns all 4 research type blocks even with no facts', async () => {
+  it('returns all 5 research type blocks even with no facts', async () => {
     setupDb(JOB_ROW, [])
     const ctx = await buildResearchContext('job-1')
     const types = ctx.blocks.map((b) => b.researchType)
-    expect(types).toEqual(['business', 'market', 'audience', 'channels'])
+    expect(types).toEqual(['business', 'market', 'audience', 'channels', 'competitors'])
   })
 
   it('shows "Данных нет." when a stream has no facts', async () => {
@@ -185,6 +185,35 @@ describe('buildResearchContext', () => {
     expect(ctx.blocks[1].contextText).toContain('=== Анализ рынка ===')
     expect(ctx.blocks[2].contextText).toContain('=== Анализ аудитории ===')
     expect(ctx.blocks[3].contextText).toContain('=== Анализ каналов ===')
+    expect(ctx.blocks[4].contextText).toContain('=== Анализ конкурентов ===')
+  })
+
+  it('client-supplied competitors notes go into competitors block (not business)', async () => {
+    setupDb(JOB_ROW, [], [{ inputPayload: { competitors: 'MarkZnak, GetMark, СБИС' } }])
+    const ctx = await buildResearchContext('job-1')
+    const business = ctx.blocks.find((b) => b.researchType === 'business')!
+    const competitors = ctx.blocks.find((b) => b.researchType === 'competitors')!
+    expect(competitors.contextText).toContain('Конкуренты (указаны клиентом)')
+    expect(competitors.contextText).toContain('MarkZnak, GetMark, СБИС')
+    expect(business.contextText).not.toContain('MarkZnak')
+  })
+
+  it('formats competitors fact correctly', async () => {
+    const factRow = {
+      researchType: 'competitors',
+      factType: 'FACT',
+      confidence: 'HIGH',
+      rs: 4,
+      content: 'MarkZnak предлагает услуги маркировки от 50 000 ₽/мес.',
+      sourceUrl: 'https://markznak.ru',
+      sourceName: 'markznak.ru',
+    }
+    setupDb(JOB_ROW, [factRow])
+    const ctx = await buildResearchContext('job-1')
+    const block = ctx.blocks.find((b) => b.researchType === 'competitors')!
+    expect(block.factCount).toBe(1)
+    expect(block.contextText).toContain('=== Анализ конкурентов ===')
+    expect(block.contextText).toContain('MarkZnak предлагает')
   })
 })
 
@@ -212,8 +241,9 @@ describe('serializeContext', () => {
     const serialized = serializeContext(ctx)
     expect(serialized).toContain('=== Анализ бизнеса ===')
     expect(serialized).toContain('=== Анализ каналов ===')
-    // 4 blocks joined by \n\n
+    expect(serialized).toContain('=== Анализ конкурентов ===')
+    // 5 blocks joined by \n\n
     const parts = serialized.split('\n\n')
-    expect(parts.length).toBeGreaterThanOrEqual(4)
+    expect(parts.length).toBeGreaterThanOrEqual(5)
   })
 })

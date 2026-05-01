@@ -10,6 +10,7 @@ import { businessAdapterMock } from './business-adapter.mock'
 import { marketAdapterMock } from './market-adapter.mock'
 import { audienceAdapterMock } from './audience-adapter.mock'
 import { channelsAdapterMock } from './channels-adapter.mock'
+import { competitorsAdapterMock } from './competitors-adapter.mock'
 import type { RawDataPoint } from '@/lib/types'
 
 const MOCK_ADAPTERS = [
@@ -17,9 +18,10 @@ const MOCK_ADAPTERS = [
   marketAdapterMock,
   audienceAdapterMock,
   channelsAdapterMock,
+  competitorsAdapterMock,
 ]
 
-const STREAM_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels']
+const STREAM_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels', 'competitors']
 
 // Insert classified facts, optionally creating source records for real-mode citations
 async function insertFacts(
@@ -59,7 +61,7 @@ async function insertFacts(
       confidence: verified.confidence,
       reliabilityScore: verified.rs,
       researchType: verified.researchType,
-      isActive: true,
+      isActive: verified.isActive,
       language: 'ru',
     })
   }
@@ -117,6 +119,7 @@ export async function startResearchJob(jobId: string): Promise<void> {
       marketStatus: 'running',
       audienceStatus: 'running',
       channelsStatus: 'running',
+      competitorsStatus: 'running',
       startedAt: new Date(),
     })
     .where(eq(researchJobs.id, jobId))
@@ -137,6 +140,7 @@ export async function startResearchJob(jobId: string): Promise<void> {
         marketStatus: 'done',
         audienceStatus: 'done',
         channelsStatus: 'done',
+        competitorsStatus: 'done',
         completedAt: new Date(),
       })
       .where(eq(researchJobs.id, jobId))

@@ -67,6 +67,43 @@ describe('classify', () => {
     const result = classify({ ...base, researchType: 'market' })
     expect(result.researchType).toBe('market')
   })
+
+  it('preserves competitors researchType', () => {
+    const result = classify({ ...base, researchType: 'competitors' })
+    expect(result.researchType).toBe('competitors')
+  })
+
+  // ─── isActive auto-deactivation (per spec A2) ─────────────────────────────
+  // Rule: facts that LLM cannot trust (no source, or low RS) are stored but
+  // marked is_active=false so they don't poison strategy generation.
+
+  it('FACT (RS 5 + source + date) → isActive=true', () => {
+    const result = classify({ ...base, rs: 5 })
+    expect(result.isActive).toBe(true)
+  })
+
+  it('HYPOTHESIS (RS 2 + source) → isActive=true', () => {
+    const result = classify({ ...base, rs: 2 })
+    expect(result.isActive).toBe(true)
+  })
+
+  it('INSUFFICIENT_DATA from missing source → isActive=false', () => {
+    const result = classify({ ...base, source: '' })
+    expect(result.type).toBe('INSUFFICIENT_DATA')
+    expect(result.isActive).toBe(false)
+  })
+
+  it('INSUFFICIENT_DATA from RS 1 → isActive=false', () => {
+    const result = classify({ ...base, rs: 1 })
+    expect(result.type).toBe('INSUFFICIENT_DATA')
+    expect(result.isActive).toBe(false)
+  })
+
+  it('whitespace-only source → INSUFFICIENT_DATA + isActive=false', () => {
+    const result = classify({ ...base, source: '   ', rs: 2 })
+    expect(result.type).toBe('INSUFFICIENT_DATA')
+    expect(result.isActive).toBe(false)
+  })
 })
 
 describe('rsToConfidence', () => {

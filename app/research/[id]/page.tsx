@@ -28,9 +28,10 @@ const STREAM_LABELS: Record<string, string> = {
   market: 'Анализ рынка',
   audience: 'Анализ аудитории',
   channels: 'Анализ каналов',
+  competitors: 'Анализ конкурентов',
 }
 
-const RESEARCH_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels']
+const RESEARCH_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels', 'competitors']
 
 export default async function ResearchStatusPage({ params }: { params: { id: string } }) {
   const db = getDb()
@@ -100,6 +101,7 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
     { key: 'market', label: STREAM_LABELS.market, status: (job.marketStatus ?? 'pending') as ResearchStatus },
     { key: 'audience', label: STREAM_LABELS.audience, status: (job.audienceStatus ?? 'pending') as ResearchStatus },
     { key: 'channels', label: STREAM_LABELS.channels, status: (job.channelsStatus ?? 'pending') as ResearchStatus },
+    { key: 'competitors', label: STREAM_LABELS.competitors, status: job.competitorsStatus as ResearchStatus },
   ]
 
   const overallStatus = job.status as ResearchStatus

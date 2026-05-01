@@ -20,6 +20,7 @@ const STREAM_LABELS: Record<ResearchType, string> = {
   market: 'Рынок',
   audience: 'Аудитория',
   channels: 'Каналы',
+  competitors: 'Конкуренты',
 }
 
 const STREAM_COLORS: Record<ResearchType, string> = {
@@ -27,6 +28,7 @@ const STREAM_COLORS: Record<ResearchType, string> = {
   market: 'bg-purple-100 text-purple-700',
   audience: 'bg-green-100 text-green-700',
   channels: 'bg-orange-100 text-orange-700',
+  competitors: 'bg-rose-100 text-rose-700',
 }
 
 const FACT_TYPE_LABELS: Record<FactType, string> = {
@@ -61,7 +63,7 @@ const SOURCE_TYPE_LABELS: Record<string, string> = {
   aggregator: 'Агрегатор',
 }
 
-const ALL_STREAMS: ResearchType[] = ['business', 'market', 'audience', 'channels']
+const ALL_STREAMS: ResearchType[] = ['business', 'market', 'audience', 'channels', 'competitors']
 const ALL_FACT_TYPES: FactType[] = ['FACT', 'HYPOTHESIS', 'INSUFFICIENT_DATA']
 const ALL_CONFIDENCES: ConfidenceLevel[] = ['HIGH', 'MEDIUM', 'LOW']
 

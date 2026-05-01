@@ -4,7 +4,7 @@ export type ResearchStatus = 'pending' | 'running' | 'done' | 'error'
 export type FactType = 'FACT' | 'HYPOTHESIS' | 'INSUFFICIENT_DATA'
 export type ConfidenceLevel = 'HIGH' | 'MEDIUM' | 'LOW'
 export type ReliabilityScore = 1 | 2 | 3 | 4 | 5
-export type ResearchType = 'business' | 'market' | 'audience' | 'channels'
+export type ResearchType = 'business' | 'market' | 'audience' | 'channels' | 'competitors'
 export type SourceType = 'registry' | 'official_site' | 'social' | 'ad' | 'aggregator'
 export type SourceRegion = 'RU' | 'GLOBAL'
 export type ArtifactStatus = 'pending' | 'generating' | 'done' | 'error'
@@ -18,6 +18,9 @@ export interface VerifiedFact {
   type: FactType
   confidence: ConfidenceLevel
   researchType: ResearchType
+  // INSUFFICIENT_DATA facts auto-deactivate so they cannot leak into strategy.
+  // Operator can manually reactivate from validation workspace.
+  isActive: boolean
 }
 
 // Input passed to each research adapter
@@ -51,5 +54,6 @@ export interface ReportContent {
   market?: string
   audience?: string
   channels?: string
+  competitors?: string
   strategy?: string
 }
