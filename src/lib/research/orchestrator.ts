@@ -11,6 +11,7 @@ import { marketAdapterMock } from './market-adapter.mock'
 import { audienceAdapterMock } from './audience-adapter.mock'
 import { channelsAdapterMock } from './channels-adapter.mock'
 import { competitorsAdapterMock } from './competitors-adapter.mock'
+import { collectExternalMetrics } from './external-metrics'
 import type { RawDataPoint } from '@/lib/types'
 
 const MOCK_ADAPTERS = [
@@ -76,11 +77,26 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
   const provider = new PerplexityResearchProvider()
   const modelId = AI_CONFIG.research.defaultModel
 
-  const results = await Promise.all(
-    STREAM_TYPES.map((type) => provider.research({ query, researchType: type, modelId })),
+  // Phase 1: Perplexity по 5 streams + external metrics по каналам/сайту клиента — параллельно.
+  // External metrics дёргают независимые API (VK, Telegram preview, PageSpeed) и закладываются
+  // в общее окно времени request handler'а: даже если PageSpeed займёт 30 сек, остальные стримы
+  // успевают за это же время.
+  const externalUrls = [...(query.channels ?? []), query.website].filter(Boolean) as string[]
+
+  const [streamResults, external] = await Promise.all([
+    Promise.all(
+      STREAM_TYPES.map((type) => provider.research({ query, researchType: type, modelId })),
+    ),
+    collectExternalMetrics(externalUrls),
+  ])
+
+  const perplexityPoints = streamResults.flatMap((r) => r.points)
+  const allPoints = [...perplexityPoints, ...external.points]
+
+  console.log(
+    `[orchestrator] external-metrics: requested=${external.stats.requested} succeeded=${external.stats.succeeded} skipped=${external.stats.skipped} failed=${external.stats.failed}`,
   )
 
-  const allPoints = results.flatMap((r) => r.points)
   await insertFacts(companyId, jobId, allPoints, true)
 }
 
