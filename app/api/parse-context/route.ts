@@ -40,8 +40,9 @@ async function callOpenRouterParse(text: string, attempt = 1): Promise<Response>
     body: JSON.stringify({
       model: PARSE_MODEL,
       max_tokens: 4096,
-      // Allow OpenRouter to fall back across providers (Together, DeepSeek-direct, Fireworks, etc.)
-      provider: { allow_fallbacks: true, sort: 'throughput' },
+      // require_parameters: only route to providers that support response_format (json_schema).
+      // Without this, throughput-sorted routing can pick a provider that 400s on our schema.
+      provider: { allow_fallbacks: true, sort: 'throughput', require_parameters: true },
       response_format: {
         type: 'json_schema',
         json_schema: { name: 'company_data', strict: true, schema: PARSE_SCHEMA },
