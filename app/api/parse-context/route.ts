@@ -95,7 +95,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: code, detail: errText, status: response.status }, { status: 500 })
     }
 
-    const data = (await response.json()) as OpenRouterResponse
+    const data = (await response.json()) as OpenRouterResponse & { error?: { message?: string; code?: number } }
+
+    if (!data.choices || data.choices.length === 0) {
+      console.error('[parse-context] no choices in response. body:', JSON.stringify(data).slice(0, 1000))
+      const detail = data.error?.message ?? 'OpenRouter не вернул ответа (возможно фильтр контента или таймаут провайдера).'
+      return NextResponse.json({ error: 'no_choices', detail }, { status: 500 })
+    }
+
     const raw = data.choices[0]?.message?.content?.trim() ?? '{}'
     console.log('[parse-context] raw response (first 800):', raw.slice(0, 800))
 
