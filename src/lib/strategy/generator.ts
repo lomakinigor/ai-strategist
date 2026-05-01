@@ -112,7 +112,9 @@ export async function callStrategyLLM(systemPrompt: string, userPrompt: string):
     },
     body: JSON.stringify({
       model,
-      max_tokens: 8000,
+      max_tokens: 5000,
+      // Pick the fastest provider; tolerate fallbacks if the top choice is overloaded.
+      provider: { allow_fallbacks: true, sort: 'throughput' },
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
