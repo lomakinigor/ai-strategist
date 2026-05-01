@@ -12,22 +12,9 @@ interface OpenRouterResponse {
   choices: Array<{ message: { content: string } }>
 }
 
-const PARSE_SCHEMA = {
-  type: 'object',
-  properties: {
-    company_name: { type: 'string' },
-    industry: { type: 'string' },
-    description: { type: 'string' },
-    website: { type: 'string' },
-    goals: { type: 'string' },
-    competitors: { type: 'string' },
-    channel_urls: { type: 'array', items: { type: 'string' } },
-    channels: { type: 'array', items: { type: 'string' } },
-  },
-  required: ['company_name', 'industry', 'description', 'website', 'goals', 'competitors', 'channel_urls', 'channels'],
-  additionalProperties: false,
-} as const
-
+// Use json_object mode (universally supported) instead of json_schema:
+// some OpenRouter providers translate json_schema into a non-standard shape that
+// then fails their own validators. We describe the expected fields in the prompt.
 async function callOpenRouterParse(text: string, attempt = 1): Promise<Response> {
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -40,27 +27,33 @@ async function callOpenRouterParse(text: string, attempt = 1): Promise<Response>
     body: JSON.stringify({
       model: PARSE_MODEL,
       max_tokens: 4096,
-      // require_parameters: only route to providers that support response_format (json_schema).
-      // Without this, throughput-sorted routing can pick a provider that 400s on our schema.
-      provider: { allow_fallbacks: true, sort: 'throughput', require_parameters: true },
-      response_format: {
-        type: 'json_schema',
-        json_schema: { name: 'company_data', strict: true, schema: PARSE_SCHEMA },
-      },
+      provider: { allow_fallbacks: true, sort: 'throughput' },
+      response_format: { type: 'json_object' },
       messages: [
         {
           role: 'system',
-          content: `Ты извлекаешь структурированные данные о компании из произвольного текста. Заполняй ВСЕ поля схемы, даже если ставишь пустую строку или пустой массив.
+          content: `Ты извлекаешь структурированные данные о компании из произвольного текста и возвращаешь СТРОГО один JSON-объект без префиксов и пояснений.
+
+Обязательные поля (заполняй ВСЕ, даже пустыми строками или пустыми массивами):
+- company_name: string — название компании
+- industry: string — отрасль/ниша
+- description: string — краткое описание бизнеса
+- website: string — основной сайт компании (URL или пустая строка)
+- goals: string — цель исследования или стратегии
+- competitors: string — список конкурентов через запятую
+- channel_urls: string[] — ВСЕ ссылки на каналы присутствия
+- channels: string[] — названия каналов из заданного списка
 
 Правила для channel_urls:
-- Извлекай ВСЕ ссылки на каналы присутствия: https://t.me/..., https://vk.com/..., https://linku.su/..., https://youtube.com/... и подобные
+- Включай: https://t.me/..., https://vk.com/..., https://linku.su/..., https://youtube.com/... и любые другие ссылки на каналы/боты/чаты/агрегаторы
 - Telegram-хендлы вида @имя_бота или @канал — преобразуй в полный URL https://t.me/имя_бота (без @)
-- Включай и каналы, и боты, и чаты, и агрегаторы ссылок
 - НЕ включай основной сайт компании (он идёт в поле website)`,
         },
         {
           role: 'user',
           content: `Извлеки информацию о компании. channel_urls — ВСЕ ссылки на каналы (Telegram-каналы, боты, чаты, ВКонтакте, YouTube, агрегаторы), включая Telegram-хендлы вида @имя (преобразуй их в https://t.me/имя). channels — только названия из списка: ${RF_CHANNELS.join(', ')}.
+
+Верни ТОЛЬКО JSON-объект, без markdown-обрамления и комментариев.
 
 Текст:
 ${text}`,
