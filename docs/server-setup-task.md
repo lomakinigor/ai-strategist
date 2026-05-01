@@ -1,160 +1,163 @@
-# Задание для Claude Code на VPS
+# Задание для Claude Code на VPS — аудит конфигурации
 
-Это разовое задание. После выполнения — отчёт по формату, файл можно удалить или оставить как лог.
+> **Это задача только на чтение и отчёт.** Не вноси никаких изменений: не редактируй файлы, не устанавливай пакеты, не правь `~/.claude/settings.json`, не запускай `git pull` / `git reset` / `npm install`. Только проверки + отчёт + план.
 
-## Цель
+## Контекст
 
-Применить на этом VPS ту же конфигурацию Claude Code, что уже зафиксирована локально в репозитории (коммиты `252267c`, `f277a85`). Конкретно:
-1. Подтвердить, что shared-конфиги из репо подтянуты и валидны.
-2. Установить системные зависимости (`jq`, `prettier` через npm).
-3. Создать `~/.claude/settings.json` с Linux-вариантом (sandbox + log-command hook), пути адаптировать под VPS.
-4. Проверить, что sandbox работает и аудит-лог пишется.
-5. Вернуть структурированный отчёт.
+На этом VPS уже часть конфигурации Claude Code выполнена раньше. Нужно понять — что именно. Локально (на машине разработчика) уже зафиксированы коммиты `252267c` и `f277a85` с проектной конфигурацией CC и инструкцией по серверу. Твоя цель — сравнить текущее состояние VPS с целевой конфигурацией и подсветить дельту.
 
-## Предусловия (проверь и сообщи, если что-то не так)
+## Целевая конфигурация (что должно быть на VPS в итоге)
 
-1. ОС — Linux (любой популярный дистрибутив с `apt`/`dnf`/`apk`). Если другая — сообщи и остановись.
-2. Репозиторий уже склонирован в текущую рабочую директорию. Если нет — сообщи путь, где он есть, или останови выполнение и спроси у пользователя.
-3. На текущей ветке `master`, без локальных uncommitted изменений. Если есть — выведи `git status` и спроси что делать (не коммитить, не сбрасывать самостоятельно).
-4. У пользователя есть `sudo` без пароля **или** `jq` уже установлен. Если sudo требует пароль и `jq` нет — сообщи и остановись с инструкцией для пользователя.
-5. Установлен Node.js (любой LTS) и npm. Если нет — сообщи и остановись.
+Подробное описание — в [`docs/claude-code-deploy.md`](claude-code-deploy.md). Кратко:
 
-## Контекст (для Claude — это уже в репо)
+1. **Repo на актуальном HEAD** — последний коммит `master` с актуальными `.claude/settings.json`, `.claude/rules/`, `.claudeignore`, `.prettierrc`, `CLAUDE.md`, `scripts/log-command.sh`
+2. **npm-зависимости установлены** — включая `prettier ^3.8.3`
+3. **`jq` доступен** в PATH (нужен для `log-command.sh`)
+4. **`scripts/log-command.sh`** имеет права на выполнение (`+x`)
+5. **`~/.claude/settings.json`** существует с разделами:
+   - `defaultMode: "acceptEdits"`
+   - `permissions.allow` под наш стек (npm/npx/git)
+   - `permissions.deny` для опасных команд и секретов
+   - `sandbox.enabled: true` с filesystem allowWrite/denyWrite/denyRead и network.allowedDomains (включая `openrouter.ai`, `api.perplexity.ai`, `api.anthropic.com`, `github.com`, `*.npmjs.org`)
+   - `hooks.PreToolUse` указывает на `bash <abs_path_to_repo>/scripts/log-command.sh`
+6. **Smoke-test хука** `scripts/log-command.sh` пишет в `.claude/logs/commands.tsv` без ошибок
 
-Прочитай перед стартом:
-- [`CLAUDE.md`](../CLAUDE.md) — общие правила проекта
-- [`.claude/rules/`](../.claude/rules/) — data-reliability, russia-context, hooks
-- [`docs/claude-code-deploy.md`](claude-code-deploy.md) — чеклист, на который опирается это задание (там же готовый JSON-фрагмент для `~/.claude/settings.json`)
-- Скрипт хука: [`scripts/log-command.sh`](../scripts/log-command.sh)
+## Что проверить (read-only)
 
-## Шаги выполнения
+Выполни проверки последовательно, по каждой запиши результат. Если команда падает или результат неоднозначен — пометь и продолжай дальше, не пытайся «починить».
 
-### Шаг 1. Sync репозитория
+### A. Состояние репозитория
 
 ```bash
-git fetch origin
-git status
-git log --oneline -5
+pwd
+git rev-parse HEAD
+git log --oneline -3
+git status --short
+git remote -v
 ```
 
-Убедись, что HEAD = `f277a85` или новее. Если позади — `git pull --ff-only origin master`. Если есть untracked/modified — **остановись и сообщи**, не сбрасывай.
+Цель: HEAD = `236e592` или новее, без uncommitted, origin указывает на правильный репо.
 
-### Шаг 2. npm-зависимости
+### B. Системные инструменты
 
 ```bash
-npm ci
+uname -a
+cat /etc/os-release 2>/dev/null | head -5
+node --version
+npm --version
+jq --version 2>&1 || echo "jq NOT installed"
+which claude || echo "claude CLI NOT in PATH"
+claude --version 2>&1 || true
 ```
 
-Должны установиться все deps включая `prettier ^3.8.3`. Если упадёт — сообщи stderr дословно, не пытайся починить через --force/--legacy.
-
-### Шаг 3. Системные зависимости
-
-Установи `jq` (нужен для `log-command.sh`):
+### C. npm-зависимости
 
 ```bash
-# Debian/Ubuntu
-sudo apt-get update && sudo apt-get install -y jq
-
-# RHEL/Rocky/Alma
-sudo dnf install -y jq
-
-# Alpine
-sudo apk add --no-cache jq
+test -d node_modules && echo "node_modules: present" || echo "node_modules: MISSING"
+npm ls prettier 2>&1 | head -3
+test -f package-lock.json && echo "lock: present" || echo "lock: MISSING"
 ```
 
-Проверь:
-```bash
-jq --version
-```
+Не запускай `npm install` / `npm ci`.
 
-### Шаг 4. Сделай хук исполняемым
+### D. Project-level CC-конфиг (должен прийти из git)
 
 ```bash
-chmod +x scripts/log-command.sh
+test -f .claude/settings.json && echo "project settings.json: present" || echo "MISSING"
+test -f .claudeignore && echo ".claudeignore: present" || echo "MISSING"
+test -f .prettierrc && echo ".prettierrc: present" || echo "MISSING"
+ls -la .claude/rules/ 2>&1
+test -x scripts/log-command.sh && echo "log-command.sh: executable" || echo "log-command.sh: NOT executable / MISSING"
 ```
 
-### Шаг 5. Сформируй `~/.claude/settings.json`
-
-**Важно:** возьми JSON-шаблон из [`docs/claude-code-deploy.md`](claude-code-deploy.md) раздел 2.2 (там уже всё с sandbox и нужными доменами).
-
-Замени плейсхолдер `/path/to/repo` на абсолютный путь к этому репозиторию (получишь через `pwd`).
-
-Если файл `~/.claude/settings.json` **уже существует** — НЕ перезаписывай. Сделай резервную копию `cp ~/.claude/settings.json ~/.claude/settings.json.bak.$(date +%s)`, затем покажи пользователю текущий и предлагаемый JSON, спроси подтверждение перед заменой.
-
-Если файла нет — создай:
-```bash
-mkdir -p ~/.claude
-cat > ~/.claude/settings.json <<'EOF'
-{ ... сюда вставь готовый JSON с подставленным абсолютным путём ... }
-EOF
-```
-
-Проверь что валидный JSON:
-```bash
-jq . ~/.claude/settings.json > /dev/null && echo OK
-```
-
-### Шаг 6. Проверки
-
-#### 6.1. Тесты и сборка проекта (sanity check, что ничего не сломалось)
+### E. User-level CC-конфиг
 
 ```bash
-npm run test
-npm run build
+test -f ~/.claude/settings.json && echo "user settings.json: present" || echo "MISSING"
 ```
 
-Оба должны быть зелёными. Если что-то падает — отчётись с stderr, не правь.
-
-#### 6.2. Хук log-command работает
-
-Создай тестовый JSON-вход и прогони хук вручную:
+Если файл есть — выведи отдельно ключевые разделы (без секретов, если попадутся):
 
 ```bash
-echo '{"tool_name":"Bash","tool_input":{"command":"echo hello"}}' | bash scripts/log-command.sh
-ls -la .claude/logs/commands.tsv 2>&1
-tail -1 .claude/logs/commands.tsv 2>&1
+jq '{defaultMode, permissions_allow_count: (.permissions.allow | length // 0), permissions_deny_count: (.permissions.deny | length // 0), sandbox_enabled: (.sandbox.enabled // false), sandbox_allowedDomains: (.sandbox.network.allowedDomains // []), hooks_PreToolUse: (.hooks.PreToolUse // [])}' ~/.claude/settings.json 2>&1
 ```
 
-Должна появиться строка с timestamp, `Bash`, `echo hello`. Файл должен быть в `.gitignore` (уже зафиксировано на строке `.claude/logs/`).
+Если `jq` не установлен — просто `cat ~/.claude/settings.json` (если он есть) и пометь что разбор JSON не делался.
 
-#### 6.3. Sandbox status
+### F. Hook smoke-test (без побочных эффектов)
 
-В рамках текущей сессии на VPS — Claude Code должен сам видеть свой sandbox. Если есть встроенная команда `/sandbox-status` или эквивалент — выведи её результат. Если нет — покажи актуальное содержимое `~/.claude/settings.json` через `jq .sandbox ~/.claude/settings.json`.
+```bash
+test -d .claude/logs && echo "logs dir: present" || echo "logs dir: not yet created"
+test -f .claude/logs/commands.tsv && wc -l .claude/logs/commands.tsv || echo "commands.tsv: not yet created"
+```
 
-### Шаг 7. Зафиксируй версию
+Не запускай хук вручную в этой сессии — это создаст лишние записи. Просто посмотри, есть ли уже логи (значит хук уже подключён и работал раньше).
 
-Запомни: эта сессия применила коммит репозитория `<вставь актуальный HEAD>` к VPS-конфигу.
+### G. Sandbox-проверка
 
-## Что НЕ нужно делать
-
-- НЕ менять файлы в репозитории
-- НЕ коммитить ничего на сервере
-- НЕ запускать `git push`
-- НЕ устанавливать Codex/Gemini CLI (отложено)
-- НЕ копировать `beep-*.ps1` хуки — они Windows-only и на сервере бесполезны
-- НЕ редактировать `.claude/settings.json` (project-level) — он уже корректный из git
-- НЕ пытаться сэмулировать звуковые сигналы
+Если в Claude Code твоей версии есть встроенная команда статуса sandbox — выведи её. Если нет — ограничься выводом из шага E.
 
 ## Формат отчёта (обязательный)
 
-В конце выполнения верни блок:
+Верни ровно такой блок (заполни значениями из проверок, ничего не выдумывай — если не проверил, пиши «не проверено»):
 
 ```
-## РЕЗЮМЕ СЕРВЕРНОЙ УСТАНОВКИ
+## АУДИТ VPS — состояние конфигурации Claude Code
 
-- HEAD репо на VPS: <hash> <subject>
-- Абсолютный путь репо: <path>
-- ОС / дистрибутив: <output of `uname -a` или `lsb_release -d`>
-- Node / npm / jq версии: <…>
-- npm ci: success / failed
-- npm run test: <N passed / N failed>
-- npm run build: success / failed
-- ~/.claude/settings.json: создан / обновлён / уже был, без изменений
-- Бэкап старого settings: <путь к .bak> (если был)
-- Sandbox enabled: true / false (из jq)
-- log-command.sh smoke-test: success / failed (последняя строка commands.tsv)
-- Что не получилось: <список или "ничего">
-- Следующий рекомендуемый шаг: <…>
+### Репозиторий
+- pwd: <…>
+- HEAD: <hash> <subject>
+- Отставание от origin/master: <commits behind / up-to-date>
+- Uncommitted: <none / список>
+
+### Система
+- ОС: <uname / os-release>
+- Node: <ver> / npm: <ver>
+- jq: <ver / NOT installed>
+- claude CLI: <ver / NOT in PATH>
+
+### npm
+- node_modules: <present / missing>
+- prettier (из npm ls): <ver / not found>
+
+### Project-level (из репо)
+- .claude/settings.json: <present / missing>
+- .claudeignore: <present / missing>
+- .prettierrc: <present / missing>
+- .claude/rules/ файлы: <список>
+- scripts/log-command.sh executable: <yes / no / missing>
+
+### User-level (~/.claude/)
+- settings.json: <present / missing>
+- defaultMode: <…>
+- allow rules count: <N>
+- deny rules count: <N>
+- sandbox.enabled: <true / false / отсутствует>
+- sandbox.network.allowedDomains: <список или "не задано">
+- hooks.PreToolUse: <содержимое или "не задано">
+
+### Хук log-command
+- .claude/logs/ существует: <yes / no>
+- commands.tsv: <N строк / отсутствует>
+
+### Дельта (что нужно сделать)
+1. <…>
+2. <…>
+
+### Предлагаемый план установки недостающего
+- Шаг 1: <конкретная команда / правка>
+- Шаг 2: <…>
+- …
+
+### Риски / вопросы пользователю
+- <если есть переписанный ранее ~/.claude/settings.json с кастомом — какие разделы НЕ затирать>
+- <если нужен sudo и его нет>
+- <всё остальное, что требует решения пользователя до начала работ>
 ```
 
-Если на любом шаге что-то падает или вызывает сомнение — **остановись, отчётись, спроси**. Не используй `--force`, `--no-verify`, `sudo rm -rf`, не сбрасывай git.
+## Важно
+
+- Ничего не меняй на этом этапе. Цель — точная картина и согласованный план.
+- Если на любом шаге команда требует sudo и его нет — пометь в отчёте и иди дальше.
+- Если `~/.claude/settings.json` уже содержит **что-то нестандартное** (другие хуки, MCP-серверы, кастомные allow-правила) — сохрани это в дельту как «требует ручного слияния, не затирать».
+- После моего одобрения плана будем выполнять установку отдельной задачей.
