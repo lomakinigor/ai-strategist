@@ -25,8 +25,10 @@ const RX_DESCRIPTION = /<meta\s+property="og:description"\s+content="([^"]+)"/i
 // counter_value contains compact numbers like "6.95K" — accept any non-tag content
 const RX_SUBSCRIBERS_BLOCK =
   /<div\s+class="tgme_channel_info_counter">\s*<span\s+class="counter_value">([^<]+)<\/span>\s*<span\s+class="counter_type">subscribers<\/span>/i
-// Posts: each message has data-post and a `.tgme_widget_message_views` element + datetime
-const RX_POSTS = /<div\s+class="tgme_widget_message_wrap[^"]*"[\s\S]*?<\/div>\s*<\/div>/g
+// Anchor that opens each message block. We split the document on it and parse
+// each chunk independently — the message HTML is too deep/variable for a single
+// regex to capture reliably (footers may be 500+ lines after the opening div).
+const POSTS_SPLIT_ANCHOR = 'tgme_widget_message_wrap'
 const RX_VIEWS = /class="tgme_widget_message_views">([^<]+)</i
 const RX_DATETIME = /<time[^>]+datetime="([^"]+)"/i
 
@@ -60,14 +62,17 @@ function parseViewsCompact(raw: string): number {
 
 function parsePosts(html: string): Array<{ views: number; date: Date }> {
   const posts: Array<{ views: number; date: Date }> = []
-  const matches = html.match(RX_POSTS) ?? []
-  for (const block of matches) {
-    const viewsM = block.match(RX_VIEWS)
-    const dateM = block.match(RX_DATETIME)
-    if (!viewsM || !dateM) continue
-    const views = parseViewsCompact(viewsM[1])
+  // Split on each message anchor; first chunk is the page header, drop it.
+  const chunks = html.split(POSTS_SPLIT_ANCHOR).slice(1)
+  for (const chunk of chunks) {
+    const viewsM = chunk.match(RX_VIEWS)
+    const dateM = chunk.match(RX_DATETIME)
+    if (!dateM) continue
     const date = new Date(dateM[1])
     if (Number.isNaN(date.getTime())) continue
+    // Some posts (eg. service messages) lack views — count them for frequency
+    // but record 0 so they don't skew avg-view calculations later.
+    const views = viewsM ? parseViewsCompact(viewsM[1]) : 0
     posts.push({ views, date })
   }
   return posts
@@ -101,8 +106,13 @@ export async function fetchTelegramSnapshot(username: string): Promise<TelegramS
 
   const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000
   const recent = allPosts.filter((p) => p.date.getTime() >= cutoff)
+  // Avg views computed only over posts that actually had a views counter,
+  // so service messages with views=0 don't drag the average down.
+  const recentWithViews = recent.filter((p) => p.views > 0)
   const avgViews =
-    recent.length > 0 ? Math.round(recent.reduce((s, p) => s + p.views, 0) / recent.length) : null
+    recentWithViews.length > 0
+      ? Math.round(recentWithViews.reduce((s, p) => s + p.views, 0) / recentWithViews.length)
+      : null
   const er = avgViews && subscribers ? Math.round((avgViews / subscribers) * 1000) / 10 : null
 
   return {
