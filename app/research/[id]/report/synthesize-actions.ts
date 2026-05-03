@@ -4,6 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { synthesizeStrategy, regenerateSection } from '@/lib/strategy/generator'
 import type { StrategySectionType } from '@/lib/types'
 
+// Synthesis (~2500 tokens) и regenerateSection (~3000 tokens) тоже не уложатся
+// в дефолтные 10s Vercel Hobby — выставляем тот же лимит, что и на странице.
+export const maxDuration = 60
+
 const VALID_SECTION_TYPES: StrategySectionType[] = [
   'business',
   'market',
