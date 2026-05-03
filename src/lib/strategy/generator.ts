@@ -175,7 +175,10 @@ const STAGE_ONE_SECTION_TYPES: StrategySectionType[] = [
   'competitors',
 ]
 
-const SECTION_MAX_TOKENS = 1800
+// Sections 1 (business) and 4 (channels) routinely truncated mid-word at 1800 — bumped
+// to 3000 so the model can finish all required cards. Each Stage-1 call still fits inside
+// the Vercel 60s limit because all 5 sections run in parallel.
+const SECTION_MAX_TOKENS = 3000
 
 export async function generateSectionDraft(
   sectionType: StrategySectionType,
@@ -188,10 +191,19 @@ export async function generateSectionDraft(
     const systemPrompt = buildSectionSystemPrompt(sectionType)
     const userPrompt = buildSectionUserPrompt(sectionType, context)
     const { content, modelId } = await callOpenRouter(systemPrompt, userPrompt, SECTION_MAX_TOKENS)
+    const trimmed = content.trim()
+    // OpenRouter sometimes returns 200 OK with empty content (provider timeout, content
+    // filter, or model returning only reasoning tokens). Without this guard the section
+    // is stored as content="" / error=null and the report page renders a blank block —
+    // the user has no way to retry. Convert the empty response into an error so the UI
+    // surfaces a regenerate button.
+    if (!trimmed) {
+      throw new Error('LLM вернул пустой ответ — недостаточно фактов или таймаут провайдера')
+    }
     return {
       id: sectionType,
       title,
-      content: content.trim(),
+      content: trimmed,
       generatedAt,
       modelId,
       error: null,

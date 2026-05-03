@@ -161,6 +161,13 @@ describe('generateSectionDraft', () => {
     expect(calledBody.messages[0].content).toBe('system for competitors')
     expect(calledBody.messages[1].content).toBe('user for competitors')
   })
+
+  it('treats empty LLM response (200 OK with content="") as error so UI can retry', async () => {
+    vi.stubGlobal('fetch', makeFetchMock('   \n  '))
+    const section = await generateSectionDraft('market', MOCK_CONTEXT)
+    expect(section.error).toMatch(/пустой ответ/i)
+    expect(section.content).toBe('')
+  })
 })
 
 // ─── generateAllSectionsParallel ──────────────────────────────────────────────
