@@ -22,29 +22,40 @@ interface TelegramSnapshot {
 
 const RX_TITLE = /<meta\s+property="og:title"\s+content="([^"]+)"/i
 const RX_DESCRIPTION = /<meta\s+property="og:description"\s+content="([^"]+)"/i
+// counter_value contains compact numbers like "6.95K" — accept any non-tag content
 const RX_SUBSCRIBERS_BLOCK =
-  /<div\s+class="tgme_channel_info_counter">\s*<span\s+class="counter_value">([\d\s,]+)<\/span>\s*<span\s+class="counter_type">subscribers<\/span>/i
+  /<div\s+class="tgme_channel_info_counter">\s*<span\s+class="counter_value">([^<]+)<\/span>\s*<span\s+class="counter_type">subscribers<\/span>/i
 // Posts: each message has data-post and a `.tgme_widget_message_views` element + datetime
 const RX_POSTS = /<div\s+class="tgme_widget_message_wrap[^"]*"[\s\S]*?<\/div>\s*<\/div>/g
 const RX_VIEWS = /class="tgme_widget_message_views">([^<]+)</i
 const RX_DATETIME = /<time[^>]+datetime="([^"]+)"/i
 
-function parseSubscribers(html: string): number | null {
-  const m = html.match(RX_SUBSCRIBERS_BLOCK)
-  if (!m) return null
-  const cleaned = m[1].replace(/[\s,]/g, '')
-  const n = parseInt(cleaned, 10)
+// "1.2K" → 1200, "5M" → 5_000_000, "742" → 742, "5 432" → 5432
+function parseCompactNumber(raw: string): number | null {
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  const lastChar = trimmed.slice(-1).toUpperCase()
+  if (lastChar === 'K') {
+    const n = parseFloat(trimmed.slice(0, -1))
+    return Number.isFinite(n) ? Math.round(n * 1_000) : null
+  }
+  if (lastChar === 'M') {
+    const n = parseFloat(trimmed.slice(0, -1))
+    return Number.isFinite(n) ? Math.round(n * 1_000_000) : null
+  }
+  const n = parseInt(trimmed.replace(/[\s,\u00A0]/g, ''), 10)
   return Number.isFinite(n) ? n : null
 }
 
+function parseSubscribers(html: string): number | null {
+  const m = html.match(RX_SUBSCRIBERS_BLOCK)
+  if (!m) return null
+  return parseCompactNumber(m[1])
+}
+
+// Backward-compatible alias used in posts parsing path
 function parseViewsCompact(raw: string): number {
-  // "1.2K" → 1200, "5M" → 5_000_000, "742" → 742
-  const trimmed = raw.trim()
-  const lastChar = trimmed.slice(-1).toUpperCase()
-  if (lastChar === 'K') return Math.round(parseFloat(trimmed) * 1_000)
-  if (lastChar === 'M') return Math.round(parseFloat(trimmed) * 1_000_000)
-  const n = parseInt(trimmed.replace(/[\s,]/g, ''), 10)
-  return Number.isFinite(n) ? n : 0
+  return parseCompactNumber(raw) ?? 0
 }
 
 function parsePosts(html: string): Array<{ views: number; date: Date }> {

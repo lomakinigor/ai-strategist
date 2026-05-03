@@ -65,12 +65,19 @@ async function vkApiCall<T>(method: string, params: Record<string, string>): Pro
 }
 
 export async function fetchVkSnapshot(screenName: string): Promise<VkSnapshot | null> {
-  const groups = await vkApiCall<GroupInfo[]>('groups.getById', {
+  // VK API v5.199 returns groups.getById as { groups: [...], profiles: [...] }
+  // (older versions returned a plain array). Support both shapes for safety.
+  const raw = await vkApiCall<GroupInfo[] | { groups?: GroupInfo[] }>('groups.getById', {
     group_ids: screenName,
     fields: 'members_count,description,activity',
   })
-  if (!groups || groups.length === 0) return null
-  const group = groups[0]
+  const groupsList: GroupInfo[] = Array.isArray(raw)
+    ? raw
+    : raw && Array.isArray(raw.groups)
+      ? raw.groups
+      : []
+  if (groupsList.length === 0) return null
+  const group = groupsList[0]
 
   const wall = await vkApiCall<{ count: number; items: WallPost[] }>('wall.get', {
     owner_id: `-${group.id}`,

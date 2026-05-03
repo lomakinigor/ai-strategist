@@ -44,7 +44,7 @@ describe('fetchTelegramSnapshot', () => {
     vi.clearAllMocks()
   })
 
-  it('парсит подписчиков, описание и посты', async () => {
+  it('парсит подписчиков, описание и посты (формат с пробелом)', async () => {
     const today = new Date()
     const recent = new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString()
     const recent2 = new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString()
@@ -73,6 +73,37 @@ describe('fetchTelegramSnapshot', () => {
     expect(snap!.postsLast30Days).toBe(2)
     expect(snap!.avgViewsLast30Days).toBe(1000) // (1200 + 800) / 2
     expect(snap!.engagementRatePct).toBeCloseTo(18.4, 1)
+  })
+
+  it('парсит компактный формат подписчиков 6.95K (как Telegram отдаёт сейчас)', async () => {
+    const html = buildPreviewHtml({
+      title: 'Test',
+      description: 'd',
+      subscribers: '6.95K',
+      posts: [],
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve(html) }),
+    )
+    const snap = await fetchTelegramSnapshot('test')
+    expect(snap).not.toBeNull()
+    expect(snap!.subscribers).toBe(6950)
+  })
+
+  it('парсит компактный формат подписчиков 1.5M', async () => {
+    const html = buildPreviewHtml({
+      title: 'Big',
+      description: 'd',
+      subscribers: '1.5M',
+      posts: [],
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve(html) }),
+    )
+    const snap = await fetchTelegramSnapshot('big')
+    expect(snap!.subscribers).toBe(1_500_000)
   })
 
   it('возвращает null если HTTP не 200', async () => {

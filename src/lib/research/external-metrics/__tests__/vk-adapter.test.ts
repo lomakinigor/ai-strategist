@@ -30,7 +30,7 @@ describe('fetchVkSnapshot', () => {
     process.env.VK_SERVICE_TOKEN = 'test-token'
   })
 
-  it('собирает подписчиков и метрики постов', async () => {
+  it('собирает подписчиков и метрики постов (legacy v5.131 формат: response = массив)', async () => {
     const recent = Math.floor(Date.now() / 1000) - 5 * 86400
     const old = Math.floor(Date.now() / 1000) - 60 * 86400
 
@@ -56,6 +56,17 @@ describe('fetchVkSnapshot', () => {
     expect(snap!.avgViewsLast30Days).toBe(900)
     expect(snap!.avgLikesLast30Days).toBe(45)
     expect(snap!.engagementRatePct).toBeCloseTo(72.9, 1)
+  })
+
+  it('собирает данные в новом формате v5.199 (response = { groups, profiles })', async () => {
+    mockVk([
+      { response: { groups: [MOCK_GROUP], profiles: [] } },
+      { response: { count: 0, items: [] } },
+    ])
+    const snap = await fetchVkSnapshot('club233306506')
+    expect(snap).not.toBeNull()
+    expect(snap!.subscribers).toBe(1234)
+    expect(snap!.name).toBe('РУЗНАК')
   })
 
   it('возвращает null если токен не задан', async () => {
