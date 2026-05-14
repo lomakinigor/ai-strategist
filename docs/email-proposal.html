@@ -4,812 +4,830 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Strategist — Стратегический анализ за 15 минут</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --orange: #FF9800;
+      --indigo: #6366F1;
+      --purple: #8B5CF6;
+      --dark: #0F1117;
+      --dark-2: #1A2332;
+      --dark-3: #1E293B;
+      --dark-4: #334155;
+      --green: #22C55E;
+      --green-dim: #34D399;
+      --green-bg: #064E3B;
+      --purple-dim: #818CF8;
+      --purple-bg: #312E81;
+      --purple-deep: #1E1B4B;
+      --text-primary: #0F172A;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --text-faint: #CBD5E1;
+      --border: #E2E8F0;
+      --bg: #F8FAFC;
+      --bg-2: #F1F5F9;
+      --white: #FFFFFF;
+      --font-mono: 'JetBrains Mono', 'Geist Mono', 'Fira Code', monospace;
+      --font-sans: 'Inter', 'Geist', system-ui, sans-serif;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: #f1f5f9;
-      color: #1e293b;
-      line-height: 1.6;
+      font-family: var(--font-sans);
+      background: #E2E8F0;
+      color: var(--text-primary);
+      line-height: 1.5;
     }
 
     /* ── WRAPPER ── */
     .wrapper {
       max-width: 680px;
       margin: 32px auto;
-      background: #ffffff;
+      background: var(--white);
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      box-shadow: 0 8px 40px rgba(0,0,0,.14);
     }
 
-    /* ── HEADER ── */
-    .header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-      padding: 40px 48px 36px;
-      color: #fff;
+    /* ══════════════════════════════════════
+       S1 — HERO
+    ══════════════════════════════════════ */
+    .hero {
+      background: var(--orange);
+      padding: 48px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
     }
-    .logo {
+
+    .logo-row {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 28px;
     }
     .logo-icon {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      border-radius: 9px;
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,.3);
+      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
+      font-size: 14px;
     }
-    .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
-    .logo-text span { color: #818cf8; }
+    .logo-name {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--white);
+      letter-spacing: -.3px;
+    }
 
-    .header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 12px;
+    .tag-badge {
+      background: rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 11px;
+      font-family: var(--font-sans);
+      color: var(--white);
+      letter-spacing: .5px;
+    }
+
+    .hero-headline {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 36px;
+      color: var(--white);
+      line-height: 1.2;
       letter-spacing: -.5px;
+      margin-top: 4px;
     }
-    .header h1 em { color: #818cf8; font-style: normal; }
-    .header p { color: #94a3b8; font-size: 15px; }
 
-    /* ── BODY ── */
-    .body { padding: 40px 48px; }
+    .hero-subline {
+      font-size: 15px;
+      color: rgba(255,255,255,.8);
+      max-width: 460px;
+    }
 
-    .salutation { color: #64748b; font-size: 14px; margin-bottom: 20px; }
-
-    .body p { margin-bottom: 16px; font-size: 15px; color: #334155; }
-    .body strong { color: #0f172a; }
-
-    /* ── STAT ROW ── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+    .btn-row {
+      display: flex;
       gap: 12px;
-      margin: 28px 0;
+      align-items: center;
+      margin-top: 4px;
     }
-    .stat-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
+    .btn-primary {
+      background: var(--white);
+      color: var(--orange);
+      border: none;
+      border-radius: 22px;
+      padding: 13px 24px;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
     }
-    .stat-card .num {
-      font-size: 26px;
-      font-weight: 800;
-      color: #6366f1;
-      letter-spacing: -1px;
-    }
-    .stat-card .lbl { font-size: 12px; color: #64748b; margin-top: 4px; line-height: 1.3; }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
 
-    /* ── DIVIDER ── */
-    .divider { border: none; border-top: 1px solid #e2e8f0; margin: 32px 0; }
-
-    /* ── DEMO BLOCK ── */
-    .demo-block {
-      background: #0f172a;
-      border-radius: 14px;
-      overflow: hidden;
-      margin: 32px 0;
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1.5px solid var(--white);
+      border-radius: 22px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
     }
-    .demo-topbar {
-      background: #1e293b;
-      padding: 10px 16px;
+    .btn-outline:hover { background: rgba(255,255,255,.1); }
+
+    /* ══════════════════════════════════════
+       S2 — DEMO (браузер-мокап)
+    ══════════════════════════════════════ */
+    .demo-wrap {
+      background: var(--dark);
+      padding: 24px 24px 32px;
+    }
+
+    .browser-chrome {
+      background: var(--dark-3);
+      border-radius: 8px 8px 0 0;
+      padding: 0 12px;
+      height: 32px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
     .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-r { background: #ef4444; }
-    .dot-y { background: #f59e0b; }
-    .dot-g { background: #22c55e; }
-    .demo-url {
+    .dot-r { background: #EF4444; }
+    .dot-y { background: #F59E0B; }
+    .dot-g { background: #22C55E; }
+    .url-bar {
       flex: 1;
-      background: #0f172a;
-      border-radius: 6px;
-      padding: 4px 12px;
-      font-size: 12px;
-      color: #64748b;
       margin-left: 8px;
+      background: var(--dark);
+      border-radius: 5px;
+      padding: 3px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #475569;
     }
 
-    .demo-inner { padding: 28px 32px 32px; }
-    .demo-inner h3 {
-      color: #f1f5f9;
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 20px;
-      letter-spacing: .2px;
+    .panels {
+      background: var(--dark-2);
+      border-radius: 0 0 8px 8px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
-    .demo-inner h3 span { color: #818cf8; }
 
-    /* form */
-    .demo-form { display: flex; flex-direction: column; gap: 12px; }
-    .demo-field label { display: block; font-size: 12px; color: #64748b; margin-bottom: 5px; }
-    .demo-field input, .demo-field select {
-      width: 100%;
-      background: #1e293b;
-      border: 1px solid #334155;
+    /* Left panel — form */
+    .panel {
+      background: var(--dark);
       border-radius: 8px;
-      padding: 10px 14px;
-      color: #f1f5f9;
-      font-size: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .panel-title {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 13px;
+      color: #F1F5F9;
+    }
+    .panel-title span { color: var(--purple-dim); }
+
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 11px; color: #64748B; font-family: var(--font-sans); }
+    .field-input {
+      background: var(--dark-3);
+      border: 1px solid var(--dark-4);
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      color: #94A3B8;
       outline: none;
       transition: border-color .2s;
-      appearance: none;
+      width: 100%;
     }
-    .demo-field input::placeholder { color: #475569; }
-    .demo-field input:focus, .demo-field select:focus { border-color: #6366f1; }
-    .demo-field select option { background: #1e293b; }
-
-    .demo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field-input:focus { border-color: var(--indigo); }
+    .field-input::placeholder { color: #475569; }
 
     .btn-launch {
-      margin-top: 8px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff;
+      background: linear-gradient(135deg, var(--indigo), var(--purple));
+      color: var(--white);
       border: none;
-      border-radius: 10px;
-      padding: 14px 24px;
-      font-size: 15px;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 13px;
+      font-family: var(--font-sans);
       font-weight: 600;
       cursor: pointer;
-      transition: opacity .2s, transform .15s;
       width: 100%;
-      letter-spacing: .2px;
+      transition: opacity .2s, transform .15s;
+      margin-top: 2px;
     }
     .btn-launch:hover { opacity: .9; transform: translateY(-1px); }
     .btn-launch:active { transform: translateY(0); }
 
-    /* progress */
-    .demo-progress { display: none; }
-    .progress-title {
-      color: #f1f5f9;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 18px;
-    }
-    .progress-title .dots::after {
-      content: '';
-      animation: dotdot 1.2s infinite;
-    }
-    @keyframes dotdot {
-      0%   { content: ''; }
-      25%  { content: '.'; }
-      50%  { content: '..'; }
-      75%  { content: '...'; }
-    }
-    .stream-list { display: flex; flex-direction: column; gap: 10px; }
-    .stream-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #1e293b;
-      border-radius: 8px;
-      padding: 10px 14px;
-    }
-    .stream-icon {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px;
-      flex-shrink: 0;
-    }
-    .stream-icon.pending { background: #334155; color: #64748b; }
-    .stream-icon.loading {
-      background: #312e81;
-      animation: spin-ring 0.8s linear infinite;
-    }
-    .stream-icon.done { background: #064e3b; color: #34d399; }
-
-    @keyframes spin-ring {
-      0%   { box-shadow: 2px 0 0 #818cf8; }
-      25%  { box-shadow: 0 2px 0 #818cf8; }
-      50%  { box-shadow: -2px 0 0 #818cf8; }
-      75%  { box-shadow: 0 -2px 0 #818cf8; }
-      100% { box-shadow: 2px 0 0 #818cf8; }
-    }
-
-    .stream-info { flex: 1; }
-    .stream-name { font-size: 13px; color: #e2e8f0; font-weight: 500; }
-    .stream-sub { font-size: 11px; color: #475569; margin-top: 1px; }
-    .stream-badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 20px;
-      background: #1e3a5f;
-      color: #60a5fa;
-    }
-    .stream-badge.done-badge { background: #064e3b; color: #34d399; }
-
-    .fact-counter {
-      margin-top: 14px;
-      text-align: center;
-      font-size: 13px;
-      color: #475569;
-    }
-    .fact-counter span { color: #818cf8; font-weight: 700; font-size: 20px; }
-
-    /* report preview */
-    .demo-report { display: none; }
+    /* Right panel — report */
     .report-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      gap: 8px;
     }
-    .report-header h4 { color: #f1f5f9; font-size: 14px; font-weight: 600; }
-    .report-badge {
-      background: #064e3b;
-      color: #34d399;
+    .report-header-title {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 13px;
+      color: #F1F5F9;
+      flex: 1;
+    }
+    .badge-ready {
+      background: var(--green-bg);
+      color: var(--green-dim);
       font-size: 11px;
       font-weight: 600;
       padding: 3px 10px;
       border-radius: 20px;
+      white-space: nowrap;
     }
 
-    .section-cards { display: flex; flex-direction: column; gap: 8px; }
-
-    .section-card {
-      border-radius: 10px;
+    .sec-card {
+      border-radius: 7px;
       overflow: hidden;
-      border: 1px solid #1e293b;
+      border: 1px solid #1E293B;
     }
-    .section-head {
+    .sec-head {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      background: #1e293b;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--dark-3);
     }
-    .section-num {
-      width: 22px; height: 22px;
-      border-radius: 6px;
-      background: #312e81;
-      color: #818cf8;
-      font-size: 11px;
-      font-weight: 700;
+    .sec-num {
+      width: 20px; height: 20px;
+      border-radius: 5px;
       display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 10px;
       flex-shrink: 0;
     }
-    .section-num.green { background: #064e3b; color: #34d399; }
-    .section-title { font-size: 13px; font-weight: 600; color: #e2e8f0; }
-    .section-rs {
-      margin-left: auto;
-      font-size: 11px;
-      color: #64748b;
-    }
+    .sec-num-green { background: var(--green-bg); color: var(--green-dim); }
+    .sec-num-purple { background: var(--purple-bg); color: var(--purple-dim); }
+    .sec-title { font-size: 12px; font-weight: 600; color: #E2E8F0; flex: 1; }
+    .sec-rs { font-size: 10px; font-family: var(--font-mono); }
+    .sec-rs-green { color: var(--green-dim); }
+    .sec-rs-purple { color: var(--purple-dim); }
+    .sec-body { padding: 8px 12px; background: var(--dark); }
+    .sec-body p { font-size: 11px; color: #94A3B8; line-height: 1.5; }
+    .sec-tag { display: inline-block; background: var(--dark-3); border-radius: 4px; padding: 1px 5px; font-size: 10px; color: #60A5FA; }
 
-    .section-body { padding: 12px 14px; background: #0f172a; }
-    .section-body p { font-size: 12px; color: #94a3b8; line-height: 1.6; }
-    .section-body .tag {
-      display: inline-block;
-      background: #1e293b;
-      border-radius: 4px;
-      padding: 2px 6px;
-      font-size: 11px;
-      color: #60a5fa;
-      margin: 2px;
-    }
-
-    .blurred { filter: blur(5px); user-select: none; pointer-events: none; opacity: .5; }
+    .sec-blurred { opacity: .3; pointer-events: none; }
 
     .unlock-bar {
-      margin-top: 16px;
-      background: linear-gradient(135deg, #312e81, #1e1b4b);
-      border: 1px dashed #4338ca;
-      border-radius: 10px;
-      padding: 14px 16px;
+      background: var(--purple-deep);
+      border: 1px dashed #4338CA;
+      border-radius: 8px;
+      padding: 10px 12px;
       text-align: center;
     }
-    .unlock-bar p { font-size: 13px; color: #a5b4fc; margin-bottom: 10px; }
+    .unlock-bar p { font-size: 11px; color: #A5B4FC; margin-bottom: 8px; }
     .btn-unlock {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff;
+      background: linear-gradient(135deg, var(--indigo), var(--purple));
+      color: var(--white);
       border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 13px;
+      border-radius: 7px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-family: var(--font-sans);
       font-weight: 600;
       cursor: pointer;
       transition: opacity .2s;
     }
     .btn-unlock:hover { opacity: .85; }
 
-    /* ── SECTIONS LIST ── */
-    .sections-list { margin: 24px 0; display: flex; flex-direction: column; gap: 10px; }
+    /* Progress state */
+    .demo-progress { display: none; flex-direction: column; gap: 10px; }
+    .prog-title { font-size: 13px; font-weight: 600; color: #F1F5F9; font-family: var(--font-mono); margin-bottom: 6px; }
+    .prog-title .dots::after { content: ''; animation: dotdot 1.2s infinite; }
+    @keyframes dotdot { 0%{content:'';} 33%{content:'.';} 66%{content:'..';} 100%{content:'...';} }
+
+    .stream {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--dark-3); border-radius: 7px; padding: 9px 12px;
+    }
+    .stream-icon {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; flex-shrink: 0;
+    }
+    .stream-icon.pending { background: var(--dark-4); color: #475569; }
+    .stream-icon.loading { background: var(--purple-bg); color: var(--purple-dim); animation: pulse .8s infinite; }
+    .stream-icon.done { background: var(--green-bg); color: var(--green-dim); }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
+    .stream-info { flex: 1; }
+    .stream-name { font-size: 12px; color: #E2E8F0; font-weight: 500; }
+    .stream-sub { font-size: 10px; color: #475569; margin-top: 1px; }
+    .stream-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 20px; background: #1E293B; color: #60A5FA; white-space: nowrap;
+    }
+    .stream-badge.done { background: var(--green-bg); color: var(--green-dim); }
+    .fact-counter { text-align: center; font-size: 12px; color: #475569; margin-top: 6px; }
+    .fact-counter span { color: var(--purple-dim); font-weight: 700; font-size: 18px; font-family: var(--font-mono); }
+
+    /* ══════════════════════════════════════
+       S3 — STATS BAR
+    ══════════════════════════════════════ */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-cell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 18px 0;
+    }
+    .stat-num {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--orange);
+      letter-spacing: -.5px;
+    }
+    .stat-lbl { font-size: 11px; color: var(--text-secondary); }
+    .stat-div { width: 1px; height: 40px; background: var(--border); }
+
+    /* ══════════════════════════════════════
+       S4 — SECTIONS LIST
+    ══════════════════════════════════════ */
+    .sections-block {
+      background: var(--white);
+      padding: 40px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .block-heading {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--text-primary);
+      letter-spacing: -.3px;
+    }
+    .block-sub { font-size: 14px; color: var(--text-secondary); margin-top: -6px; }
+
     .sec-row {
       display: flex;
+      align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      background: #f8fafc;
+      background: var(--bg);
       border-radius: 10px;
-      border-left: 3px solid #6366f1;
+      border: 1px solid var(--border);
     }
-    .sec-row .sec-n {
-      font-size: 20px;
+    .sec-row-accent { width: 3px; height: 36px; background: var(--orange); border-radius: 2px; flex-shrink: 0; }
+    .sec-row-num {
+      font-family: var(--font-mono);
       font-weight: 800;
-      color: #c7d2fe;
-      line-height: 1;
-      min-width: 24px;
+      font-size: 18px;
+      color: #E2E8F0;
+      min-width: 28px;
     }
-    .sec-row .sec-text strong {
-      display: block;
-      font-size: 14px;
-      color: #1e293b;
-      margin-bottom: 2px;
-    }
-    .sec-row .sec-text span { font-size: 13px; color: #64748b; }
+    .sec-row-info { flex: 1; }
+    .sec-row-title { font-family: var(--font-mono); font-weight: 600; font-size: 13px; color: var(--text-primary); }
+    .sec-row-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
-    /* ── COMPARE ── */
+    /* ══════════════════════════════════════
+       S5 — COMPARE TABLE
+    ══════════════════════════════════════ */
+    .compare-block {
+      background: var(--bg-2);
+      padding: 40px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
     .compare-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-      margin: 20px 0;
+      background: var(--white);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: 12px;
     }
     .compare-table th {
       padding: 10px 14px;
       text-align: left;
       font-weight: 600;
-      color: #64748b;
-      border-bottom: 2px solid #e2e8f0;
+      color: var(--text-secondary);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-sans);
+    }
+    .compare-table th.col-us {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--orange);
     }
     .compare-table td {
-      padding: 10px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      color: #334155;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--bg-2);
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
     }
     .compare-table tr:last-child td { border-bottom: none; }
-    .compare-table .col-us { color: #059669; font-weight: 600; }
-    .compare-table .col-bad { color: #94a3b8; }
-    .compare-table .col-head { font-weight: 500; color: #1e293b; }
+    .compare-table td.col-label { font-weight: 500; color: var(--text-primary); }
+    .compare-table td.col-us-val { font-family: var(--font-mono); font-weight: 600; color: var(--green); }
 
-    /* ── CTA ── */
+    /* ══════════════════════════════════════
+       S6 — CTA
+    ══════════════════════════════════════ */
     .cta-block {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      border-radius: 14px;
-      padding: 32px;
+      background: linear-gradient(135deg, var(--indigo), var(--purple));
+      padding: 48px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       text-align: center;
-      margin: 32px 0;
     }
-    .cta-block h3 { color: #fff; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .cta-block p { color: #c7d2fe; font-size: 14px; margin-bottom: 20px; }
+    .cta-heading {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 24px;
+      color: var(--white);
+    }
+    .cta-sub { font-size: 14px; color: #C7D2FE; max-width: 420px; }
     .btn-cta {
-      background: #fff;
-      color: #6366f1;
+      background: var(--white);
+      color: var(--indigo);
       border: none;
       border-radius: 10px;
       padding: 14px 32px;
       font-size: 15px;
+      font-family: var(--font-sans);
       font-weight: 700;
       cursor: pointer;
       transition: transform .15s, opacity .2s;
+      margin-top: 4px;
     }
     .btn-cta:hover { transform: translateY(-2px); opacity: .92; }
-    .cta-note { color: #a5b4fc; font-size: 12px; margin-top: 10px; }
+    .cta-note { font-size: 12px; color: #A5B4FC; }
 
-    /* ── FOOTER ── */
+    /* ══════════════════════════════════════
+       S7 — FOOTER
+    ══════════════════════════════════════ */
     .footer {
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
       padding: 24px 48px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
-    .footer p { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
-    .footer a { color: #6366f1; text-decoration: none; }
-    .footer a:hover { text-decoration: underline; }
+    .footer p { font-size: 12px; color: #94A3B8; }
+    .footer a { color: var(--indigo); text-decoration: none; }
+    .footer .tagline { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+    .sr-only { visibility: hidden; }
 
+    /* ══════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════ */
     @media (max-width: 600px) {
       .wrapper { margin: 0; border-radius: 0; }
-      .header, .body { padding: 28px 24px; }
+      .hero, .sections-block, .compare-block, .cta-block { padding: 32px 24px; }
+      .hero-headline { font-size: 26px; }
+      .panels { grid-template-columns: 1fr; }
       .footer { padding: 20px 24px; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .stats .stat-card:last-child { grid-column: 1 / -1; }
-      .demo-row { grid-template-columns: 1fr; }
-      .demo-inner { padding: 20px; }
+      .btn-row { flex-direction: column; width: 100%; }
+      .btn-primary, .btn-outline { width: 100%; text-align: center; }
     }
   </style>
 </head>
 <body>
-
 <div class="wrapper">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="logo">
+  <!-- S1 HERO -->
+  <div class="hero">
+    <div class="logo-row">
       <div class="logo-icon">⚡</div>
-      <div class="logo-text">AI <span>Strategist</span></div>
+      <span class="logo-name">AI Strategist</span>
     </div>
-    <h1>Стратегический анализ вашего бизнеса —<br><em>за 15 минут, а не за 8 недель</em></h1>
-    <p>Коммерческое предложение · Попробуйте прямо в этом письме</p>
+    <div class="tag-badge">Новый стандарт анализа</div>
+    <h1 class="hero-headline">Стратегический анализ<br>за 15 минут</h1>
+    <p class="hero-subline">Полный отчёт по 5 разделам — без консультантов и недель ожидания</p>
+    <div class="btn-row">
+      <button type="button" class="btn-primary" onclick="scrollToDemo()">Попробовать бесплатно</button>
+      <button type="button" class="btn-outline" onclick="document.getElementById('sections').scrollIntoView({behavior:'smooth'})">Подробнее →</button>
+    </div>
   </div>
 
-  <!-- BODY -->
-  <div class="body">
-
-    <p class="salutation">Добрый день!</p>
-
-    <p>Меня зовут Игорь, я основатель <strong>AI Strategist</strong> — платформы, которая делает то, на что раньше уходили недели и сотни тысяч рублей: полный стратегический анализ вашего бизнеса, рынка и конкурентов.</p>
-
-    <p>Я пишу вам, потому что вижу запрос: компании вашего уровня регулярно сталкиваются с одной проблемой — <strong>решения принимаются без чёткой картины рынка</strong>. Либо дорого (консалтинг от 300 000 ₽), либо долго (4–8 недель), либо данные о российском рынке попросту неточные.</p>
-
-    <p>Мы решили эту проблему.</p>
-
-    <!-- STATS -->
-    <div class="stats">
-      <div class="stat-card">
-        <div class="num">15 мин</div>
-        <div class="lbl">от заполнения формы до готового отчёта</div>
-      </div>
-      <div class="stat-card">
-        <div class="num">5 разд.</div>
-        <div class="lbl">полный анализ: бизнес, рынок, ЦА, каналы, стратегия</div>
-      </div>
-      <div class="stat-card">
-        <div class="num">×20</div>
-        <div class="lbl">дешевле, чем классический стратегический аудит</div>
-      </div>
+  <!-- S2 DEMO -->
+  <div class="demo-wrap" id="demo">
+    <div class="browser-chrome">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div class="url-bar">app.ai-strategist.ru · Демо-режим</div>
     </div>
+    <div class="panels">
 
-    <hr class="divider">
+      <!-- Left: form -->
+      <div class="panel" id="left-panel">
 
-    <!-- DEMO BLOCK -->
-    <p style="font-size:14px; color:#64748b; margin-bottom:16px;">
-      👇 <strong>Попробуйте прямо сейчас</strong> — введите данные своей компании и посмотрите, как работает система:
-    </p>
-
-    <div class="demo-block">
-      <div class="demo-topbar">
-        <div class="dot dot-r"></div>
-        <div class="dot dot-y"></div>
-        <div class="dot dot-g"></div>
-        <div class="demo-url">app.ai-strategist.ru · Демо-режим</div>
-      </div>
-
-      <div class="demo-inner">
-
-        <!-- STEP 1: FORM -->
+        <!-- Step 1: Form -->
         <div id="step-form">
-          <h3>Запустите анализ — <span>результат через 15 секунд</span></h3>
-          <div class="demo-form">
-            <div class="demo-row">
-              <div class="demo-field">
-                <label>Название компании</label>
-                <input id="inp-company" type="text" placeholder="ООО Ромашка" />
-              </div>
-              <div class="demo-field">
-                <label>Сайт</label>
-                <input id="inp-site" type="text" placeholder="romashka.ru" />
-              </div>
-            </div>
-            <div class="demo-field">
-              <label>Отрасль / ниша</label>
-              <select id="inp-niche">
-                <option value="">— выберите —</option>
-                <option value="b2b">B2B-услуги</option>
-                <option value="retail">Ритейл / e-commerce</option>
-                <option value="production">Производство</option>
-                <option value="education">Образование</option>
-                <option value="medicine">Медицина / здоровье</option>
-                <option value="construction">Строительство</option>
-                <option value="it">IT / SaaS</option>
-                <option value="other">Другое</option>
-              </select>
-            </div>
-            <div class="demo-field">
-              <label>Ссылки на ваши каналы (необязательно)</label>
-              <input id="inp-channels" type="text" placeholder="vk.com/company, t.me/channel" />
-            </div>
-            <button class="btn-launch" onclick="startAnalysis()">
-              Запустить анализ →
-            </button>
+          <div class="panel-title">Запустите анализ — <span>результат через 15 сек</span></div>
+          <div class="field">
+            <label>Название компании</label>
+            <input id="inp-company" class="field-input" type="text" placeholder="ООО Ромашка">
           </div>
+          <div class="field">
+            <label>Сайт / Отрасль</label>
+            <input id="inp-site" class="field-input" type="text" placeholder="romashka.ru · B2B-услуги">
+          </div>
+          <div class="field">
+            <label>Каналы (необязательно)</label>
+            <input id="inp-channels" class="field-input" type="text" placeholder="vk.com/company, t.me/channel">
+          </div>
+          <button type="button" class="btn-launch" onclick="startAnalysis()">Запустить анализ →</button>
         </div>
 
-        <!-- STEP 2: PROGRESS -->
+        <!-- Step 2: Progress -->
         <div class="demo-progress" id="step-progress">
-          <div class="progress-title">
-            Анализируем <span id="company-name-display">вашу компанию</span><span class="dots"></span>
+          <div class="prog-title">Анализируем <span id="company-display">компанию</span><span class="dots"></span></div>
+          <div class="stream" id="s1">
+            <div class="stream-icon pending" id="s1-icon">◦</div>
+            <div class="stream-info">
+              <div class="stream-name">ЕГРЮЛ и реестры</div>
+              <div class="stream-sub">Юридические данные</div>
+            </div>
+            <div class="stream-badge" id="s1-badge">ожидание</div>
           </div>
-          <div class="stream-list">
-            <div class="stream-item" id="s1">
-              <div class="stream-icon pending" id="s1-icon">◦</div>
-              <div class="stream-info">
-                <div class="stream-name">ЕГРЮЛ и реестры</div>
-                <div class="stream-sub">Юридические данные, реквизиты</div>
-              </div>
-              <div class="stream-badge" id="s1-badge">ожидание</div>
+          <div class="stream" id="s2">
+            <div class="stream-icon pending" id="s2-icon">◦</div>
+            <div class="stream-info">
+              <div class="stream-name">Сайт и соцсети</div>
+              <div class="stream-sub">Каналы, аудитория</div>
             </div>
-            <div class="stream-item" id="s2">
-              <div class="stream-icon pending" id="s2-icon">◦</div>
-              <div class="stream-info">
-                <div class="stream-name">Сайт и соцсети</div>
-                <div class="stream-sub">Контент, каналы, аудитория</div>
-              </div>
-              <div class="stream-badge" id="s2-badge">ожидание</div>
+            <div class="stream-badge" id="s2-badge">ожидание</div>
+          </div>
+          <div class="stream" id="s3">
+            <div class="stream-icon pending" id="s3-icon">◦</div>
+            <div class="stream-info">
+              <div class="stream-name">Конкуренты</div>
+              <div class="stream-sub">Позиционирование, цены</div>
             </div>
-            <div class="stream-item" id="s3">
-              <div class="stream-icon pending" id="s3-icon">◦</div>
-              <div class="stream-info">
-                <div class="stream-name">Конкуренты</div>
-                <div class="stream-sub">Позиционирование, цены, каналы</div>
-              </div>
-              <div class="stream-badge" id="s3-badge">ожидание</div>
+            <div class="stream-badge" id="s3-badge">ожидание</div>
+          </div>
+          <div class="stream" id="s4">
+            <div class="stream-icon pending" id="s4-icon">◦</div>
+            <div class="stream-info">
+              <div class="stream-name">Рынок и аналитика</div>
+              <div class="stream-sub">Объём, тренды</div>
             </div>
-            <div class="stream-item" id="s4">
-              <div class="stream-icon pending" id="s4-icon">◦</div>
-              <div class="stream-info">
-                <div class="stream-name">Рынок и аналитика</div>
-                <div class="stream-sub">Объём, тренды, аудитория</div>
-              </div>
-              <div class="stream-badge" id="s4-badge">ожидание</div>
-            </div>
+            <div class="stream-badge" id="s4-badge">ожидание</div>
           </div>
           <div class="fact-counter">Собрано фактов: <span id="fact-count">0</span></div>
         </div>
 
-        <!-- STEP 3: REPORT PREVIEW -->
-        <div class="demo-report" id="step-report">
-          <div class="report-header">
-            <h4 id="report-title">Отчёт готов</h4>
-            <div class="report-badge">✓ Готов</div>
+      </div>
+
+      <!-- Right: report preview -->
+      <div class="panel">
+        <div class="report-header">
+          <span class="report-header-title" id="report-title">Отчёт готов</span>
+          <span class="badge-ready">✓ Готов</span>
+        </div>
+
+        <!-- Section 1: open -->
+        <div class="sec-card" id="sec1-card">
+          <div class="sec-head">
+            <div class="sec-num sec-num-green">1</div>
+            <span class="sec-title">Бизнес клиента</span>
+            <span class="sec-rs sec-rs-green">HIGH</span>
           </div>
-          <div class="section-cards">
-
-            <!-- Section 1: open -->
-            <div class="section-card">
-              <div class="section-head">
-                <div class="section-num green">1</div>
-                <div class="section-title">Бизнес клиента</div>
-                <div class="section-rs">RS: HIGH</div>
-              </div>
-              <div class="section-body">
-                <p id="sec1-text">Компания зарегистрирована в ЕГРЮЛ. Основная деятельность — <span class="tag" id="sec1-niche-tag">B2B-услуги</span>. Работает на рынке более 3 лет. Присутствие: сайт, Telegram-канал, ВКонтакте. Среди конкурентов — 7 активных игроков в регионе.</p>
-              </div>
-            </div>
-
-            <!-- Sections 2-4: blurred -->
-            <div class="section-card blurred">
-              <div class="section-head">
-                <div class="section-num">2</div>
-                <div class="section-title">Рынок и ниша</div>
-                <div class="section-rs">RS: MEDIUM</div>
-              </div>
-              <div class="section-body">
-                <p>Объём рынка в РФ — ██ млрд ₽. Рост за 2024 — ██%. Ключевые игроки: ██████, ████. Незанятая ниша: ████████████.</p>
-              </div>
-            </div>
-            <div class="section-card blurred">
-              <div class="section-head">
-                <div class="section-num">3</div>
-                <div class="section-title">Целевая аудитория</div>
-                <div class="section-rs">RS: MEDIUM</div>
-              </div>
-              <div class="section-body">
-                <p>Сегмент A: ████████, боль — ████████. Триггер покупки: ████. Сегмент B: ████████████████████.</p>
-              </div>
-            </div>
-            <div class="section-card blurred">
-              <div class="section-head">
-                <div class="section-num">4</div>
-                <div class="section-title">Каналы · Топ-каналы в нише</div>
-                <div class="section-rs">RS: HIGH</div>
-              </div>
-              <div class="section-body">
-                <p>Ваши каналы: ████ ██. Конкуренты активны в: ██████. Лучший канал для ████: Telegram (рост ██%). ████████ — недоиспользован.</p>
-              </div>
-            </div>
-            <div class="section-card blurred">
-              <div class="section-head">
-                <div class="section-num">5</div>
-                <div class="section-title">Стратегия и рекомендации</div>
-                <div class="section-rs">RS: HIGH</div>
-              </div>
-              <div class="section-body">
-                <p>Приоритет 1: ████████████████. Приоритет 2: ████████. AI-инструменты: ████████████.</p>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="unlock-bar">
-            <p>Разделы 2–5 доступны в полном отчёте — 47 фактов с источниками и датами</p>
-            <button class="btn-unlock" onclick="alert('Переход на ai-strategist.ru — оформление доступа')">
-              Получить полный отчёт →
-            </button>
+          <div class="sec-body">
+            <p id="sec1-text">ООО Ромашка · ЕГРЮЛ · <span class="sec-tag">B2B-услуги</span> · 7 конкурентов в регионе</p>
           </div>
         </div>
 
-      </div><!-- /demo-inner -->
-    </div><!-- /demo-block -->
+        <!-- Section 2: blurred -->
+        <div class="sec-card sec-blurred">
+          <div class="sec-head">
+            <div class="sec-num sec-num-purple">2</div>
+            <span class="sec-title">Рынок и ниша · ████████</span>
+            <span class="sec-rs sec-rs-purple">MED</span>
+          </div>
+        </div>
 
-    <hr class="divider">
+        <!-- Unlock -->
+        <div class="unlock-bar">
+          <p>Разделы 2–5 в полном отчёте · 47 фактов со ссылками</p>
+          <button type="button" class="btn-unlock" onclick="alert('→ ai-strategist.ru')">Получить полный отчёт →</button>
+        </div>
+      </div>
 
-    <!-- SECTIONS EXPLANATION -->
-    <p><strong>Что входит в полный отчёт:</strong></p>
-    <div class="sections-list">
-      <div class="sec-row">
-        <div class="sec-n">1</div>
-        <div class="sec-text">
-          <strong>Бизнес клиента</strong>
-          <span>Реальная картина вашей компании по открытым данным: ЕГРЮЛ, сайт, карточки</span>
-        </div>
-      </div>
-      <div class="sec-row">
-        <div class="sec-n">2</div>
-        <div class="sec-text">
-          <strong>Рынок и ниша</strong>
-          <span>Объём рынка, кто растёт и почему, незанятые ниши</span>
-        </div>
-      </div>
-      <div class="sec-row">
-        <div class="sec-n">3</div>
-        <div class="sec-text">
-          <strong>Целевая аудитория</strong>
-          <span>Реальные сегменты, боли и триггеры покупки — не «все, кому нужен продукт»</span>
-        </div>
-      </div>
-      <div class="sec-row">
-        <div class="sec-n">4</div>
-        <div class="sec-text">
-          <strong>Каналы + топ-каналы продвижения в нише</strong>
-          <span>Ваши каналы vs конкуренты. Какие рекламные форматы конвертируют в вашей отрасли</span>
-        </div>
-      </div>
-      <div class="sec-row">
-        <div class="sec-n">5</div>
-        <div class="sec-text">
-          <strong>Стратегия</strong>
-          <span>Конкретные рекомендации с приоритетом. Какие AI-инструменты внедрить прямо сейчас</span>
-        </div>
+    </div>
+  </div>
+
+  <!-- S3 STATS -->
+  <div class="stats-bar">
+    <div class="stat-cell">
+      <span class="stat-num">15 мин</span>
+      <span class="stat-lbl">от ввода до отчёта</span>
+    </div>
+    <div class="stat-div"></div>
+    <div class="stat-cell">
+      <span class="stat-num">5 разделов</span>
+      <span class="stat-lbl">полный анализ бизнеса</span>
+    </div>
+    <div class="stat-div"></div>
+    <div class="stat-cell">
+      <span class="stat-num">×20</span>
+      <span class="stat-lbl">дешевле консалтинга</span>
+    </div>
+  </div>
+
+  <!-- S4 SECTIONS -->
+  <div class="sections-block" id="sections">
+    <h2 class="block-heading">Что входит в отчёт</h2>
+    <p class="block-sub">Каждый факт — с источником, датой и уровнем достоверности</p>
+
+    <div class="sec-row">
+      <div class="sec-row-accent"></div>
+      <span class="sec-row-num">01</span>
+      <div class="sec-row-info">
+        <div class="sec-row-title">Бизнес клиента</div>
+        <div class="sec-row-desc">ЕГРЮЛ, сайт, соцсети — реальная картина вашей компании</div>
       </div>
     </div>
+    <div class="sec-row">
+      <div class="sec-row-accent"></div>
+      <span class="sec-row-num">02</span>
+      <div class="sec-row-info">
+        <div class="sec-row-title">Рынок и ниша</div>
+        <div class="sec-row-desc">Объём, динамика, ключевые игроки, незанятые ниши</div>
+      </div>
+    </div>
+    <div class="sec-row">
+      <div class="sec-row-accent"></div>
+      <span class="sec-row-num">03</span>
+      <div class="sec-row-info">
+        <div class="sec-row-title">Целевая аудитория</div>
+        <div class="sec-row-desc">Реальные сегменты, боли и триггеры покупки — не «все подряд»</div>
+      </div>
+    </div>
+    <div class="sec-row">
+      <div class="sec-row-accent"></div>
+      <span class="sec-row-num">04</span>
+      <div class="sec-row-info">
+        <div class="sec-row-title">Каналы + топ-каналы в нише</div>
+        <div class="sec-row-desc">Ваши каналы vs конкуренты. Какие рекламные форматы конвертируют</div>
+      </div>
+    </div>
+    <div class="sec-row">
+      <div class="sec-row-accent"></div>
+      <span class="sec-row-num">05</span>
+      <div class="sec-row-info">
+        <div class="sec-row-title">Стратегия</div>
+        <div class="sec-row-desc">Конкретные рекомендации с приоритетом. AI-инструменты прямо сейчас</div>
+      </div>
+    </div>
+  </div>
 
-    <hr class="divider">
-
-    <!-- COMPARE -->
-    <p><strong>Сравнение с альтернативами:</strong></p>
+  <!-- S5 COMPARE -->
+  <div class="compare-block">
+    <h2 class="block-heading">Почему не консалтинг и не западный SaaS</h2>
     <table class="compare-table">
       <thead>
         <tr>
-          <th></th>
+          <th>Критерий</th>
           <th>Консалтинг</th>
           <th>Западный SaaS</th>
-          <th>AI Strategist</th>
+          <th class="col-us">AI Strategist</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td class="col-head">Срок</td>
-          <td class="col-bad">4–8 нед.</td>
-          <td class="col-bad">настройка 1–2 нед.</td>
-          <td class="col-us">15 минут</td>
+          <td class="col-label">Срок</td>
+          <td>4–8 недель</td>
+          <td>1–2 нед. настройка</td>
+          <td class="col-us-val">15 минут</td>
         </tr>
         <tr>
-          <td class="col-head">Стоимость</td>
-          <td class="col-bad">от 300 000 ₽</td>
-          <td class="col-bad">от 30 000 ₽/мес</td>
-          <td class="col-us">от 15 000 ₽</td>
+          <td class="col-label">Стоимость</td>
+          <td>от 300 000 ₽</td>
+          <td>от 30 000 ₽/мес</td>
+          <td class="col-us-val">от 15 000 ₽</td>
         </tr>
         <tr>
-          <td class="col-head">Данные РФ</td>
-          <td class="col-bad">зависит от аналитика</td>
-          <td class="col-bad">слабые или нет</td>
-          <td class="col-us">ВК, TG, ЕГРЮЛ, Дзен</td>
+          <td class="col-label">Данные РФ</td>
+          <td>зависит от аналитика</td>
+          <td>слабые или нет</td>
+          <td class="col-us-val">ВК · TG · ЕГРЮЛ · Дзен</td>
         </tr>
         <tr>
-          <td class="col-head">Источники</td>
-          <td class="col-bad">не всегда прозрачны</td>
-          <td class="col-bad">агрегированные</td>
-          <td class="col-us">каждый факт — со ссылкой</td>
+          <td class="col-label">Источники</td>
+          <td>не всегда прозрачны</td>
+          <td>агрегированные</td>
+          <td class="col-us-val">каждый факт — со ссылкой</td>
         </tr>
         <tr>
-          <td class="col-head">Повторный анализ</td>
-          <td class="col-bad">снова от 300 000 ₽</td>
-          <td class="col-bad">в рамках подписки</td>
-          <td class="col-us">по себестоимости</td>
+          <td class="col-label">Повторный анализ</td>
+          <td>снова от 300 000 ₽</td>
+          <td>в рамках подписки</td>
+          <td class="col-us-val">по себестоимости</td>
         </tr>
       </tbody>
     </table>
+  </div>
 
-    <!-- CTA -->
-    <div class="cta-block">
-      <h3>Попробуйте бесплатно</h3>
-      <p>Введите данные компании — получите демо-фрагмент отчёта по первому разделу.<br>Без регистрации. Без карты.</p>
-      <button class="btn-cta" onclick="alert('Переход на ai-strategist.ru')">
-        Запустить бесплатный анализ →
-      </button>
-      <div class="cta-note">Или напишите нам: Telegram @ai_strategist_ru · hello@ai-strategist.ru</div>
-    </div>
+  <!-- S6 CTA -->
+  <div class="cta-block">
+    <h2 class="cta-heading">Попробуйте бесплатно</h2>
+    <p class="cta-sub">Введите данные компании — демо-фрагмент отчёта без карты и регистрации</p>
+    <button type="button" class="btn-cta" onclick="scrollToDemo()">Запустить бесплатный анализ →</button>
+    <p class="cta-note">Или напишите: Telegram @ai_strategist_ru · hello@ai-strategist.ru</p>
+  </div>
 
-    <p style="font-size:14px; color:#64748b;">
-      Если хотите обсудить детали или получить демо под ваш бизнес лично — просто ответьте на это письмо. Отвечу в течение часа.
-    </p>
-    <p style="font-size:14px; color:#64748b; margin-top:8px;">
-      С уважением,<br>
-      <strong style="color:#1e293b;">Игорь Ломакин</strong><br>
-      Основатель AI Strategist
-    </p>
-
-  </div><!-- /body -->
-
-  <!-- FOOTER -->
+  <!-- S7 FOOTER -->
   <div class="footer">
     <p>AI Strategist · <a href="#">ai-strategist.ru</a> · <a href="#">Telegram</a> · <a href="#">hello@ai-strategist.ru</a></p>
-    <p style="margin-top:4px;">Вы получили это письмо, потому что оставили контакт или были рекомендованы партнёром.</p>
-    <p><a href="#">Отписаться</a></p>
+    <p class="tagline">Стратегический анализ без консультантов, без недель ожидания, без непрозрачных данных</p>
   </div>
 
 </div><!-- /wrapper -->
 
 <script>
+  function scrollToDemo() {
+    document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => document.getElementById('inp-company').focus(), 600);
+  }
+
   function startAnalysis() {
     const company = document.getElementById('inp-company').value.trim() || 'вашу компанию';
-    const niche = document.getElementById('inp-niche');
-    const nicheText = niche.options[niche.selectedIndex].text;
-
-    document.getElementById('company-name-display').textContent = company;
-    document.getElementById('report-title').textContent = 'Отчёт: ' + company;
-
-    const nicheTagMap = {
-      'b2b': 'B2B-услуги', 'retail': 'Ритейл / e-commerce',
-      'production': 'Производство', 'education': 'Образование',
-      'medicine': 'Медицина', 'construction': 'Строительство',
-      'it': 'IT / SaaS', 'other': 'Ваша ниша', '': 'Ваша ниша'
-    };
-    document.getElementById('sec1-niche-tag').textContent =
-      nicheTagMap[niche.value] || 'Ваша ниша';
+    document.getElementById('company-display').textContent = company;
+    document.getElementById('report-title').textContent = company !== 'вашу компанию' ? 'Отчёт: ' + company : 'Отчёт готов';
     document.getElementById('sec1-text').innerHTML =
-      'Компания <strong>' + (company !== 'вашу компанию' ? company : 'клиента') +
-      '</strong> зарегистрирована в ЕГРЮЛ. Основная деятельность — <span class="tag">' +
-      (nicheTagMap[niche.value] || 'Ваша ниша') +
-      '</span>. Присутствие: сайт, Telegram, ВКонтакте. Выявлено 7 активных конкурентов в регионе. Незанятых ниш — 2.';
+      '<strong style="color:#E2E8F0">' + (company !== 'вашу компанию' ? company : 'Компания') +
+      '</strong> · ЕГРЮЛ · <span class="sec-tag">B2B-услуги</span> · 7 конкурентов в регионе';
 
-    // show progress
     document.getElementById('step-form').style.display = 'none';
     const prog = document.getElementById('step-progress');
-    prog.style.display = 'block';
+    prog.style.display = 'flex';
 
     const streams = [
-      { id: 's1', delay: 0,    duration: 1200, facts: 12 },
-      { id: 's2', delay: 300,  duration: 1800, facts: 19 },
-      { id: 's3', delay: 600,  duration: 2200, facts: 9  },
-      { id: 's4', delay: 900,  duration: 2600, facts: 7  },
+      { id: 's1', delay: 0,    dur: 1200, facts: 12 },
+      { id: 's2', delay: 300,  dur: 1800, facts: 19 },
+      { id: 's3', delay: 600,  dur: 2200, facts: 9  },
+      { id: 's4', delay: 900,  dur: 2600, facts: 7  },
     ];
+    let total = 0;
 
-    let totalFacts = 0;
-
-    streams.forEach(({ id, delay, duration, facts }) => {
+    streams.forEach(({ id, delay, dur, facts }) => {
       setTimeout(() => {
-        setStreamLoading(id);
-        const step = Math.round(facts / (duration / 100));
-        const ticker = setInterval(() => {
-          totalFacts = Math.min(totalFacts + step, totalFacts + facts);
-          document.getElementById('fact-count').textContent = totalFacts;
-        }, 100);
+        setLoading(id);
+        const interval = setInterval(() => {
+          total++;
+          document.getElementById('fact-count').textContent = total;
+        }, dur / facts);
         setTimeout(() => {
-          clearInterval(ticker);
-          totalFacts += facts;
-          document.getElementById('fact-count').textContent = totalFacts;
-          setStreamDone(id, facts);
-        }, duration);
+          clearInterval(interval);
+          setDone(id, facts);
+        }, dur);
       }, delay);
     });
 
-    const maxTime = Math.max(...streams.map(s => s.delay + s.duration)) + 600;
+    const maxTime = Math.max(...streams.map(s => s.delay + s.dur)) + 500;
     setTimeout(() => {
       prog.style.display = 'none';
-      document.getElementById('step-report').style.display = 'block';
+      document.getElementById('step-form').style.display = 'block';
+      document.getElementById('step-form').querySelector('.btn-launch').textContent = 'Обновить анализ →';
     }, maxTime);
   }
 
-  function setStreamLoading(id) {
+  function setLoading(id) {
     const icon = document.getElementById(id + '-icon');
     const badge = document.getElementById(id + '-badge');
     icon.className = 'stream-icon loading';
@@ -817,14 +835,13 @@
     badge.textContent = 'сбор данных';
     badge.className = 'stream-badge';
   }
-
-  function setStreamDone(id, facts) {
+  function setDone(id, facts) {
     const icon = document.getElementById(id + '-icon');
     const badge = document.getElementById(id + '-badge');
     icon.className = 'stream-icon done';
     icon.textContent = '✓';
     badge.textContent = facts + ' фактов';
-    badge.className = 'stream-badge done-badge';
+    badge.className = 'stream-badge done';
   }
 </script>
 </body>
