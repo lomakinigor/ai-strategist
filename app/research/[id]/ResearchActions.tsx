@@ -26,6 +26,11 @@ export function TriggerResearchButton({ jobId, label }: { jobId: string; label: 
     const formData = new FormData(e.currentTarget)
     try {
       const result = await triggerResearch(formData)
+      if ('error' in result) {
+        setError(result.error)
+        setLoading(false)
+        return
+      }
       router.refresh()
       router.push(result.redirectTo)
     } catch (err) {

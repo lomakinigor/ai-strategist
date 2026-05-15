@@ -2,11 +2,17 @@
 
 import { startResearchJob } from '@/lib/research/orchestrator'
 
-export async function triggerResearch(formData: FormData): Promise<{ redirectTo: string }> {
+type TriggerResult = { redirectTo: string } | { error: string }
+
+export async function triggerResearch(formData: FormData): Promise<TriggerResult> {
   const jobId = (formData.get('jobId') as string | null)?.trim()
-  if (!jobId) throw new Error('jobId обязателен')
+  if (!jobId) return { error: 'jobId обязателен' }
 
-  await startResearchJob(jobId)
-
-  return { redirectTo: `/research/${jobId}` }
+  try {
+    await startResearchJob(jobId)
+    return { redirectTo: `/research/${jobId}` }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Неизвестная ошибка'
+    return { error: message }
+  }
 }
