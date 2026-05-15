@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { ArchiveHotkey } from './ArchiveHotkey'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-strategist-bice.vercel.app'
 const DESCRIPTION =
@@ -52,7 +53,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        <ArchiveHotkey />
+        {children}
+      </body>
     </html>
   )
 }
