@@ -20,7 +20,6 @@ export default function IntakeForm() {
   const [goals, setGoals] = useState('')
   const [competitors, setCompetitors] = useState('')
   const [contextNotes, setContextNotes] = useState('')
-  const [channelLinks, setChannelLinks] = useState<string[]>([''])
   const [isChain, setIsChain] = useState(false)
   const [chainScope, setChainScope] = useState<'network' | 'location'>('network')
   const [city, setCity] = useState('')
@@ -59,20 +58,7 @@ export default function IntakeForm() {
       if (parsed.goals && !goals) setGoals(parsed.goals)
       if (parsed.competitors && !competitors) setCompetitors(parsed.competitors)
 
-      // Merge AI-extracted channel URLs into existing list (skip duplicates and empty current)
-      if (Array.isArray(parsed.channel_urls) && parsed.channel_urls.length > 0) {
-        const aiUrls = parsed.channel_urls.filter((u: unknown): u is string => typeof u === 'string' && u.trim().length > 0)
-        if (aiUrls.length > 0) {
-          setChannelLinks((prev) => {
-            const existing = prev.filter((l) => l.trim().length > 0)
-            const merged = [...existing]
-            for (const url of aiUrls) {
-              if (!merged.includes(url)) merged.push(url)
-            }
-            return merged.length > 0 ? merged : ['']
-          })
-        }
-      }
+
     } catch {
       setParseError('Ошибка парсинга — заполните поля вручную')
     } finally {
@@ -80,23 +66,10 @@ export default function IntakeForm() {
     }
   }
 
-  function updateChannelLink(index: number, value: string) {
-    setChannelLinks((prev) => prev.map((l, i) => (i === index ? value : l)))
-  }
-
-  function addChannelLink() {
-    setChannelLinks((prev) => [...prev, ''])
-  }
-
-  function removeChannelLink(index: number) {
-    setChannelLinks((prev) => prev.filter((_, i) => i !== index))
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
-    channelLinks.filter((l) => l.trim()).forEach((l) => formData.append('channel_link', l.trim()))
     formData.set('is_chain', isChain ? '1' : '0')
     if (isChain) {
       formData.set('chain_scope', chainScope)
@@ -275,51 +248,6 @@ export default function IntakeForm() {
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <p className="mt-1 text-xs text-gray-400">Через запятую. Будут включены в анализ рынка.</p>
-      </div>
-
-      {/* ── Channel links ── */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Каналы присутствия — ссылки
-        </label>
-        <p className="text-xs text-gray-400 mb-3">
-          Укажите прямые ссылки: Telegram-каналы, боты, группы ВКонтакте, YouTube-канал, Instagram и т.д. Можно несколько.
-        </p>
-        <div className="space-y-2">
-          {channelLinks.map((link, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                type="url"
-                value={link}
-                onChange={(e) => updateChannelLink(i, e.target.value)}
-                placeholder="https://t.me/channel, https://vk.com/company, https://linku.su/…"
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {channelLinks.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeChannelLink(i)}
-                  title="Удалить"
-                  className="p-1.5 text-gray-400 hover:text-red-500 cursor-pointer transition-colors rounded"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={addChannelLink}
-          className="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Добавить ещё канал
-        </button>
       </div>
 
       {/* ── Research goal ── */}
