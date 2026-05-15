@@ -17,6 +17,7 @@ function Spinner() {
 export function TriggerResearchButton({ jobId, label }: { jobId: string; label: string }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -24,10 +25,10 @@ export function TriggerResearchButton({ jobId, label }: { jobId: string; label: 
     setError(null)
     const formData = new FormData(e.currentTarget)
     try {
-      await triggerResearch(formData)
+      const result = await triggerResearch(formData)
+      router.refresh()
+      router.push(result.redirectTo)
     } catch (err) {
-      // Next.js redirect() throws internally with digest='NEXT_REDIRECT;...' — must re-throw
-      if ((err as { digest?: string })?.digest?.startsWith?.('NEXT_REDIRECT')) throw err
       setError(err instanceof Error ? err.message : 'Неизвестная ошибка при запуске исследования')
       setLoading(false)
     }
