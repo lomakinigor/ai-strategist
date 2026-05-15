@@ -16,30 +16,40 @@ function Spinner() {
 
 export function TriggerResearchButton({ jobId, label }: { jobId: string; label: string }) {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
+    setError(null)
     const formData = new FormData(e.currentTarget)
     try {
       await triggerResearch(formData)
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Неизвестная ошибка при запуске исследования')
       setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="hidden" name="jobId" value={jobId} />
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
-      >
-        {loading && <Spinner />}
-        {loading ? 'Запускаю…' : label}
-      </button>
-    </form>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <input type="hidden" name="jobId" value={jobId} />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
+        >
+          {loading && <Spinner />}
+          {loading ? 'Запускаю…' : label}
+        </button>
+      </form>
+      {error && (
+        <p className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 break-words">
+          Ошибка: {error}
+        </p>
+      )}
+    </div>
   )
 }
 

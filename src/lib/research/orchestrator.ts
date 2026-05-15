@@ -82,20 +82,19 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
   // PageSpeed запускается только для сайта (query.website).
   const siteUrls = [query.website].filter(Boolean) as string[]
 
-  const [streamResults, external] = await Promise.all([
+  const siteMarketingStream = query.website
+    ? provider.research({ query, researchType: 'site_marketing', modelId }).then((r) => r.points)
+    : Promise.resolve([] as RawDataPoint[])
+
+  const [streamResults, external, siteMarketingPoints] = await Promise.all([
     Promise.all(
       STREAM_TYPES.map((type) => provider.research({ query, researchType: type, modelId })),
     ),
     collectExternalMetrics(siteUrls),
+    siteMarketingStream,
   ])
 
   const perplexityPoints = streamResults.flatMap((r) => r.points)
-
-  // Phase 2: Маркетинговый аудит сайта через Perplexity (если сайт указан)
-  // Запускается после PageSpeed чтобы мочь добавить технический контекст к маркетинговым выводам
-  const siteMarketingPoints = query.website
-    ? await provider.research({ query, researchType: 'site_marketing', modelId }).then((r) => r.points)
-    : []
 
   const allPoints = [...perplexityPoints, ...external.points, ...siteMarketingPoints]
 
