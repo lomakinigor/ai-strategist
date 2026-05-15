@@ -77,21 +77,27 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
   const provider = new PerplexityResearchProvider()
   const modelId = AI_CONFIG.research.defaultModel
 
-  // Phase 1: Perplexity по 5 streams + external metrics по каналам/сайту клиента — параллельно.
-  // External metrics дёргают независимые API (VK, Telegram preview, PageSpeed) и закладываются
-  // в общее окно времени request handler'а: даже если PageSpeed займёт 30 сек, остальные стримы
-  // успевают за это же время.
-  const externalUrls = [...(query.channels ?? []), query.website].filter(Boolean) as string[]
+  // Phase 1: Perplexity по 5 streams + PageSpeed для сайта клиента — параллельно.
+  // VK и Telegram исключены из пайплайна — данные не давали достоверных метрик.
+  // PageSpeed запускается только для сайта (query.website).
+  const siteUrls = [query.website].filter(Boolean) as string[]
 
   const [streamResults, external] = await Promise.all([
     Promise.all(
       STREAM_TYPES.map((type) => provider.research({ query, researchType: type, modelId })),
     ),
-    collectExternalMetrics(externalUrls),
+    collectExternalMetrics(siteUrls),
   ])
 
   const perplexityPoints = streamResults.flatMap((r) => r.points)
-  const allPoints = [...perplexityPoints, ...external.points]
+
+  // Phase 2: Маркетинговый аудит сайта через Perplexity (если сайт указан)
+  // Запускается после PageSpeed чтобы мочь добавить технический контекст к маркетинговым выводам
+  const siteMarketingPoints = query.website
+    ? await provider.research({ query, researchType: 'site_marketing', modelId }).then((r) => r.points)
+    : []
+
+  const allPoints = [...perplexityPoints, ...external.points, ...siteMarketingPoints]
 
   console.log(
     `[orchestrator] external-metrics: requested=${external.stats.requested} succeeded=${external.stats.succeeded} skipped=${external.stats.skipped} failed=${external.stats.failed}`,
@@ -125,6 +131,7 @@ export async function startResearchJob(jobId: string): Promise<void> {
     description: company.description ?? undefined,
     website: company.website ?? undefined,
     channels: company.channels ?? undefined,
+    competitors: company.competitors ?? undefined,
   }
 
   await db

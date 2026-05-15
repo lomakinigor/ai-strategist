@@ -36,6 +36,7 @@ export async function createResearchJob(formData: FormData) {
       website,
       goals,
       channels: channels.length ? channels : null,
+      competitors: competitors || null,
       region: 'RU',
       status: 'active',
     })

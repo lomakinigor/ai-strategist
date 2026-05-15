@@ -27,11 +27,11 @@ const STREAM_LABELS: Record<string, string> = {
   business: 'Анализ бизнеса',
   market: 'Анализ рынка',
   audience: 'Анализ аудитории',
-  channels: 'Анализ каналов',
   competitors: 'Анализ конкурентов',
 }
 
-const RESEARCH_TYPES: ResearchType[] = ['business', 'market', 'audience', 'channels', 'competitors']
+// channels исключены из UI — VK/Telegram данные убраны из пайплайна
+const RESEARCH_TYPES: ResearchType[] = ['business', 'market', 'audience', 'competitors']
 
 export default async function ResearchStatusPage({ params }: { params: { id: string } }) {
   const db = getDb()
@@ -100,7 +100,6 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
     { key: 'business', label: STREAM_LABELS.business, status: (job.businessStatus ?? 'pending') as ResearchStatus },
     { key: 'market', label: STREAM_LABELS.market, status: (job.marketStatus ?? 'pending') as ResearchStatus },
     { key: 'audience', label: STREAM_LABELS.audience, status: (job.audienceStatus ?? 'pending') as ResearchStatus },
-    { key: 'channels', label: STREAM_LABELS.channels, status: (job.channelsStatus ?? 'pending') as ResearchStatus },
     { key: 'competitors', label: STREAM_LABELS.competitors, status: job.competitorsStatus as ResearchStatus },
   ]
 

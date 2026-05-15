@@ -80,6 +80,7 @@ export const companies = pgTable(
     description: text('description'),
     website: text('website'),
     channels: text('channels').array(),
+    competitors: text('competitors'),
     goals: text('goals'),
     region: text('region').default('RU').notNull(),
     status: text('status').default('active').notNull(),

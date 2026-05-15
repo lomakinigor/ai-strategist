@@ -50,6 +50,7 @@ export interface ResearchQuery {
   description?: string
   website?: string
   channels?: string[]
+  competitors?: string
 }
 
 // Raw output from a research adapter before reliability classification

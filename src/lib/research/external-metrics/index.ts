@@ -1,15 +1,10 @@
-// Внешние метрики для каналов клиента и (в перспективе) конкурентов.
-// Принимает список URL → классифицирует через url-router → дёргает адаптеры
-// параллельно через Promise.allSettled. Любой сбой в адаптере не валит остальные.
+// Внешние метрики сайта клиента — только PageSpeed Insights.
+// VK и Telegram исключены: скрапинг не давал достоверных данных.
+// Принимает URL сайта → запускает PageSpeed адаптер.
 
 import type { RawDataPoint } from '@/lib/types'
 import { detectChannels, type ChannelInfo } from './url-router'
-import {
-  fetchTelegramSnapshot,
-  snapshotToFact as telegramFact,
-  buildSkippedFact,
-} from './telegram-adapter'
-import { fetchVkSnapshot, snapshotToFact as vkFact } from './vk-adapter'
+import { buildSkippedFact } from './telegram-adapter'
 import {
   fetchPageSpeedSnapshot,
   snapshotToFact as pageSpeedFact,
@@ -27,25 +22,18 @@ export interface ExternalMetricsResult {
 
 async function processChannel(c: ChannelInfo): Promise<RawDataPoint[]> {
   switch (c.type) {
-    case 'telegram-channel': {
-      const snap = await fetchTelegramSnapshot(c.identifier)
-      if (!snap) return [buildSkippedFact(c.originalUrl, 'превью Telegram недоступно')]
-      return [telegramFact(snap, c.originalUrl)]
-    }
-    case 'vk': {
-      const snap = await fetchVkSnapshot(c.identifier)
-      if (!snap) return [buildSkippedFact(c.originalUrl, 'VK API не вернул данные')]
-      return [vkFact(snap, c.originalUrl)]
-    }
     case 'site': {
       const snap = await fetchPageSpeedSnapshot(c.identifier)
       if (!snap) return [buildSkippedFact(c.originalUrl, 'PageSpeed Insights не доступен')]
       return [pageSpeedFact(snap)]
     }
+    // VK и Telegram исключены из пайплайна — данные не использовались
+    case 'telegram-channel':
     case 'telegram-bot':
-      return [buildSkippedFact(c.originalUrl, 'Telegram-бот: публичных метрик нет')]
+    case 'vk':
+      return []
     case 'skip':
-      return [buildSkippedFact(c.originalUrl, 'агрегатор/приватная ссылка — пропуск')]
+      return []
     default:
       return []
   }
