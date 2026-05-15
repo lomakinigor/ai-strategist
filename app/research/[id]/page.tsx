@@ -250,11 +250,6 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
           </div>
         )}
 
-        <div className="mt-4 text-center">
-          <a href="/intake" className="text-sm text-blue-600 hover:underline">
-            Создать ещё одно исследование
-          </a>
-        </div>
       </div>
     </main>
   )
