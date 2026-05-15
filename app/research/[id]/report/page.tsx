@@ -5,6 +5,7 @@ import { reportArtifacts, researchJobs, companies } from '@/db/schema'
 import { parseSections } from '@/lib/strategy/generator'
 import { CopyButton } from './CopyButton'
 import { SynthesizeButton, RegenerateSectionButton } from './TwoStageActions'
+import { BriefReportPanel } from './BriefReportPanel'
 import type { PartialStrategyContent } from '@/lib/types'
 
 // Server actions in this segment may run for the full Vercel Hobby budget.
@@ -453,6 +454,11 @@ export default async function ReportPage({
               </div>
             ))}
           </div>
+        )}
+
+        {/* ── Brief report panel ──────────────────────────────────── */}
+        {isDone && !isMock && sections.length > 0 && (
+          <BriefReportPanel artifactId={currentArtifactId} />
         )}
 
         {/* ── Raw markdown fallback ───────────────────────────────── */}

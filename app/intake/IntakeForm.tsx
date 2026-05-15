@@ -247,7 +247,7 @@ export default function IntakeForm() {
           placeholder="Компания А, Компания Б, бренд В"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <p className="mt-1 text-xs text-gray-400">Через запятую. Будут включены в анализ рынка.</p>
+        <p className="mt-1 text-xs text-gray-400">Через запятую. Желательно указать ссылку на сайт рядом с названием: «Компания А (company-a.ru), Компания Б».</p>
       </div>
 
       {/* ── Research goal ── */}
