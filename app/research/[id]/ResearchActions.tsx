@@ -26,6 +26,8 @@ export function TriggerResearchButton({ jobId, label }: { jobId: string; label: 
     try {
       await triggerResearch(formData)
     } catch (err) {
+      // Next.js redirect() throws internally with digest='NEXT_REDIRECT;...' — must re-throw
+      if ((err as { digest?: string })?.digest?.startsWith?.('NEXT_REDIRECT')) throw err
       setError(err instanceof Error ? err.message : 'Неизвестная ошибка при запуске исследования')
       setLoading(false)
     }
