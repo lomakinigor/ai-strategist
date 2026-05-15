@@ -481,6 +481,9 @@ export default async function ReportPage({
           <a href={`/research/${jobId}`} className="text-sm text-gray-500 hover:underline">
             ← Исследование
           </a>
+          <a href="/archive" className="text-sm text-gray-400 hover:underline">
+            Архив отчётов
+          </a>
           <a href="/intake" className="text-sm text-gray-400 hover:underline ml-auto">
             Новое исследование
           </a>
