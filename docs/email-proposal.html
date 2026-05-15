@@ -175,7 +175,7 @@
       padding: 3px 10px;
       font-family: var(--font-mono);
       font-size: 11px;
-      color: #475569;
+      color: #94A3B8;
     }
 
     .panels {
@@ -204,8 +204,58 @@
     }
     .panel-title span { color: var(--purple-dim); }
 
+    /* form-inputs inner flex */
+    #form-inputs { display: flex; flex-direction: column; gap: 12px; }
+
+    /* compact mode: labels + title hidden, inputs smaller */
+    #form-inputs.compact { gap: 5px; }
+    #form-inputs.compact #form-title,
+    #form-inputs.compact .field-lbl { display: none; }
+    #form-inputs.compact .field { gap: 0; }
+    #form-inputs.compact .field-input {
+      padding: 5px 10px;
+      font-size: 11px;
+      color: #94A3B8;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    /* button alignment: push to bottom of panel */
+    #btn-launch, #btn-refresh { margin-top: auto; }
+    #btn-refresh { margin-top: 0; }
+    #unlock-bar { margin-top: auto; }
+
+    /* Preview sources (right panel initial state) */
+    .preview-sources { display: flex; flex-direction: column; gap: 7px; }
+    .preview-label {
+      font-size: 10px;
+      color: #475569;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .preview-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--dark-3);
+      border-radius: 7px;
+      padding: 7px 12px;
+    }
+    .preview-icon {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      color: #334155;
+    }
+    .preview-info { flex: 1; }
+    .preview-name { font-size: 12px; color: #475569; font-weight: 500; }
+    .preview-sub { font-size: 10px; color: #334155; margin-top: 1px; }
+
     .field { display: flex; flex-direction: column; gap: 4px; }
-    .field label { font-size: 11px; color: #64748B; font-family: var(--font-sans); }
+    .field label, .field-lbl { font-size: 11px; color: #64748B; font-family: var(--font-sans); }
     .field-input {
       background: var(--dark-3);
       border: 1px solid var(--dark-4);
@@ -292,7 +342,7 @@
     .sec-body p { font-size: 11px; color: #94A3B8; line-height: 1.5; }
     .sec-tag { display: inline-block; background: var(--dark-3); border-radius: 4px; padding: 1px 5px; font-size: 10px; color: #60A5FA; }
 
-    .sec-blurred { opacity: .3; pointer-events: none; }
+    .sec-blurred { opacity: .25; pointer-events: none; filter: blur(2px); }
 
     .unlock-bar {
       background: var(--purple-deep);
@@ -344,6 +394,7 @@
     }
     .stream-badge.done { background: var(--green-bg); color: var(--green-dim); }
     .fact-counter { text-align: center; font-size: 12px; color: #475569; margin-top: 6px; }
+    .hidden { display: none !important; }
     .fact-counter span { color: var(--purple-dim); font-weight: 700; font-size: 18px; font-family: var(--font-mono); }
 
     /* ══════════════════════════════════════
@@ -552,30 +603,29 @@
     </div>
     <div class="panels">
 
-      <!-- Left: form -->
+      <!-- Left: form + progress -->
       <div class="panel" id="left-panel">
 
-        <!-- Step 1: Form -->
-        <div id="step-form">
-          <div class="panel-title">Запустите анализ — <span>результат через 15 сек</span></div>
+        <!-- Inputs (always visible; compact in progress mode) -->
+        <div id="form-inputs">
+          <div class="panel-title" id="form-title">Запустите анализ — <span>результат через 15 сек</span></div>
           <div class="field">
-            <label>Название компании</label>
+            <label class="field-lbl">Название компании</label>
             <input id="inp-company" class="field-input" type="text" placeholder="ООО Ромашка">
           </div>
           <div class="field">
-            <label>Сайт / Отрасль</label>
+            <label class="field-lbl">Сайт / Отрасль</label>
             <input id="inp-site" class="field-input" type="text" placeholder="romashka.ru · B2B-услуги">
           </div>
           <div class="field">
-            <label>Каналы (необязательно)</label>
+            <label class="field-lbl">Каналы (необязательно)</label>
             <input id="inp-channels" class="field-input" type="text" placeholder="vk.com/company, t.me/channel">
           </div>
-          <button type="button" class="btn-launch" onclick="startAnalysis()">Запустить анализ →</button>
         </div>
 
-        <!-- Step 2: Progress -->
+        <!-- Progress streams (shown after click) -->
         <div class="demo-progress" id="step-progress">
-          <div class="prog-title">Анализируем <span id="company-display">компанию</span><span class="dots"></span></div>
+          <div class="prog-title"><span id="prog-status">Анализируем</span> <span id="company-display">компанию</span><span class="dots" id="prog-dots"></span></div>
           <div class="stream" id="s1">
             <div class="stream-icon pending" id="s1-icon">◦</div>
             <div class="stream-info">
@@ -611,16 +661,21 @@
           <div class="fact-counter">Собрано фактов: <span id="fact-count">0</span></div>
         </div>
 
+        <!-- Buttons at bottom (margin-top: auto in CSS) -->
+        <button type="button" class="btn-launch" id="btn-launch" onclick="startAnalysis()">Запустить анализ →</button>
+        <button type="button" class="btn-launch hidden" id="btn-refresh" onclick="resetAnalysis()">Обновить анализ →</button>
+
       </div>
 
       <!-- Right: report preview -->
-      <div class="panel">
+      <div class="panel" id="right-panel">
+
         <div class="report-header">
           <span class="report-header-title" id="report-title">Отчёт готов</span>
           <span class="badge-ready">✓ Готов</span>
         </div>
 
-        <!-- Section 1: open -->
+        <!-- Section 1: always visible -->
         <div class="sec-card" id="sec1-card">
           <div class="sec-head">
             <div class="sec-num sec-num-green">1</div>
@@ -632,20 +687,54 @@
           </div>
         </div>
 
-        <!-- Section 2: blurred -->
-        <div class="sec-card sec-blurred">
-          <div class="sec-head">
-            <div class="sec-num sec-num-purple">2</div>
-            <span class="sec-title">Рынок и ниша · ████████</span>
-            <span class="sec-rs sec-rs-purple">MED</span>
+        <!-- Preview (initial state only) -->
+        <div id="preview-sources" class="preview-sources">
+          <div class="preview-label">Что проверим</div>
+          <div class="preview-row">
+            <div class="preview-icon">○</div>
+            <div class="preview-info">
+              <div class="preview-name">ЕГРЮЛ · сайт · соцсети</div>
+              <div class="preview-sub">Юридика, каналы, аудитория</div>
+            </div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-icon">○</div>
+            <div class="preview-info">
+              <div class="preview-name">Рынок · конкуренты · тренды</div>
+              <div class="preview-sub">Объём, позиционирование</div>
+            </div>
           </div>
         </div>
 
-        <!-- Unlock -->
-        <div class="unlock-bar">
-          <p>Разделы 2–5 в полном отчёте · 47 фактов со ссылками</p>
-          <button type="button" class="btn-unlock" onclick="alert('→ ai-strategist.ru')">Получить полный отчёт →</button>
+        <!-- Blurred sections (shown after click) -->
+        <div class="sec-card sec-blurred hidden" id="sec2-card">
+          <div class="sec-head">
+            <div class="sec-num sec-num-purple">2</div>
+            <span class="sec-title">Рынок и ниша</span>
+            <span class="sec-rs sec-rs-purple">MED</span>
+          </div>
+          <div class="sec-body">
+            <p id="sec2-text">Объём рынка: 4,2 млрд ₽ · Рост +18% г/г · 3 незанятые ниши<br>Ключевые игроки: Альфа, Бета, Гамма · Ваша доля: ~2%</p>
+          </div>
         </div>
+
+        <div class="sec-card sec-blurred hidden" id="sec3-card">
+          <div class="sec-head">
+            <div class="sec-num sec-num-purple">3</div>
+            <span class="sec-title">Целевая аудитория</span>
+            <span class="sec-rs sec-rs-purple">MED</span>
+          </div>
+          <div class="sec-body">
+            <p>4 сегмента · Основной триггер: снижение затрат<br>Каналы охвата: Telegram, ВКонтакте, прямые продажи</p>
+          </div>
+        </div>
+
+        <!-- Unlock bar (margin-top: auto in CSS → always at bottom) -->
+        <div class="unlock-bar" id="unlock-bar">
+          <p>Разделы 2–5 в полном отчёте · <span id="unlock-facts">47</span> фактов со ссылками</p>
+          <button type="button" class="btn-unlock" onclick="window.open('https://ai-strategist-bice.vercel.app/intake','_blank')">Получить полный отчёт →</button>
+        </div>
+
       </div>
 
     </div>
@@ -780,32 +869,51 @@
 </div><!-- /wrapper -->
 
 <script>
+  const STREAMS = [
+    { id: 's1', delay: 0,    dur: 1200, facts: 12 },
+    { id: 's2', delay: 300,  dur: 1800, facts: 19 },
+    { id: 's3', delay: 600,  dur: 2200, facts: 9  },
+    { id: 's4', delay: 900,  dur: 2600, facts: 7  },
+  ];
+  const TOTAL_FACTS = STREAMS.reduce((s, x) => s + x.facts, 0); // 47
+
   function scrollToDemo() {
     document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
     setTimeout(() => document.getElementById('inp-company').focus(), 600);
   }
 
   function startAnalysis() {
-    const company = document.getElementById('inp-company').value.trim() || 'вашу компанию';
+    const company = document.getElementById('inp-company').value.trim() || 'ваша компания';
+    const siteVal = document.getElementById('inp-site').value.trim();
+
+    // Извлекаем отрасль из поля "Сайт / Отрасль" (берём часть после ·)
+    const dotParts = siteVal.split('·').map(s => s.trim());
+    const industry = (dotParts.length > 1 ? dotParts.slice(1).join(' · ') : siteVal).trim() || 'B2B-услуги';
+
+    // Обновляем правую панель
     document.getElementById('company-display').textContent = company;
-    document.getElementById('report-title').textContent = company !== 'вашу компанию' ? 'Отчёт: ' + company : 'Отчёт готов';
+    document.getElementById('report-title').textContent = 'Отчёт: ' + company;
     document.getElementById('sec1-text').innerHTML =
-      '<strong style="color:#E2E8F0">' + (company !== 'вашу компанию' ? company : 'Компания') +
-      '</strong> · ЕГРЮЛ · <span class="sec-tag">B2B-услуги</span> · 7 конкурентов в регионе';
+      '<strong style="color:#E2E8F0">' + company +
+      '</strong> · ЕГРЮЛ · <span class="sec-tag">' + industry + '</span> · 7 конкурентов в регионе';
+    document.getElementById('unlock-facts').textContent = TOTAL_FACTS;
 
-    document.getElementById('step-form').style.display = 'none';
-    const prog = document.getElementById('step-progress');
-    prog.style.display = 'flex';
+    // Левая панель: компактный режим + показать прогресс
+    document.getElementById('form-inputs').classList.add('compact');
+    document.getElementById('btn-launch').classList.add('hidden');
+    STREAMS.forEach(({ id }) => resetStream(id));
+    document.getElementById('fact-count').textContent = '0';
+    document.getElementById('prog-status').textContent = 'Анализируем';
+    document.getElementById('prog-dots').style.display = '';
+    document.getElementById('step-progress').style.display = 'flex';
 
-    const streams = [
-      { id: 's1', delay: 0,    dur: 1200, facts: 12 },
-      { id: 's2', delay: 300,  dur: 1800, facts: 19 },
-      { id: 's3', delay: 600,  dur: 2200, facts: 9  },
-      { id: 's4', delay: 900,  dur: 2600, facts: 7  },
-    ];
+    // Правая панель: скрыть превью, показать блюр-секции
+    document.getElementById('preview-sources').classList.add('hidden');
+    document.getElementById('sec2-card').classList.remove('hidden');
+    document.getElementById('sec3-card').classList.remove('hidden');
+
     let total = 0;
-
-    streams.forEach(({ id, delay, dur, facts }) => {
+    STREAMS.forEach(({ id, delay, dur, facts }) => {
       setTimeout(() => {
         setLoading(id);
         const interval = setInterval(() => {
@@ -819,12 +927,34 @@
       }, delay);
     });
 
-    const maxTime = Math.max(...streams.map(s => s.delay + s.dur)) + 500;
+    const maxTime = Math.max(...STREAMS.map(s => s.delay + s.dur)) + 400;
     setTimeout(() => {
-      prog.style.display = 'none';
-      document.getElementById('step-form').style.display = 'block';
-      document.getElementById('step-form').querySelector('.btn-launch').textContent = 'Обновить анализ →';
+      document.getElementById('fact-count').textContent = TOTAL_FACTS;
+      document.getElementById('prog-status').textContent = 'Анализ завершён ·';
+      document.getElementById('prog-dots').style.display = 'none';
+      document.getElementById('btn-refresh').classList.remove('hidden');
     }, maxTime);
+  }
+
+  function resetAnalysis() {
+    document.getElementById('step-progress').style.display = 'none';
+    document.getElementById('btn-refresh').classList.add('hidden');
+    document.getElementById('btn-launch').classList.remove('hidden');
+    document.getElementById('form-inputs').classList.remove('compact');
+    document.getElementById('preview-sources').classList.remove('hidden');
+    document.getElementById('sec2-card').classList.add('hidden');
+    document.getElementById('sec3-card').classList.add('hidden');
+    document.getElementById('report-title').textContent = 'Отчёт готов';
+    document.getElementById('sec1-text').innerHTML = 'ООО Ромашка · ЕГРЮЛ · <span class="sec-tag">B2B-услуги</span> · 7 конкурентов в регионе';
+  }
+
+  function resetStream(id) {
+    const icon = document.getElementById(id + '-icon');
+    const badge = document.getElementById(id + '-badge');
+    icon.className = 'stream-icon pending';
+    icon.textContent = '◦';
+    badge.textContent = 'ожидание';
+    badge.className = 'stream-badge';
   }
 
   function setLoading(id) {
@@ -835,6 +965,7 @@
     badge.textContent = 'сбор данных';
     badge.className = 'stream-badge';
   }
+
   function setDone(id, facts) {
     const icon = document.getElementById(id + '-icon');
     const badge = document.getElementById(id + '-badge');

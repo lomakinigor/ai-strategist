@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Strategist · Как работает приложение</title>
+  <meta name="description" content="Автоматизированный аналитический конвейер, который преобразует короткую анкету о компании в развёрнутый стратегический отчёт. Шесть этапов, четыре источника данных, один итоговый документ." />
+
+  <meta property="og:title" content="AI-Strategist · Как работает приложение" />
+  <meta property="og:description" content="Шесть этапов от анкеты до стратегического отчёта" />
+  <meta property="og:type" content="article" />
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;rect width='32' height='32' rx='8' fill='%23FF9800'/&gt;&lt;text x='16' y='22' font-family='monospace' font-size='16' font-weight='800' fill='%230F1117' text-anchor='middle'&gt;A&lt;/text&gt;&lt;/svg&gt;" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --orange:       #FF9800;
+      --orange-dark:  #E65100;
+      --orange-light: #FFF3E0;
+      --orange-mid:   #FFE0B2;
+      --indigo:       #6366F1;
+      --purple:       #8B5CF6;
+      --purple-dim:   #818CF8;
+      --dark:         #0F1117;
+      --dark-2:       #1A2332;
+      --dark-3:       #1E293B;
+      --dark-4:       #334155;
+      --green:        #22C55E;
+      --green-bg:     #064E3B;
+      --text-primary: #0F172A;
+      --text-secondary:#64748B;
+      --text-muted:   #94A3B8;
+      --text-faint:   #CBD5E1;
+      --border:       #E2E8F0;
+      --border-strong:#CBD5E1;
+      --bg:           #F8FAFC;
+      --bg-2:         #F1F5F9;
+      --card:         #FFFFFF;
+      --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+      --font-sans:    'Inter', system-ui, sans-serif;
+      --shadow-sm: 0 1px 3px rgba(15,17,23,.08);
+      --shadow-md: 0 4px 16px rgba(15,17,23,.10);
+      --shadow-lg: 0 16px 48px rgba(15,17,23,.14);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background: #E2E8F0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .container { padding: 0 32px; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: rgba(255,255,255,.92);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 30px; height: 30px;
+      background: var(--orange);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--dark);
+    }
+    .logo-name {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-primary);
+      letter-spacing: -.3px;
+    }
+    .topbar-badge {
+      background: var(--orange-light);
+      color: var(--orange-dark);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      letter-spacing: .3px;
+    }
+
+    /* ── HERO (orange) ── */
+    .hero {
+      background: var(--orange);
+      padding: 56px 0 52px;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.22);
+      color: var(--dark);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: clamp(32px, 5.5vw, 52px);
+      line-height: 1.08;
+      letter-spacing: -.03em;
+      color: var(--dark);
+      margin-bottom: 20px;
+      max-width: 16ch;
+    }
+    .hero-sub {
+      font-size: 17px;
+      line-height: 1.6;
+      color: rgba(15,17,23,.72);
+      max-width: 58ch;
+    }
+
+    /* ── FACTS STRIP (dark) ── */
+    .facts-strip {
+      background: var(--dark);
+      padding: 0;
+    }
+    .facts-inner {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .fact {
+      flex: 1 1 180px;
+      padding: 28px 32px;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .fact:last-child { border-right: none; }
+    .fact-value {
+      font-family: var(--font-mono);
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--orange);
+      letter-spacing: -.04em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .fact-value-white { color: #FFFFFF; }
+    .fact-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ── STAGES (light) ── */
+    .stages {
+      background: var(--bg);
+      padding: 64px 0 56px;
+    }
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--border-strong);
+      flex-shrink: 0;
+    }
+    .section-label--on-dark { color: var(--text-muted); }
+    .section-label--on-dark::before { background: rgba(255,255,255,.15); }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 32px;
+      padding: 36px 0;
+      border-top: 1px solid var(--border);
+      align-items: start;
+    }
+    .stage:last-child { border-bottom: 1px solid var(--border); }
+
+    .stage-num {
+      font-family: var(--font-mono);
+      font-size: 54px;
+      font-weight: 800;
+      color: var(--orange);
+      letter-spacing: -.04em;
+      line-height: .9;
+    }
+    .stage-num-label {
+      display: block;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: .2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 10px;
+    }
+    .stage-title {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text-primary);
+      letter-spacing: -.02em;
+      margin-bottom: 12px;
+    }
+    .stage-text {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 60ch;
+    }
+
+    /* ── TOOLS (dark card) ── */
+    .tools {
+      background: var(--dark-2);
+      padding: 72px 0;
+    }
+    h2 {
+      font-family: var(--font-mono);
+      font-size: clamp(26px, 3.6vw, 36px);
+      font-weight: 800;
+      letter-spacing: -.025em;
+      color: #FFFFFF;
+      margin-bottom: 36px;
+    }
+
+    .table-wrap {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--dark-3);
+    }
+    .table-scroll { overflow-x: auto; }
+    .tools-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      min-width: 600px;
+    }
+    .tools-table thead {
+      background: var(--dark);
+    }
+    .tools-table th {
+      text-align: left;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--text-muted);
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .tools-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      vertical-align: middle;
+      color: var(--text-faint);
+    }
+    .tools-table tr:last-child td { border-bottom: none; }
+    .tools-table tbody tr:hover {
+      background: rgba(255,255,255,.03);
+    }
+
+    .col-layer  { width: 130px; }
+    .col-tariff { width: 170px; text-align: right; }
+
+    .layer-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--orange);
+      padding: 3px 9px;
+      background: rgba(255,152,0,.12);
+      border: 1px solid rgba(255,152,0,.25);
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    .api-name {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -.01em;
+    }
+    .api-name .arrow { color: var(--text-muted); margin: 0 4px; }
+    .purpose-text {
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+    .pill::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .8;
+    }
+    .pill-free {
+      background: rgba(34,197,94,.12);
+      color: #4ADE80;
+      border: 1px solid rgba(34,197,94,.2);
+    }
+    .pill-paid {
+      background: rgba(99,102,241,.12);
+      color: var(--purple-dim);
+      border: 1px solid rgba(99,102,241,.2);
+    }
+    .pill-paid-cheap {
+      background: rgba(255,152,0,.12);
+      color: #FFCC80;
+      border: 1px solid rgba(255,152,0,.2);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      padding: 36px 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer-dot {
+      width: 7px; height: 7px;
+      background: var(--orange);
+      border-radius: 50%;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 720px) {
+      .container { padding: 0 20px; }
+      .hero { padding: 40px 0 36px; }
+      h1 { font-size: 34px; max-width: none; }
+      .hero-sub { font-size: 16px; }
+
+      .facts-inner { flex-direction: column; }
+      .fact { padding: 20px 24px; border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .fact:last-child { border-bottom: none; }
+      .fact-value { font-size: 30px; }
+
+      .stages { padding: 44px 0 32px; }
+      .stage { grid-template-columns: 1fr; gap: 12px; padding: 28px 0; }
+      .stage-num { font-size: 44px; }
+      .stage-title { font-size: 18px; }
+
+      .tools { padding: 48px 0; }
+      h2 { font-size: 26px; }
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      body { background: white; font-size: 11pt; }
+      .topbar { display: none; }
+      .hero { background: #FF9800; padding: 24pt 0; }
+      h1 { font-size: 26pt; color: #0F1117; }
+      .facts-strip { background: #0F1117; }
+      .fact-value { color: #FF9800; font-size: 24pt; }
+      .stage { break-inside: avoid; padding: 14pt 0; }
+      .stage-num { color: #FF9800 !important; font-size: 30pt; }
+      .tools { background: #1E293B; padding: 24pt 0; }
+      .table-wrap { box-shadow: none; }
+      footer { background: #0F1117; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a href="#" class="logo">
+          <span class="logo-icon">A</span>
+          <span class="logo-name">AI-Strategist</span>
+        </a>
+        <span class="topbar-badge">Обзор системы v1.0</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="container">
+        <div class="hero-eyebrow">// документация</div>
+        <h1>Как работает приложение</h1>
+        <p class="hero-sub">
+          Автоматизированный аналитический конвейер, который преобразует
+          короткую анкету о компании в развёрнутый стратегический отчёт.
+          Работа разбита на шесть последовательных этапов.
+        </p>
+      </div>
+    </section>
+
+    <div class="facts-strip">
+      <div class="container">
+        <div class="facts-inner">
+          <div class="fact">
+            <div class="fact-value">6</div>
+            <div class="fact-label">последовательных этапов</div>
+          </div>
+          <div class="fact">
+            <div class="fact-value">4</div>
+            <div class="fact-label">источника данных</div>
+          </div>
+          <div class="fact">
+            <div class="fact-value fact-value-white">5</div>
+            <div class="fact-label">направлений анализа</div>
+          </div>
+          <div class="fact">
+            <div class="fact-value">1</div>
+            <div class="fact-label">итоговый отчёт</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="stages">
+      <div class="container">
+        <div class="section-label">Конвейер обработки</div>
+
+        <div class="stage">
+          <div>
+            <div class="stage-num">01</div>
+            <span class="stage-num-label">этап</span>
+          </div>
+          <div>
+            <h3 class="stage-title">Сбор первичных данных</h3>
+            <p class="stage-text">
+              Владелец заполняет анкету: название, отрасль, сайт, ссылки на каналы
+              в соцсетях, конкуренты, цели. Сведения сохраняются в базе данных.
+            </p>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div>
+            <div class="stage-num">02</div>
+            <span class="stage-num-label">этап</span>
+          </div>
+          <div>
+            <h3 class="stage-title">Параллельный сбор информации из&nbsp;открытых источников</h3>
+            <p class="stage-text">
+              Одновременно работают несколько потоков: интеллектуальный поисковик
+              собирает упоминания компании, её рынка и конкурентов в открытом
+              интернете, а отдельные адаптеры снимают метрики сайта (скорость,
+              видимость в поиске), Telegram-канала (подписчики, охват, частота
+              публикаций) и сообщества ВКонтакте.
+            </p>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div>
+            <div class="stage-num">03</div>
+            <span class="stage-num-label">этап</span>
+          </div>
+          <div>
+            <h3 class="stage-title">Оценка достоверности</h3>
+            <p class="stage-text">
+              Каждому факту присваивается числовая оценка от 1 до 5: государственные
+              реестры и официальные сайты — 4–5, корпоративные соцсети — 3,
+              рекламные материалы и отзывы — 2, неверифицированные агрегаторы — 1.
+            </p>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div>
+            <div class="stage-num">04</div>
+            <span class="stage-num-label">этап</span>
+          </div>
+          <div>
+            <h3 class="stage-title">Классификация утверждений</h3>
+            <p class="stage-text">
+              На основе этой оценки каждый факт относится к одной из трёх категорий:
+              подтверждённый факт, гипотеза или недостаточно данных. Утверждения
+              с низкой оценкой автоматически исключаются из дальнейшего анализа.
+            </p>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div>
+            <div class="stage-num">05</div>
+            <span class="stage-num-label">этап</span>
+          </div>
+          <div>
+            <h3 class="stage-title">Ручная верификация</h3>
+            <p class="stage-text">
+              Пользователь просматривает список собранных фактов и при необходимости
+              отключает те, что считает некорректными или нерелевантными.
+            </p>
+          </div>
+        </div>
+
+        <div class="stage">
+          <div>
+            <div class="stage-num">06</div>
+            <span class="stage-num-label">этап</span>
+          </div>
+          <div>
+            <h3 class="stage-title">Формирование отчёта</h3>
+            <p class="stage-text">
+              Подтверждённые факты группируются по пяти направлениям (бизнес, рынок,
+              аудитория, каналы, конкуренты), после чего языковая модель составляет
+              шесть содержательных разделов с практическими рекомендациями
+              и оценкой потенциала автоматизации.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="tools">
+      <div class="container">
+        <div class="section-label section-label--on-dark">Стек технологий</div>
+        <h2>Используемые инструменты</h2>
+
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table class="tools-table">
+              <thead>
+                <tr>
+                  <th class="col-layer">Слой</th>
+                  <th>API</th>
+                  <th>Назначение</th>
+                  <th class="col-tariff">Тариф</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="layer-badge">Research</span></td>
+                  <td><span class="api-name">Perplexity Sonar</span></td>
+                  <td class="purpose-text">Поиск фактов в реальном времени с цитатами</td>
+                  <td class="col-tariff"><span class="pill pill-paid">Платный</span></td>
+                </tr>
+                <tr>
+                  <td><span class="layer-badge">Channels</span></td>
+                  <td><span class="api-name">VK API v5.199</span></td>
+                  <td class="purpose-text">Метрики ВКонтакте</td>
+                  <td class="col-tariff"><span class="pill pill-free">Free tier</span></td>
+                </tr>
+                <tr>
+                  <td><span class="layer-badge">Channels</span></td>
+                  <td><span class="api-name">Telegram t.me/s</span></td>
+                  <td class="purpose-text">Парсер публичного превью канала</td>
+                  <td class="col-tariff"><span class="pill pill-free">Бесплатно</span></td>
+                </tr>
+                <tr>
+                  <td><span class="layer-badge">Site</span></td>
+                  <td><span class="api-name">Google PageSpeed v5</span></td>
+                  <td class="purpose-text">Core Web Vitals, SEO, доступность</td>
+                  <td class="col-tariff"><span class="pill pill-free">Free tier</span></td>
+                </tr>
+                <tr>
+                  <td><span class="layer-badge">Strategy LLM</span></td>
+                  <td><span class="api-name">OpenRouter <span class="arrow">→</span> DeepSeek-v4-flash</span></td>
+                  <td class="purpose-text">Генерация разделов и синтез</td>
+                  <td class="col-tariff"><span class="pill pill-paid-cheap">Платный, дёшево</span></td>
+                </tr>
+                <tr>
+                  <td><span class="layer-badge">DB</span></td>
+                  <td><span class="api-name">Postgres + pgvector на Neon</span></td>
+                  <td class="purpose-text">Хранение фактов и отчётов</td>
+                  <td class="col-tariff"><span class="pill pill-free">Free tier</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container footer-inner">
+        <div class="footer-logo">
+          <span class="footer-dot"></span>
+          <span>AI-Strategist · 2026</span>
+        </div>
+        <div>Документ обновлён 15 мая 2026</div>
+      </div>
+    </footer>
+
+  </div>
+
+</body>
+</html>
