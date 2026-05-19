@@ -93,29 +93,46 @@ export function NavButton({
 
 export function GenerateStrategyButton({ jobId }: { jobId: string }) {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
+    setError(null)
     const formData = new FormData(e.currentTarget)
     try {
-      await generateStrategyAction(formData)
-    } catch {
+      const result = await generateStrategyAction(formData)
+      if ('error' in result) {
+        setError(result.error)
+        setLoading(false)
+        return
+      }
+      router.push(result.redirectTo)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Неизвестная ошибка при генерации стратегии')
       setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="hidden" name="jobId" value={jobId} />
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
-      >
-        {loading && <Spinner />}
-        {loading ? 'Генерирую стратегию…' : 'Сгенерировать стратегический анализ →'}
-      </button>
-    </form>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <input type="hidden" name="jobId" value={jobId} />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
+        >
+          {loading && <Spinner />}
+          {loading ? 'Генерирую стратегию…' : 'Сгенерировать стратегический анализ →'}
+        </button>
+      </form>
+      {error && (
+        <p className="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 break-words">
+          Ошибка: {error}
+        </p>
+      )}
+    </div>
   )
 }
