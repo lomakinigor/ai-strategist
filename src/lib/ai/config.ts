@@ -23,12 +23,12 @@ export interface AIConfig {
   strategy: StrategyProviderConfig
 }
 
-// Perplexity Sonar — research provider (real-time web + citations).
+// OpenAI gpt-4o-mini + web_search_preview — research provider (real-time web + citations).
 // OpenRouter + DeepSeek V4 Pro — strategy/analytics (low-cost, large context).
 export const AI_CONFIG: AIConfig = {
   research: {
-    defaultProvider: 'perplexity',
-    defaultModel: 'sonar-pro',
+    defaultProvider: 'openai',
+    defaultModel: process.env.OPENAI_RESEARCH_MODEL ?? 'gpt-4o-mini',
     fallbackProvider: 'mock',
     mode: process.env.RESEARCH_MODE === 'real' ? 'real' : 'mock',
   },

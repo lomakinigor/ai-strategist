@@ -4,8 +4,8 @@ import { researchJobs, companies, sources, facts } from '@/db/schema'
 import type { ResearchQuery, ResearchType } from '@/lib/types'
 import { classify } from '@/lib/reliability/classify'
 import { AI_CONFIG } from '@/lib/ai/config'
-import { PerplexityResearchProvider } from '@/lib/ai/providers/perplexity-research-provider'
 import { inferSourceType } from '@/lib/ai/providers/perplexity-research-provider'
+import { OpenAIResearchProvider } from '@/lib/ai/providers/openai-research-provider'
 import { businessAdapterMock } from './business-adapter.mock'
 import { marketAdapterMock } from './market-adapter.mock'
 import { audienceAdapterMock } from './audience-adapter.mock'
@@ -74,12 +74,9 @@ async function runMockResearch(companyId: string, jobId: string, query: Research
 }
 
 async function runRealResearch(companyId: string, jobId: string, query: ResearchQuery): Promise<void> {
-  const provider = new PerplexityResearchProvider()
+  const provider = new OpenAIResearchProvider()
   const modelId = AI_CONFIG.research.defaultModel
 
-  // Phase 1: Perplexity по 5 streams + PageSpeed для сайта клиента — параллельно.
-  // VK и Telegram исключены из пайплайна — данные не давали достоверных метрик.
-  // PageSpeed запускается только для сайта (query.website).
   const siteUrls = [query.website].filter(Boolean) as string[]
 
   const siteMarketingStream = query.website
@@ -94,9 +91,8 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
     siteMarketingStream,
   ])
 
-  const perplexityPoints = streamResults.flatMap((r) => r.points)
-
-  const allPoints = [...perplexityPoints, ...external.points, ...siteMarketingPoints]
+  const providerPoints = streamResults.flatMap((r) => r.points)
+  const allPoints = [...providerPoints, ...external.points, ...siteMarketingPoints]
 
   console.log(
     `[orchestrator] external-metrics: requested=${external.stats.requested} succeeded=${external.stats.succeeded} skipped=${external.stats.skipped} failed=${external.stats.failed}`,
