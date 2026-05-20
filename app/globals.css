@@ -1,1 +1,76 @@
 @import "tailwindcss";
+
+/* ─── Brief report print styles ──────────────────────────────────────────────
+ * When user clicks "Скачать PDF" → window.print() → browser save-as-PDF.
+ * We strip backgrounds, shadows, decorations and expand collapsibles so the
+ * PDF reads cleanly on paper.
+ */
+@media print {
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Section cards — flat for print, page breaks between */
+  .brief-section {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+    transform: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* AI block — keep gradient feel via light tint, no shadows */
+  .ai-block {
+    background: #fafafa !important;
+    border: 1px solid #c7d2fe !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .ai-block .pointer-events-none {
+    display: none !important;
+  }
+
+  /* AI cards — expand all and remove background */
+  .ai-card {
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .ai-card-body {
+    display: block !important;
+  }
+
+  /* Hide expand/collapse chevrons */
+  .ai-card svg.transition-transform {
+    display: none !important;
+  }
+
+  /* Remove rounded radii for cleaner edges */
+  .rounded-2xl, .rounded-xl {
+    border-radius: 0.5rem !important;
+  }
+
+  /* Tighter spacing */
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.125rem !important; }
+
+  /* Footer */
+  .brief-footer {
+    border-top: 1px solid #e5e7eb !important;
+    color: #6b7280 !important;
+  }
+}

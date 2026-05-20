@@ -3,62 +3,17 @@ import { notFound } from 'next/navigation'
 import { getDb } from '@/db'
 import { reportArtifacts, companies } from '@/db/schema'
 import { generateBriefReport } from '@/lib/strategy/brief'
+import { parseBriefMarkdown } from './parser'
+import { extractAiProposals } from './ai-extract'
+import { SectionCard } from './SectionCard'
+import { AiBlock } from './AiBlock'
+import { PrintButton } from './PrintButton'
 import { BriefFooter } from './BriefFooter'
 
 export const maxDuration = 60
 
 export const metadata = {
   title: 'Краткий отчёт — AI-Стратег',
-}
-
-function renderBriefContent(text: string) {
-  const lines = text.split('\n')
-  return (
-    <div className="space-y-1">
-      {lines.map((line, i) => {
-        const trimmed = line.trim()
-        if (trimmed === '') return <div key={i} className="h-2" />
-
-        if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-          return (
-            <h3 key={i} className="text-sm font-bold text-gray-900 mt-6 mb-1 first:mt-0 uppercase tracking-wide">
-              {trimmed.slice(2, -2)}
-            </h3>
-          )
-        }
-
-        if (trimmed.startsWith('ВЫВОД:')) {
-          return (
-            <p key={i} className="text-sm font-semibold text-indigo-900 bg-indigo-50 px-3 py-2 rounded leading-relaxed">
-              {trimmed}
-            </p>
-          )
-        }
-
-        if (trimmed.startsWith('ДЕЙСТВИЕ:')) {
-          return (
-            <p key={i} className="text-sm font-medium text-emerald-800 bg-emerald-50 px-3 py-2 rounded leading-relaxed mt-1">
-              {trimmed}
-            </p>
-          )
-        }
-
-        if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
-          return (
-            <p key={i} className="text-sm text-gray-700 pl-3 leading-relaxed">
-              {'• '}{trimmed.replace(/^[•\-]\s*/, '')}
-            </p>
-          )
-        }
-
-        return (
-          <p key={i} className="text-sm text-gray-800 leading-relaxed">
-            {line}
-          </p>
-        )
-      })}
-    </div>
-  )
 }
 
 export default async function BriefPage({ params }: { params: { artifactId: string } }) {
@@ -70,6 +25,7 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
       createdAt: reportArtifacts.createdAt,
       companyName: companies.name,
       industry: companies.industry,
+      researchJobId: reportArtifacts.researchJobId,
     })
     .from(reportArtifacts)
     .leftJoin(companies, eq(reportArtifacts.companyId, companies.id))
@@ -81,39 +37,88 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
     notFound()
   }
 
-  const brief = await generateBriefReport(artifact.contentMarkdown)
+  const briefMarkdown = await generateBriefReport(artifact.contentMarkdown)
+  const sections = parseBriefMarkdown(briefMarkdown)
+  const aiProposals = extractAiProposals(artifact.contentMarkdown, 3)
+
+  // Split sections: business/market/audience/channels/competitors → main grid; strategy → footer block
+  const mainSections = sections.filter((s) => s.id !== 'strategy' && s.id !== 'other')
+  const strategySection = sections.find((s) => s.id === 'strategy')
+  const otherSections = sections.filter((s) => s.id === 'other')
 
   const dateStr = artifact.createdAt.toLocaleDateString('ru-RU', {
     day: '2-digit',
-    month: '2-digit',
+    month: 'long',
     year: 'numeric',
   })
 
   return (
-    <main className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto px-6 py-12">
+    <main className="min-h-screen bg-stone-50">
+      <div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
 
-        <div className="mb-8 pb-6 border-b border-gray-100">
-          <p className="text-xs font-semibold text-indigo-600 uppercase tracking-widest mb-2">
+        {/* ── Top toolbar (hidden in print) ─────────────────────────── */}
+        <div className="no-print flex items-center justify-between mb-10 -mt-4">
+          <a
+            href={`/research/${artifact.researchJobId}/report`}
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+              <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            К полному отчёту
+          </a>
+          <PrintButton />
+        </div>
+
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header className="brief-header mb-12">
+          <p className="text-[11px] font-semibold text-indigo-600 uppercase tracking-[0.25em] mb-3">
             Краткий отчёт · AI-Стратег
           </p>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight tracking-tight">
             {artifact.companyName ?? 'Компания'}
           </h1>
           {artifact.industry && (
-            <p className="mt-1 text-sm text-gray-500">{artifact.industry}</p>
+            <p className="mt-2 text-base text-gray-600">{artifact.industry}</p>
           )}
-          <p className="mt-1 text-xs text-gray-400">
-            Исследование от {dateStr} · методология Minto · McKinsey · Knaflic
+          <p className="mt-3 text-xs text-gray-400">
+            Исследование от {dateStr} · методология Minto · Knaflic · Duarte
           </p>
-        </div>
+        </header>
 
-        <div className="prose-sm">
-          {renderBriefContent(brief)}
-        </div>
+        {/* ── Main sections ─────────────────────────────────────────── */}
+        {mainSections.length > 0 && (
+          <div className="space-y-5 mb-8">
+            {mainSections.map((section, i) => (
+              <SectionCard key={section.id + i} section={section} index={i + 1} />
+            ))}
+          </div>
+        )}
+
+        {/* ── AI automation block ───────────────────────────────────── */}
+        {aiProposals.length > 0 && (
+          <div className="mb-8">
+            <AiBlock proposals={aiProposals} />
+          </div>
+        )}
+
+        {/* ── Strategy section (last, visual emphasis) ──────────────── */}
+        {strategySection && (
+          <div className="mb-8">
+            <SectionCard section={strategySection} index={mainSections.length + 1} />
+          </div>
+        )}
+
+        {/* ── Other unclassified sections ───────────────────────────── */}
+        {otherSections.length > 0 && (
+          <div className="space-y-5 mb-8">
+            {otherSections.map((section, i) => (
+              <SectionCard key={'other-' + i} section={section} index={mainSections.length + (strategySection ? 1 : 0) + i + 1} />
+            ))}
+          </div>
+        )}
 
         <BriefFooter />
-
       </div>
     </main>
   )

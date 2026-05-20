@@ -1,20 +1,14 @@
-'use client'
-
 export function BriefFooter() {
   return (
-    <div className="mt-10 pt-6 border-t border-gray-100 flex gap-4">
-      <button
-        className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
-        onClick={() => window.print()}
-      >
-        Распечатать
-      </button>
-      <button
-        className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
-        onClick={() => window.close()}
-      >
-        Закрыть окно
-      </button>
-    </div>
+    <footer className="brief-footer mt-12 pt-8 border-t border-gray-200/60">
+      <p className="text-[11px] text-gray-400 leading-relaxed text-center">
+        Отчёт сгенерирован AI-Стратегом · только подтверждённые факты с источниками ·
+        методология{' '}
+        <span className="text-gray-500">Minto · Knaflic · Duarte</span>
+      </p>
+      <p className="text-[11px] text-gray-400 leading-relaxed text-center mt-2">
+        Документ носит аналитический характер и не заменяет профессиональную консультацию.
+      </p>
+    </footer>
   )
 }
