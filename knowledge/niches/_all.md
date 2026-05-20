@@ -88,7 +88,7 @@
 
 **🟢 ПОСЛЕ:** Open rate 15–25%, click 3–7%, возврат старых клиентов.
 
-**📡 КАНАЛЫ:** email, Telegram-бот, WhatsApp Business API, MAX (мессенджер РФ).
+**📡 КАНАЛЫ (приоритет для РФ):** MAX, ВКонтакте (сообщения сообщества), Telegram-бот, email, WhatsApp Business API.
 
 **🛠️ ИНСТРУМЕНТЫ:** Unisender / DashaMail + AI-генератор.
 
