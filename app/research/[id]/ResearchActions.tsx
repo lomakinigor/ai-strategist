@@ -103,6 +103,13 @@ export function GenerateStrategyButton({ jobId }: { jobId: string }) {
     const formData = new FormData(e.currentTarget)
     try {
       const result = await generateStrategyAction(formData)
+      if (!result) {
+        setError(
+          'Запрос превысил лимит времени сервера (60с). Обнови страницу через минуту — стратегия может уже сохраниться, либо запусти повторно.',
+        )
+        setLoading(false)
+        return
+      }
       if ('error' in result) {
         setError(result.error)
         setLoading(false)

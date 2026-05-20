@@ -2,6 +2,8 @@
 
 import { generateStrategyDraft } from '@/lib/strategy/generator'
 
+export const maxDuration = 60
+
 type GenerateResult = { redirectTo: string } | { error: string }
 
 export async function generateStrategyAction(formData: FormData): Promise<GenerateResult> {
