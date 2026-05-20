@@ -39,3 +39,6 @@ drizzle/meta/
 # Claude Code (personal/local settings only — settings.json is shared)
 .claude/settings.local.json
 .claude/logs/
+
+# VS Code workspace (personal)
+*.code-workspace
