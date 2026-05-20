@@ -41,8 +41,12 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
   const sections = parseBriefMarkdown(briefMarkdown)
   const aiProposals = extractAiProposals(artifact.contentMarkdown, 3)
 
-  // Split sections: business/market/audience/channels/competitors → main grid; strategy → footer block
-  const mainSections = sections.filter((s) => s.id !== 'strategy' && s.id !== 'other')
+  // Split sections per visualization methodology:
+  //   V7 — Executive Snapshot is rendered first as "10-second read"
+  //   V5 — main sections share identical small-multiples layout
+  //   strategy is rendered last (after AI block) for narrative closure
+  const snapshotSection = sections.find((s) => s.id === 'snapshot')
+  const mainSections = sections.filter((s) => s.id !== 'snapshot' && s.id !== 'strategy' && s.id !== 'other')
   const strategySection = sections.find((s) => s.id === 'strategy')
   const otherSections = sections.filter((s) => s.id === 'other')
 
@@ -86,7 +90,14 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
           </p>
         </header>
 
-        {/* ── Main sections ─────────────────────────────────────────── */}
+        {/* ── Executive Snapshot — V7, first screen, "10-second read" ── */}
+        {snapshotSection && (
+          <div className="mb-8">
+            <SectionCard section={snapshotSection} index={0} />
+          </div>
+        )}
+
+        {/* ── Main sections (V5 small multiples) ───────────────────── */}
         {mainSections.length > 0 && (
           <div className="space-y-5 mb-8">
             {mainSections.map((section, i) => (

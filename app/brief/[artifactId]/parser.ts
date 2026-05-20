@@ -10,6 +10,7 @@
 //   ДЕЙСТВИЕ: ...
 
 export type SectionId =
+  | 'snapshot'
   | 'business'
   | 'market'
   | 'audience'
@@ -27,6 +28,8 @@ export interface BriefSection {
 }
 
 const TITLE_TO_ID: Record<string, SectionId> = {
+  'executive snapshot': 'snapshot',
+  'snapshot': 'snapshot',
   'бизнес': 'business',
   'рынок': 'market',
   'аудитория': 'audience',
@@ -37,6 +40,7 @@ const TITLE_TO_ID: Record<string, SectionId> = {
 
 function classifyTitle(title: string): SectionId {
   const normalized = title.toLowerCase().trim()
+  if (normalized.includes('executive') || normalized.includes('snapshot')) return 'snapshot'
   for (const key in TITLE_TO_ID) {
     if (normalized.includes(key)) return TITLE_TO_ID[key]
   }

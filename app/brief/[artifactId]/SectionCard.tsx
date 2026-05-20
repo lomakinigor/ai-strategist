@@ -1,6 +1,7 @@
 import type { BriefSection, SectionId } from './parser'
 
 const SECTION_META: Record<SectionId, { label: string; icon: string; accent: string; bg: string; border: string; iconBg: string }> = {
+  snapshot: { label: 'Executive Snapshot', icon: '⚡', accent: 'text-indigo-700', bg: 'bg-indigo-50/60', border: 'border-indigo-200', iconBg: 'bg-indigo-100' },
   business: { label: 'Бизнес', icon: '🏢', accent: 'text-blue-700', bg: 'bg-blue-50/40', border: 'border-blue-100', iconBg: 'bg-blue-100' },
   market: { label: 'Рынок', icon: '📊', accent: 'text-purple-700', bg: 'bg-purple-50/40', border: 'border-purple-100', iconBg: 'bg-purple-100' },
   audience: { label: 'Аудитория', icon: '👥', accent: 'text-orange-700', bg: 'bg-orange-50/40', border: 'border-orange-100', iconBg: 'bg-orange-100' },
@@ -27,7 +28,7 @@ export function SectionCard({ section, index }: { section: BriefSection; index: 
         </div>
         <div>
           <p className={`text-[11px] font-semibold uppercase tracking-widest ${meta.accent}`}>
-            Раздел {index}
+            {section.id === 'snapshot' ? 'Краткий обзор · 10 секунд' : `Раздел ${index}`}
           </p>
           <h2 className="text-xl font-bold text-gray-900 leading-tight mt-0.5">
             {section.title || meta.label}
