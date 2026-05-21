@@ -2,13 +2,10 @@ import { eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import { getDb } from '@/db'
 import { reportArtifacts, companies } from '@/db/schema'
-import { generateBriefReport } from '@/lib/strategy/brief'
-import { BriefReport } from './BriefReport'
+import type { BriefReportBlock } from '@/lib/strategy/brief'
+import { BriefClient } from './BriefClient'
 import { PrintButton } from './PrintButton'
 import { BriefFooter } from './BriefFooter'
-
-// 300 = Vercel Hobby max with Fluid Compute (Pro allows up to 800).
-export const maxDuration = 300
 
 export const metadata = {
   title: 'Краткий отчёт — AI-Стратег',
@@ -18,8 +15,8 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
   const db = getDb()
   const rows = await db
     .select({
-      contentMarkdown: reportArtifacts.contentMarkdown,
       status: reportArtifacts.status,
+      briefJson: reportArtifacts.briefJson,
       createdAt: reportArtifacts.createdAt,
       companyName: companies.name,
       industry: companies.industry,
@@ -31,15 +28,12 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
     .limit(1)
 
   const artifact = rows[0]
-  if (!artifact || !artifact.contentMarkdown || artifact.status !== 'done') {
+  if (!artifact || artifact.status !== 'done') {
     notFound()
   }
 
-  const { parsed: brief } = await generateBriefReport(
-    artifact.companyName ?? 'Компания',
-    artifact.industry ?? '',
-    artifact.contentMarkdown,
-  )
+  // Кеш: если brief уже сгенерирован — отдаём из БД; иначе клиент сгенерирует по кнопке.
+  const initialBrief = (artifact.briefJson as BriefReportBlock | null) ?? null
 
   const dateStr = artifact.createdAt.toLocaleDateString('ru-RU', {
     day: '2-digit',
@@ -82,8 +76,8 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
           </p>
         </header>
 
-        {/* ── 6 блоков BRIEF_REPORT ─────────────────────────────────── */}
-        <BriefReport brief={brief} />
+        {/* ── 6 блоков BRIEF_REPORT (кеш / генерация по кнопке) ─────── */}
+        <BriefClient artifactId={params.artifactId} initialBrief={initialBrief} />
 
         <BriefFooter />
       </div>

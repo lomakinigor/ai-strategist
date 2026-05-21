@@ -206,6 +206,9 @@ export const reportArtifacts = pgTable(
     status: artifactStatusEnum('status').default('pending').notNull(),
     contentJson: jsonb('content_json'),
     contentMarkdown: text('content_markdown'),
+    // Кеш краткого отчёта (BRIEF_REPORT, 6 блоков) — генерируется по запросу,
+    // чтобы не пересоздавать дорогостоящий brief при каждом просмотре.
+    briefJson: jsonb('brief_json'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
