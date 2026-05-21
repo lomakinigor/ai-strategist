@@ -1,0 +1,27 @@
+{
+  "legal_services": {
+    "display_name": "Юридические услуги",
+    "file": "legal_services.md",
+    "keywords": ["юрист", "адвокат", "юридические услуги", "правовая защита", "репутация", "банкротство", "корпоративные споры"]
+  },
+  "marketing": {
+    "display_name": "Маркетинг и реклама",
+    "file": "marketing.md",
+    "keywords": ["маркетинг", "реклама", "SMM", "SEO", "контекст", "таргет"]
+  },
+  "ecommerce": {
+    "display_name": "Электронная торговля",
+    "file": "ecommerce.md",
+    "keywords": ["интернет-магазин", "маркетплейс", "Wildberries", "Ozon", "розница"]
+  },
+  "b2b_saas": {
+    "display_name": "B2B SaaS",
+    "file": "b2b_saas.md",
+    "keywords": ["SaaS", "подписка", "B2B", "автоматизация", "CRM", "ERP"]
+  },
+  "consulting": {
+    "display_name": "Консалтинг",
+    "file": "consulting.md",
+    "keywords": ["консалтинг", "консультации", "аудит", "стратегия", "управление"]
+  }
+}
