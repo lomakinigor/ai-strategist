@@ -1,4 +1,4 @@
-import { eq, and, inArray } from 'drizzle-orm'
+import { eq, and, inArray, type SQL } from 'drizzle-orm'
 import { getDb } from '@/db'
 import { facts, sources } from '@/db/schema'
 import type { ResearchType, FactType, ConfidenceLevel, SourceType } from '@/lib/types'
@@ -29,8 +29,7 @@ export interface FactFilters {
 export async function getFactsForJob(jobId: string, filters?: FactFilters): Promise<FactForValidation[]> {
   const db = getDb()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const conditions: any[] = [eq(facts.researchJobId, jobId)]
+  const conditions: SQL[] = [eq(facts.researchJobId, jobId)]
 
   if (filters?.streams && filters.streams.length > 0) {
     conditions.push(inArray(facts.researchType, filters.streams))
