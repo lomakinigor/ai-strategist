@@ -24,22 +24,29 @@
 | 1b | **Site marketing-анализ** | Разбор страницы клиента (USP, CTA, тексты) | OpenAI | `gpt-4o-mini` + `web_search_preview` |
 | 2 | **Внешние метрики** (детерминированные) | LCP/CLS/Lighthouse + VK-аудитория и охваты | — | Google PageSpeed API, VK API (без LLM) |
 | 3 | **Верификация / RS-классификация** | Reliability Score 1–5, тип факта, HIGH/MEDIUM/LOW | — | детерминированный код [classify.ts](../src/lib/reliability/classify.ts) |
-| 4a | **Stage 1: 5 параллельных черновиков** *(если `STRATEGY_TWO_STAGE_REVIEW=true`)* | По одному draft на раздел, пользователь делает ревью | OpenRouter | DeepSeek V4 Flash |
-| 4b | **Stage 2: синтез полной стратегии** | Объединение 5 ревьюнутых draft в финальный отчёт | OpenRouter | DeepSeek V4 Flash |
-| 4* | **Single-call mode (текущий дефолт)** | Полный отчёт за один вызов LLM | OpenRouter | DeepSeek V4 Flash |
-| 5 | **Краткий отчёт (brief)** | Executive Snapshot + 5 разделов по методологии Tufte/Knaflic/Berinato | OpenRouter | DeepSeek V4 Flash |
+| 4a | **Stage 1: 5 параллельных черновиков** *(если `STRATEGY_TWO_STAGE_REVIEW=true`)* | По одному draft на раздел, пользователь делает ревью | OpenRouter | Claude Sonnet 4.6 |
+| 4b | **Stage 2: синтез полной стратегии** | Объединение 5 ревьюнутых draft в финальный отчёт | OpenRouter | Claude Sonnet 4.6 |
+| 4* | **Single-call mode (текущий дефолт)** | Полный отчёт за один вызов LLM | OpenRouter | Claude Sonnet 4.6 |
+| 5 | **Краткий отчёт (brief)** | Executive Snapshot + 5 разделов по методологии Tufte/Knaflic/Berinato | OpenRouter | Claude Sonnet 4.6 |
 | 6 | **AI-блок (3 предложения)** | Извлечение AI-возможностей из текста полного отчёта | — | детерминированный regex [ai-extract.ts](../app/brief/[artifactId]/ai-extract.ts) |
 
 ## Заметки
 
-- **DeepSeek V4 Flash вместо V4 Pro** — переключили из-за 60-секундного таймаута Vercel ([config.ts:38–39](../src/lib/ai/config.ts#L38-L39)). Pro даёт лучшее качество, но падает в 504. Вернёмся к Pro, когда переедем на async/background-обработку.
+- **Claude Sonnet 4.6 на всей стратегии** — секции (4a), синтез (4b/4*) и brief (5) идут на Sonnet ради единой планки качества. Стало возможным после Vercel Fluid Compute (лимит 300с на Hobby), который снял прежнее ограничение «только Flash». Вернуть Flash для экономии — `OPENROUTER_STRATEGY_MODEL=deepseek/deepseek-v4-flash`.
+- **Стоимость** — Claude Sonnet 4.6 $3 вход / $15 выход за 1M токенов. One-shot режим (текущий дефолт): синтез + brief ≈ **$0.10/отчёт**. Two-stage добавляет 5 параллельных секций ≈ +$0.25.
+- **DeepSeek V4 Pro на intake (0)** — сильнее на «грязном» свободном тексте клиента. Override `OPENROUTER_PARSE_MODEL`.
 - **Mock-режим по умолчанию** — `RESEARCH_MODE=real` нужно явно ставить в env, иначе работают mock-адаптеры (быстрая локальная разработка).
 - **Two-stage review выключен по умолчанию** — `STRATEGY_TWO_STAGE_REVIEW=true` включает ревью между генерацией разделов и финальным синтезом.
 
-## Этапы без LLM (часто упускают из виду)
+## Этапы, которые часто упускают из виду
 
-- **Этап 0 — парсинг intake**: отдельный LLM-вызов, превращающий буфер обмена клиента в структуру.
+С LLM:
+
+- **Этап 0 — парсинг intake**: отдельный LLM-вызов (DeepSeek V4 Pro), превращающий буфер обмена клиента в структуру.
 - **Этап 1b — site marketing**: отдельный поток research, не входит в 5 основных.
-- **Этап 2 — внешние метрики**: PageSpeed + VK API без LLM.
-- **Этап 3 — RS-верификация фактов**: детерминированная классификация по reliability score.
+
+Без LLM (детерминированные):
+
+- **Этап 2 — внешние метрики**: PageSpeed + VK API.
+- **Этап 3 — RS-верификация фактов**: классификация по reliability score.
 - **Этап 6 — AI-блок**: regex-извлечение AI-возможностей из текста стратегии.

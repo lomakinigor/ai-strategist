@@ -40,8 +40,9 @@ export const AI_CONFIG: AIConfig = {
     defaultProvider: 'openrouter',
     // Vercel Fluid Compute (default since Apr 2025) lifts maxDuration to 300s on Hobby /
     // 800s on Pro, so the old "Flash only, -pro 504s" constraint no longer applies.
-    // Flash stays for lightweight parallel work (5 section drafts, brief reformatting).
-    defaultModel: process.env.OPENROUTER_STRATEGY_MODEL ?? 'deepseek/deepseek-v4-flash',
+    // Claude Sonnet 4.6 for Stage-1 section drafts and brief reformatting — same quality
+    // bar as the synthesis. Override via OPENROUTER_STRATEGY_MODEL (e.g. back to Flash to cut cost).
+    defaultModel: process.env.OPENROUTER_STRATEGY_MODEL ?? 'anthropic/claude-sonnet-4.6',
     // Claude Sonnet 4.6 for the full-strategy synthesis — the main client deliverable.
     // ~$0.05/report (one call). Override via OPENROUTER_SYNTHESIS_MODEL.
     synthesisModel: process.env.OPENROUTER_SYNTHESIS_MODEL ?? 'anthropic/claude-sonnet-4.6',
