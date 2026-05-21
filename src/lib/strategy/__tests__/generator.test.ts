@@ -10,7 +10,6 @@ vi.mock('@/lib/rag/context', () => ({
 // ─── Prompts mock ─────────────────────────────────────────────────────────────
 
 vi.mock('../prompts', () => ({
-  STRATEGY_SYSTEM_PROMPT: 'mock system prompt',
   STRATEGY_SYNTHESIS_SYSTEM_PROMPT: 'mock synthesis system prompt',
   SECTION_TITLES: {
     business: 'Анализ бизнеса',
@@ -19,10 +18,22 @@ vi.mock('../prompts', () => ({
     channels: 'Анализ каналов',
     competitors: 'Анализ конкурентов',
   },
-  buildStrategyUserPrompt: vi.fn(() => 'mock user prompt'),
   buildSectionSystemPrompt: vi.fn((t: string) => `system for ${t}`),
   buildSectionUserPrompt: vi.fn((t: string) => `user for ${t}`),
   buildSynthesisUserPrompt: vi.fn(() => 'synthesis user prompt'),
+  buildFullReportPrompt: vi.fn(() => ({ system: 'full report system', user: 'full report user' })),
+}))
+
+// ─── KB mock ──────────────────────────────────────────────────────────────────
+
+vi.mock('../kb', () => ({
+  detectNiche: vi.fn(async () => null),
+  loadReportRequirements: vi.fn(async () => ({
+    niche: null,
+    universalMarkdown: 'U',
+    nicheMarkdown: '',
+    combinedMarkdown: 'U',
+  })),
 }))
 
 // ─── AI config mock ───────────────────────────────────────────────────────────
@@ -31,7 +42,8 @@ vi.mock('@/lib/ai/config', () => ({
   AI_CONFIG: {
     strategy: {
       defaultProvider: 'openrouter',
-      defaultModel: 'deepseek/deepseek-v4-pro',
+      defaultModel: 'deepseek/deepseek-v4-flash',
+      synthesisModel: 'anthropic/claude-sonnet-4.6',
       twoStageReview: false,
     },
   },
@@ -58,6 +70,14 @@ vi.mock('@/db/schema', () => ({
   researchJobs: {
     id: 'research_jobs.id',
     companyId: 'research_jobs.company_id',
+  },
+  companies: {
+    id: 'companies.id',
+    name: 'companies.name',
+    industry: 'companies.industry',
+    description: 'companies.description',
+    website: 'companies.website',
+    goals: 'companies.goals',
   },
 }))
 
@@ -250,10 +270,10 @@ describe('generateStrategyDraft — real mode (with API key)', () => {
     )
   })
 
-  it('returns mode=real and model from AI_CONFIG.strategy.defaultModel', async () => {
+  it('returns mode=real and model from AI_CONFIG.strategy.synthesisModel (one-shot FULL_REPORT)', async () => {
     const result = await generateStrategyDraft('job-1')
     expect(result.mode).toBe('real')
-    expect(result.modelId).toContain('deepseek')
+    expect(result.modelId).toContain('claude-sonnet')
   })
 
   it('parses 5 sections from API response', async () => {

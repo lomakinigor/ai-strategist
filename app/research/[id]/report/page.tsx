@@ -15,12 +15,14 @@ export const maxDuration = 300
 // ─── Section metadata ─────────────────────────────────────────────────────────
 
 const SECTION_LABELS: Record<string, string> = {
-  business: 'Анализ бизнеса',
-  market: 'Анализ рынка',
-  audience: 'Анализ целевой аудитории',
-  channels: 'Анализ каналов',
-  competitors: 'Анализ конкурентов',
-  strategy: 'Стратегия и рекомендации',
+  business: 'Профиль бизнеса',
+  market: 'Рыночная позиция',
+  audience: 'Целевая аудитория',
+  channels: 'Каналы привлечения',
+  competitors: 'Конкурентный ландшафт',
+  ai_automation: 'AI-автоматизация',
+  strategy: 'Стратегия роста',
+  hypotheses: 'Гипотезы для проверки',
 }
 
 const SECTION_BORDER: Record<string, string> = {
@@ -29,7 +31,9 @@ const SECTION_BORDER: Record<string, string> = {
   audience: 'border-orange-200',
   channels: 'border-teal-200',
   competitors: 'border-rose-200',
+  ai_automation: 'border-indigo-200',
   strategy: 'border-green-200',
+  hypotheses: 'border-slate-200',
 }
 
 const SECTION_BG: Record<string, string> = {
@@ -38,7 +42,9 @@ const SECTION_BG: Record<string, string> = {
   audience: 'bg-orange-50',
   channels: 'bg-teal-50',
   competitors: 'bg-rose-50',
+  ai_automation: 'bg-indigo-50',
   strategy: 'bg-green-50',
+  hypotheses: 'bg-slate-50',
 }
 
 const SECTION_HEADING: Record<string, string> = {
@@ -47,7 +53,9 @@ const SECTION_HEADING: Record<string, string> = {
   audience: 'text-orange-800',
   channels: 'text-teal-800',
   competitors: 'text-rose-800',
+  ai_automation: 'text-indigo-800',
   strategy: 'text-green-800',
+  hypotheses: 'text-slate-800',
 }
 
 // ─── Section content renderer ─────────────────────────────────────────────────

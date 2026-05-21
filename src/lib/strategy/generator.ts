@@ -1,17 +1,17 @@
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
-import { reportArtifacts, researchJobs } from '@/db/schema'
-import { buildResearchContext, type ResearchContext } from '@/lib/rag/context'
+import { reportArtifacts, researchJobs, companies } from '@/db/schema'
+import { buildResearchContext, serializeContext, type ResearchContext } from '@/lib/rag/context'
 import { AI_CONFIG } from '@/lib/ai/config'
 import {
-  buildStrategyUserPrompt,
   buildSectionSystemPrompt,
   buildSectionUserPrompt,
   buildSynthesisUserPrompt,
-  STRATEGY_SYSTEM_PROMPT,
+  buildFullReportPrompt,
   STRATEGY_SYNTHESIS_SYSTEM_PROMPT,
   SECTION_TITLES,
 } from './prompts'
+import { detectNiche, loadReportRequirements } from './kb'
 import type {
   PartialStrategyContent,
   StrategySection,
@@ -27,6 +27,8 @@ export type SectionId =
   | 'channels'
   | 'competitors'
   | 'strategy'
+  | 'ai_automation'
+  | 'hypotheses'
 
 export interface StrategySectionRendered {
   id: SectionId
@@ -48,13 +50,23 @@ export interface StrategyDraftResult {
 
 // ─── Section parsing (markdown → sections, used by report page) ──────────────
 
-const SECTION_IDS: Record<string, SectionId> = {
-  'Анализ бизнеса': 'business',
-  'Анализ рынка': 'market',
-  'Анализ целевой аудитории': 'audience',
-  'Анализ каналов': 'channels',
-  'Анализ конкурентов': 'competitors',
-  'Стратегия и рекомендации': 'strategy',
+// Сопоставление заголовка раздела с SectionId по ключевым словам.
+// Поддерживает обе схемы: старую (one-shot/two-stage «Анализ ...», «Стратегия и
+// рекомендации») и новую FULL_REPORT (8 разделов в верхнем регистре). Матчинг по
+// подстроке устойчив к суффиксам вроде «(H1–H6)» и регистру.
+function classifySectionTitle(rawTitle: string): SectionId | null {
+  const t = rawTitle.toLowerCase()
+  // Порядок важен: более специфичные проверки раньше общих.
+  if (t.includes('гипотез')) return 'hypotheses'
+  if (t.includes('ai-автоматизац') || t.includes('ai автоматизац') || t.includes('автоматизац'))
+    return 'ai_automation'
+  if (t.includes('профиль') || t.includes('бизнес')) return 'business'
+  if (t.includes('рын')) return 'market' // «рынок», «рыночная позиция»
+  if (t.includes('аудитори')) return 'audience'
+  if (t.includes('канал')) return 'channels'
+  if (t.includes('конкурент')) return 'competitors'
+  if (t.includes('стратег')) return 'strategy'
+  return null
 }
 
 export function parseSections(markdown: string): StrategySectionRendered[] {
@@ -66,7 +78,7 @@ export function parseSections(markdown: string): StrategySectionRendered[] {
     if (!headerMatch) continue
     const title = headerMatch[1].trim()
     const content = headerMatch[2].trim()
-    const id = SECTION_IDS[title]
+    const id = classifySectionTitle(title)
     if (id) {
       sections.push({ id, title, content })
     }
@@ -235,6 +247,11 @@ export async function generateAllSectionsParallel(
 
 const SYNTHESIS_MAX_TOKENS = 2500
 
+// FULL_REPORT — 8 разделов, 3000–5000 слов русского текста. Русский токенизируется
+// дороже (~2–3 токена/слово), поэтому лимит сильно выше синтеза. Vercel maxDuration=300
+// и Claude Sonnet 4.6 (до 64k output) это выдерживают.
+const FULL_REPORT_MAX_TOKENS = 16000
+
 function assembleFullMarkdown(
   sections: StrategySection[],
   synthesisBody: string,
@@ -378,6 +395,13 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
     throw new Error(`Research job not found: ${jobId}`)
   }
 
+  const companyRows = await db
+    .select()
+    .from(companies)
+    .where(eq(companies.id, companyId))
+    .limit(1)
+  const company = companyRows[0]
+
   const inserted = await db
     .insert(reportArtifacts)
     .values({
@@ -441,12 +465,27 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
       }
     }
 
-    // One-shot path (twoStageReview=false): single LLM call returns full markdown.
-    // This is the full-strategy synthesis → use the stronger synthesisModel.
-    const userPrompt = buildStrategyUserPrompt(context)
-    const { content: contentMarkdown, modelId } = await callStrategyLLM(
-      STRATEGY_SYSTEM_PROMPT,
-      userPrompt,
+    // One-shot path (twoStageReview=false): полный отчёт FULL_REPORT (8 разделов).
+    // Подгружаем требования базы знаний (universal + ниша по detectNiche) и
+    // прокидываем в промпт. Тяжёлый синтез → synthesisModel (Claude Sonnet 4.6),
+    // повышенный лимит токенов под объём 3000–5000 слов.
+    const nicheText = [company?.industry, company?.name, company?.description]
+      .filter(Boolean)
+      .join(' ')
+    const nicheId = await detectNiche(nicheText)
+    const reqs = await loadReportRequirements(nicheId)
+    const { system, user } = buildFullReportPrompt({
+      companyName: company?.name ?? 'Компания',
+      companySite: company?.website ?? undefined,
+      niche: reqs.niche,
+      goal: company?.goals ?? '',
+      factsMarkdown: serializeContext(context),
+      kbRequirements: reqs.combinedMarkdown,
+    })
+    const { content: contentMarkdown, modelId } = await callOpenRouter(
+      system,
+      user,
+      FULL_REPORT_MAX_TOKENS,
       AI_CONFIG.strategy.synthesisModel,
     )
 

@@ -14,7 +14,6 @@ vi.mock('@/lib/rag/context', () => ({
 }))
 
 vi.mock('../prompts', () => ({
-  STRATEGY_SYSTEM_PROMPT: 'mock system prompt',
   STRATEGY_SYNTHESIS_SYSTEM_PROMPT: 'mock synthesis system',
   SECTION_TITLES: {
     business: 'Анализ бизнеса',
@@ -23,10 +22,20 @@ vi.mock('../prompts', () => ({
     channels: 'Анализ каналов',
     competitors: 'Анализ конкурентов',
   },
-  buildStrategyUserPrompt: vi.fn(() => 'mock user prompt'),
   buildSectionSystemPrompt: vi.fn((t: string) => `system for ${t}`),
   buildSectionUserPrompt: vi.fn((t: string) => `user for ${t}`),
   buildSynthesisUserPrompt: vi.fn(() => 'synthesis user prompt'),
+  buildFullReportPrompt: vi.fn(() => ({ system: 'full report system', user: 'full report user' })),
+}))
+
+vi.mock('../kb', () => ({
+  detectNiche: vi.fn(async () => null),
+  loadReportRequirements: vi.fn(async () => ({
+    niche: null,
+    universalMarkdown: 'U',
+    nicheMarkdown: '',
+    combinedMarkdown: 'U',
+  })),
 }))
 
 vi.mock('@/lib/ai/config', () => ({
@@ -34,6 +43,7 @@ vi.mock('@/lib/ai/config', () => ({
     strategy: {
       defaultProvider: 'openrouter',
       defaultModel: 'deepseek/deepseek-v4-flash',
+      synthesisModel: 'anthropic/claude-sonnet-4.6',
       twoStageReview: true,
     },
   },
@@ -57,11 +67,23 @@ vi.mock('@/db/schema', () => ({
     id: 'research_jobs.id',
     companyId: 'research_jobs.company_id',
   },
+  companies: {
+    id: 'companies.id',
+    name: 'companies.name',
+    industry: 'companies.industry',
+    description: 'companies.description',
+    website: 'companies.website',
+    goals: 'companies.goals',
+  },
 }))
 
 const mockJobLimit = vi.fn()
 const mockJobWhere = vi.fn().mockReturnValue({ limit: mockJobLimit })
 const mockJobFrom = vi.fn().mockReturnValue({ where: mockJobWhere })
+
+const mockCompanyLimit = vi.fn()
+const mockCompanyWhere = vi.fn().mockReturnValue({ limit: mockCompanyLimit })
+const mockCompanyFrom = vi.fn().mockReturnValue({ where: mockCompanyWhere })
 
 const mockArtifactLimit = vi.fn()
 const mockArtifactWhere = vi.fn().mockReturnValue({ limit: mockArtifactLimit })
@@ -114,7 +136,11 @@ function setupDbForGenerate() {
   mockSelect.mockReset()
   mockSelect
     .mockReturnValueOnce({ from: mockJobFrom }) // researchJobs lookup
+    .mockReturnValueOnce({ from: mockCompanyFrom }) // companies lookup
   mockJobLimit.mockResolvedValue([{ companyId: 'company-1' }])
+  mockCompanyLimit.mockResolvedValue([
+    { id: 'company-1', name: 'Тест', industry: 'Юридические услуги', website: null, description: null, goals: null },
+  ])
   mockReturning.mockResolvedValue([{ id: 'artifact-1' }])
   mockUpdateWhere.mockResolvedValue([])
   vi.mocked(buildResearchContext).mockResolvedValue(MOCK_CONTEXT)
