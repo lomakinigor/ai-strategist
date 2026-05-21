@@ -1,98 +1,175 @@
-import { callStrategyLLM } from './generator'
+// BRIEF_REPORT (Этап 2 двухэтапной методологии) — дистилляция полного отчёта
+// в 6 структурированных блоков. Модель возвращает JSON (без response_format —
+// только промпт-инструкция + устойчивый парсер, см. brief-parser.ts), что обходит
+// несовместимость OpenRouter json_schema с throughput-роутингом.
 
-const BRIEF_SYSTEM_PROMPT = `Ты аналитик-стратег. Создай краткое резюме стратегического анализа для клиента-предпринимателя.
+import { callOpenRouter } from './generator'
+import { AI_CONFIG } from '@/lib/ai/config'
+import { detectNiche, loadReportRequirements } from './kb'
+import { parseBriefReport } from './brief-parser'
 
-МЕТОДОЛОГИЯ (текстовая):
-- Minto (Принцип пирамиды): вывод первым, затем 3 факта-обоснования, тест «И что?» — каждый факт должен давать действие
-- Knaflic (Storytelling with Data): один ключевой инсайт на раздел, убирай лишнее, цифры с контекстом
-- Duarte (Resonate): контраст «что есть → что может быть», особенно в AI-блоке
-- McKinsey Way: 80/20 — только 20% самой важной информации, elevator test — раздел понятен за 30 секунд
+export const BRIEF_REPORT_MAX_TOKENS = 4096
 
-МЕТОДОЛОГИЯ (визуализация — Tufte / Knaflic / Berinato):
-- V1 ЗАГОЛОВОК = ВЫВОД (Berinato): название раздела — не тема, а законченное утверждение. Не «Бизнес», а «Компания работает в премиум-B2B без публичной воронки».
-- V2 DATA-INK (Tufte): каждое слово несёт смысл. Удаляй «необходимо рассмотреть», «важно отметить», «следует учесть» — это chartjunk текста.
-- V3 ОДНА ТОЧКА ФОКУСА (Knaflic): в блоке выделяется ровно один главный факт (выводом). Остальное — нейтрально.
-- V4 NO DATA → NO CLAIM (Tufte): нет факта с RS ≥ 3 — нет утверждения. Никаких «обычно», «как правило», «по нашему опыту».
-- V5 SMALL MULTIPLES (Tufte): все разделы строго одной формы (вывод / 3 факта / действие) — глаз привыкает за первый, дальше сканирует.
-- V6 ОДИН БЛОК — ОДИН ВОПРОС (Berinato): если в разделе появляется второй вопрос — он уходит в свой блок или вычёркивается.
-- V7 EXECUTIVE SNAPSHOT (Berinato): первый блок отчёта — 1 предложение про компанию + 3–5 ключевых фактов с источниками. Читатель понимает «что делать» за 10 секунд.
-- V8 ANTI-DUPLICATION: каждый факт упоминается РОВНО ОДИН РАЗ во всём отчёте. Если факт попал в EXECUTIVE SNAPSHOT — он НЕ повторяется в разделах. Если упомянут в «Рынок» — не появляется в «Стратегия». Запрещены формулировки «как уже было сказано выше», «как отмечалось ранее».
+// ─── Типы 6 блоков ────────────────────────────────────────────────────────────
 
-ФОРМАТ ОТЧЁТА:
+export interface MarketPositionRow {
+  metric: string
+  value: string
+  norm: string
+  status: 'red' | 'yellow' | 'green'
+}
 
-Блок 1 — EXECUTIVE SNAPSHOT (всегда первый, обязателен):
-**EXECUTIVE SNAPSHOT**
-ВЫВОД: [одно предложение — что собой представляет компания + главный стратегический вызов]
-• [KPI/факт 1 — самый важный, с цифрой и источником]
-• [KPI/факт 2]
-• [KPI/факт 3]
-• [KPI/факт 4 — опционально]
-• [KPI/факт 5 — опционально]
+export interface MarketPositionTable {
+  rows: MarketPositionRow[]
+}
 
-Блоки 2-N — РАЗДЕЛЫ (Бизнес | Рынок | Аудитория | Каналы | Конкуренты | Стратегия):
-**[Заголовок-вывод — законченное утверждение, не тема]**
-ВЫВОД: [одно предложение — главный инсайт раздела, НЕ повторяет факты из Snapshot]
-• [Факт 1 — новый, не из Snapshot и не из других разделов]
-• [Факт 2]
-• [Факт 3]
-ДЕЙСТВИЕ: [конкретный следующий шаг — глагол + объект + срок/метрика]
+export interface Bottleneck {
+  problem: string
+  metric: string
+  consequence: string
+}
 
-ЖЁСТКИЕ ПРАВИЛА:
+export interface GrowthPotentialRow {
+  direction: string
+  potential_pct: string
+  deadline: string
+  priority: 'high' | 'medium' | 'low'
+}
 
-1. ТОЛЬКО ФАКТЫ — никаких гипотез
-   - Пропускай факты с [ГИПОТЕЗА], [ОЦЕНКА], [НЕДОСТАТОЧНО ДАННЫХ]
-   - В кратком отчёте остаются только утверждения с RS ≥ 3 (подтверждённые источниками)
-   - Лучше короткий раздел из 2 фактов, чем длинный с натянутыми
+export interface GrowthPotentialTable {
+  rows: GrowthPotentialRow[]
+}
 
-2. РАСШИФРОВКА ПРОФЕССИОНАЛЬНЫХ ТЕРМИНОВ — обязательно
-   Клиент не маркетолог. Каждый профессиональный термин при первом упоминании сопровождай скобочной расшифровкой простыми словами:
-   - LCP (Largest Contentful Paint — время загрузки главного блока страницы, норма до 2,5 секунды)
-   - SEO (поисковая оптимизация — продвижение сайта в выдаче Яндекса и Google)
-   - USP (Unique Selling Proposition — уникальное торговое предложение)
-   - CTA (Call To Action — кнопка/призыв к действию)
-   - Lighthouse Performance (показатель скорости сайта от Google, 0–100)
-   - CAC (Customer Acquisition Cost — стоимость привлечения одного клиента)
-   - CPL (Cost Per Lead — стоимость одной заявки)
-   - benchmark (среднее по отрасли)
-   - legal-tech (технологии для юристов)
-   - ретаргетинг (повторный показ рекламы тем, кто уже был на сайте)
-   - A/B-тест (сравнение двух вариантов)
-   Дальше в отчёте термин можно использовать без скобок.
+export interface AILever {
+  tool: string
+  automates: string
+  effect: string
+  launch_deadline: string
+}
 
-3. КАНАЛЫ РФ — приоритет
-   - Основные каналы: MAX, ВКонтакте, 2ГИС, Яндекс (Директ + Карты + SEO + Дзен)
-   - Для рассылок: MAX → ВКонтакте → Telegram → email
-   - Для привлечения: Яндекс.Директ → ВКонтакте → 2ГИС → SEO
-   - Telegram, YouTube, Авито — упоминаем только если у клиента есть конкретная активность
-   - Instagram/TikTok — только если клиент сам их использует, с пометкой «через VPN»
+export interface NextAction {
+  action: string
+  deadline: string
+  owner: string
+  kpi: string
+}
 
-4. AI-СЕКЦИЯ — обязательная (3 слота)
-   В блоке Стратегия обязательно отрази 3 AI-возможности (если в полном отчёте они были):
-   - Слот 1: автоматизация публикаций/рассылок в каналы клиента (универсальное)
-   - Слот 2: нишевое предложение (специфика отрасли)
-   - Слот 3: самое релевантное по фактам
-   Каждое — короткий контраст «Сейчас X → После Y → Экономия Z ₽/мес».
+export interface ABHypothesis {
+  id: string
+  hypothesis: string
+  metric: string
+  test_method: string
+  deadline: string
+}
 
-5. ОБЩИЕ ПРАВИЛА
-   - Только конкретные данные — никаких «необходимо», «важно», «следует рассмотреть»
-   - Суммы только в рублях (₽)
-   - Весь отчёт — не более 600 слов (вместе с Executive Snapshot)
-   - Разделы: EXECUTIVE SNAPSHOT (всегда первый) + Бизнес | Рынок | Аудитория | Каналы | Конкуренты | Стратегия (только те, где есть факты)
-   - АНТИ-ПОВТОР: перед добавлением факта в раздел проверь, что он не упоминался выше. Если упоминался — пропусти. Лучше пустой раздел, чем дубль.`
+export interface BriefReportBlock {
+  market_position: MarketPositionTable
+  critical_bottlenecks: Bottleneck[]
+  growth_potential: GrowthPotentialTable
+  ai_levers: AILever[]
+  next_actions: NextAction[]
+  ab_hypotheses: ABHypothesis[]
+}
 
-export async function generateBriefReport(contentMarkdown: string): Promise<string> {
-  const userPrompt =
-    `На основе полного стратегического анализа ниже создай краткий клиентский отчёт строго по правилам system-промпта.\n\n` +
-    `ПОЛНЫЙ АНАЛИЗ:\n${contentMarkdown}\n\n` +
-    `НАПОМИНАНИЕ: \n` +
-    `- НАЧНИ С EXECUTIVE SNAPSHOT — 1 предложение про компанию + 3–5 ключевых фактов с источниками.\n` +
-    `- АНТИ-ПОВТОР (V8): факты из Snapshot НЕ повторяются в разделах. Перед добавлением факта в раздел проверь весь предыдущий текст — если факт уже звучал (даже другими словами), пропусти. Лучше короткий раздел из 2 фактов, чем повтор.\n` +
-    `- ЗАГОЛОВОК РАЗДЕЛА (V1) — это законченный вывод, а не тема: «Премиум-B2B без публичной воронки», а не «Бизнес».\n` +
-    `- Пропускай всё с [ГИПОТЕЗА], [ОЦЕНКА], [НЕДОСТАТОЧНО ДАННЫХ] — только подтверждённые факты.\n` +
-    `- Каждый профессиональный термин (LCP, SEO, USP, CTA, CAC, CPL, benchmark и т.п.) при первом упоминании — с расшифровкой в скобках.\n` +
-    `- Основные каналы РФ для анализа: MAX, ВКонтакте, 2ГИС, Яндекс.\n` +
-    `- В разделе «Стратегия» обязательно отрази 3 AI-возможности из полного отчёта (рассылки + нишевое + свободное).`
+// ─── Промпт Этапа 2 ────────────────────────────────────────────────────────────
 
-  const { content } = await callStrategyLLM(BRIEF_SYSTEM_PROMPT, userPrompt)
-  return content
+export function buildBriefReportPrompt(
+  companyName: string,
+  niche: string,
+  fullReport: string,
+  kbRequirements: string,
+): string {
+  return `# Задача: Краткий стратегический отчёт (Этап 2)
+
+## Компания: ${companyName}
+## Ниша: ${niche}
+
+## Требования базы знаний (краткий формат)
+${kbRequirements}
+
+## Полный отчёт для дистилляции
+${fullReport}
+
+---
+
+## Правила дистилляции
+- Используй ТОЛЬКО факты с маркировкой [ФАКТ] из полного отчёта.
+- Каждое утверждение содержит конкретную цифру.
+- Нет вводных фраз: «таким образом», «следует отметить», «необходимо учитывать».
+- Объём — строго 600–900 слов суммарно по всем блокам.
+- Тест: можно ли прочитать за 3 минуты? Если нет — сократи.
+- Суммы — только в рублях (₽). Весь текст — на русском.
+
+## Обязательная структура вывода (JSON)
+Верни результат ТОЛЬКО как валидный JSON без markdown-обёртки и комментариев:
+
+{
+  "market_position": {
+    "rows": [
+      { "metric": "название метрики", "value": "фактическое значение", "norm": "норма отрасли", "status": "red|yellow|green" }
+    ]
+  },
+  "critical_bottlenecks": [
+    { "problem": "конкретная проблема", "metric": "цифра, подтверждающая проблему", "consequence": "что произойдёт, если не исправить" }
+  ],
+  "growth_potential": {
+    "rows": [
+      { "direction": "направление роста", "potential_pct": "+XX%", "deadline": "срок", "priority": "high|medium|low" }
+    ]
+  },
+  "ai_levers": [
+    { "tool": "название инструмента", "automates": "что автоматизирует", "effect": "измеримый эффект", "launch_deadline": "срок запуска" }
+  ],
+  "next_actions": [
+    { "action": "конкретное действие", "deadline": "дедлайн", "owner": "ответственный", "kpi": "измеримый результат" }
+  ],
+  "ab_hypotheses": [
+    { "id": "H1", "hypothesis": "формулировка гипотезы", "metric": "метрика проверки", "test_method": "способ проверки", "deadline": "срок" }
+  ]
+}
+
+## Требования к количеству элементов
+- market_position: 5–7 строк
+- critical_bottlenecks: ровно 3
+- growth_potential: 4–6 строк
+- ai_levers: ровно 3
+- next_actions: ровно 3
+- ab_hypotheses: 2–3 гипотезы (H1, H2, H3)
+
+## Статусы светофора
+- "red"    — значение хуже нормы более чем на 30%
+- "yellow" — значение отличается от нормы на 10–30%
+- "green"  — значение в норме или лучше`
+}
+
+const BRIEF_SYSTEM_PROMPT = `Ты — профессиональный бизнес-аналитик. Твоя задача — дистиллировать полный стратегический отчёт в краткую версию для клиента.
+Возвращай ТОЛЬКО валидный JSON без комментариев и markdown-блоков. Все значения — на русском языке, суммы — в рублях.`
+
+// ─── Генерация ───────────────────────────────────────────────────────────────
+
+export async function generateBriefReport(
+  companyName: string,
+  companyIndustry: string,
+  fullReportText: string,
+): Promise<{ raw: string; parsed: BriefReportBlock }> {
+  const nicheId = await detectNiche(`${companyIndustry} ${companyName} ${fullReportText}`)
+  const reqs = await loadReportRequirements(nicheId)
+  const nicheName = reqs.niche?.displayName ?? companyIndustry ?? 'не определена'
+
+  const userPrompt = buildBriefReportPrompt(
+    companyName,
+    nicheName,
+    fullReportText,
+    reqs.combinedMarkdown,
+  )
+
+  const { content: raw } = await callOpenRouter(
+    BRIEF_SYSTEM_PROMPT,
+    userPrompt,
+    BRIEF_REPORT_MAX_TOKENS,
+    AI_CONFIG.strategy.synthesisModel,
+  )
+
+  const parsed = parseBriefReport(raw)
+  return { raw, parsed }
 }

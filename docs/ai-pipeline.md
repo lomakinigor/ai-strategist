@@ -27,8 +27,7 @@
 | 4a | **Stage 1: 5 параллельных черновиков** *(если `STRATEGY_TWO_STAGE_REVIEW=true`)* | По одному draft на раздел, пользователь делает ревью | OpenRouter | Claude Sonnet 4.6 |
 | 4b | **Stage 2: синтез полной стратегии** | Объединение 5 ревьюнутых draft в финальный отчёт | OpenRouter | Claude Sonnet 4.6 |
 | 4* | **Single-call mode (текущий дефолт)** | Полный отчёт за один вызов LLM | OpenRouter | Claude Sonnet 4.6 |
-| 5 | **Краткий отчёт (brief)** | Executive Snapshot + 5 разделов по методологии Tufte/Knaflic/Berinato | OpenRouter | Claude Sonnet 4.6 |
-| 6 | **AI-блок (3 предложения)** | Извлечение AI-возможностей из текста полного отчёта | — | детерминированный regex [ai-extract.ts](../app/brief/[artifactId]/ai-extract.ts) |
+| 5 | **Краткий отчёт (BRIEF_REPORT)** | Дистилляция полного отчёта в 6 блоков JSON: позиция (таблица-светофор), узкие места, потенциал, AI-рычаги, 3 действия, A/B-гипотезы | OpenRouter | Claude Sonnet 4.6 |
 
 ## Заметки
 
@@ -49,4 +48,3 @@
 
 - **Этап 2 — внешние метрики**: PageSpeed + VK API.
 - **Этап 3 — RS-верификация фактов**: классификация по reliability score.
-- **Этап 6 — AI-блок**: regex-извлечение AI-возможностей из текста стратегии.

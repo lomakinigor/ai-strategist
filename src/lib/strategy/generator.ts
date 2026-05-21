@@ -127,7 +127,7 @@ interface OpenRouterChatResponse {
   choices: Array<{ message: { content: string } }>
 }
 
-async function callOpenRouter(
+export async function callOpenRouter(
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number,
