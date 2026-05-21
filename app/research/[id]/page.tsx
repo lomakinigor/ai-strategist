@@ -7,7 +7,8 @@ import { AI_CONFIG } from '@/lib/ai/config'
 import { TriggerResearchButton, GenerateStrategyButton, NavButton } from './ResearchActions'
 
 // Research-trigger and strategy-generate actions run on this segment; need >10s budget.
-export const maxDuration = 60
+// 300 = Vercel Hobby max with Fluid Compute (Pro allows up to 800).
+export const maxDuration = 300
 
 const STATUS_LABELS: Record<ResearchStatus, string> = {
   pending: 'Ожидает запуска',

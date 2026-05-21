@@ -11,7 +11,11 @@ export interface ResearchProviderConfig {
 
 export interface StrategyProviderConfig {
   defaultProvider: AIProviderId
+  // Lightweight parallel tasks: Stage-1 section drafts, brief reformatting.
   defaultModel: AIModelId
+  // Heavy synthesis of the full strategy (the product's main deliverable).
+  // Quality matters more here, so we spend a stronger model on a single call.
+  synthesisModel: AIModelId
   // Two-stage review mode: Stage 1 generates 5 parallel section drafts (status='partial'),
   // user reviews them on the report page, then explicitly triggers Stage 2 synthesis.
   // Disable to fall back to single-call generation (one LLM round-trip).
@@ -34,9 +38,13 @@ export const AI_CONFIG: AIConfig = {
   },
   strategy: {
     defaultProvider: 'openrouter',
-    // Flash fits in Vercel's 60s function timeout; -pro takes 90+s and triggers 504.
-    // Switch back to -pro once strategy generation moves to async/background processing.
+    // Vercel Fluid Compute (default since Apr 2025) lifts maxDuration to 300s on Hobby /
+    // 800s on Pro, so the old "Flash only, -pro 504s" constraint no longer applies.
+    // Flash stays for lightweight parallel work (5 section drafts, brief reformatting).
     defaultModel: process.env.OPENROUTER_STRATEGY_MODEL ?? 'deepseek/deepseek-v4-flash',
+    // Claude Sonnet 4.6 for the full-strategy synthesis — the main client deliverable.
+    // ~$0.05/report (one call). Override via OPENROUTER_SYNTHESIS_MODEL.
+    synthesisModel: process.env.OPENROUTER_SYNTHESIS_MODEL ?? 'anthropic/claude-sonnet-4.6',
     twoStageReview: process.env.STRATEGY_TWO_STAGE_REVIEW === 'true',
   },
 }

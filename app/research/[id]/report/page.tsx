@@ -9,7 +9,8 @@ import { BriefReportPanel } from './BriefReportPanel'
 import type { PartialStrategyContent } from '@/lib/types'
 
 // Server actions in this segment may run for the full Vercel Hobby budget.
-export const maxDuration = 60
+// 300 = Vercel Hobby max with Fluid Compute (Pro allows up to 800).
+export const maxDuration = 300
 
 // ─── Section metadata ─────────────────────────────────────────────────────────
 

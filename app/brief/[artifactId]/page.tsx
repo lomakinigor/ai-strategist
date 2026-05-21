@@ -10,7 +10,8 @@ import { AiBlock } from './AiBlock'
 import { PrintButton } from './PrintButton'
 import { BriefFooter } from './BriefFooter'
 
-export const maxDuration = 60
+// 300 = Vercel Hobby max with Fluid Compute (Pro allows up to 800).
+export const maxDuration = 300
 
 export const metadata = {
   title: 'Краткий отчёт — AI-Стратег',

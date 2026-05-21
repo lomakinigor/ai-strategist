@@ -9,7 +9,7 @@
 |--------|-----------|---------|-------------|
 | **GitHub** | Хостинг исходников | — | бесплатно (public repo `lomakinigor/ai-strategist`) |
 | **Vercel** | Hosting Next.js + Serverless Functions + Postgres | `DATABASE_URL` | Hobby бесплатно / Pro при росте |
-| **OpenRouter** | Router для LLM (стратегия, brief, парсинг intake) | `OPENROUTER_API_KEY`, `OPENROUTER_REFERER` | per-token (DeepSeek V4 Flash ~$0.10–0.30 / 1M токенов) |
+| **OpenRouter** | Router для LLM (стратегия, синтез, brief, парсинг intake) | `OPENROUTER_API_KEY`, `OPENROUTER_REFERER` | per-token: DeepSeek V4 Flash ~$0.10–0.30 / 1M; Claude Sonnet 4.6 $3 вход / $15 выход за 1M (~$0.05 за синтез) |
 | **OpenAI** | Research с веб-поиском в реальном времени | `OPENAI_API_KEY` | per-token + плата за web_search вызовы |
 | **Perplexity** *(legacy)* | Старый research-провайдер, оставлен в коде | `PERPLEXITY_API_KEY` | сейчас не активен (заменён на OpenAI) |
 | **Google PageSpeed Insights** | Метрики сайта (LCP/CLS/Lighthouse) | `GOOGLE_PAGESPEED_API_KEY` | бесплатно с квотами |

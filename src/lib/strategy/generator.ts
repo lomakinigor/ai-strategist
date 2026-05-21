@@ -119,12 +119,13 @@ async function callOpenRouter(
   systemPrompt: string,
   userPrompt: string,
   maxTokens: number,
+  modelId?: string,
 ): Promise<{ content: string; modelId: string }> {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) {
     throw new Error('OPENROUTER_API_KEY is not configured')
   }
-  const model = AI_CONFIG.strategy.defaultModel
+  const model = modelId ?? AI_CONFIG.strategy.defaultModel
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -161,8 +162,9 @@ async function callOpenRouter(
 export async function callStrategyLLM(
   systemPrompt: string,
   userPrompt: string,
+  modelId?: string,
 ): Promise<{ content: string; modelId: string }> {
-  return callOpenRouter(systemPrompt, userPrompt, 5000)
+  return callOpenRouter(systemPrompt, userPrompt, 5000, modelId)
 }
 
 // ─── Stage 1: per-section generation ─────────────────────────────────────────
@@ -289,6 +291,7 @@ export async function synthesizeStrategy(artifactId: string): Promise<StrategyDr
       STRATEGY_SYNTHESIS_SYSTEM_PROMPT,
       userPrompt,
       SYNTHESIS_MAX_TOKENS,
+      AI_CONFIG.strategy.synthesisModel,
     )
 
     const fullMarkdown = assembleFullMarkdown(partial.sections, synthesisBody)
@@ -438,11 +441,13 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
       }
     }
 
-    // One-shot legacy path (twoStageReview=false): single LLM call returns full markdown.
+    // One-shot path (twoStageReview=false): single LLM call returns full markdown.
+    // This is the full-strategy synthesis → use the stronger synthesisModel.
     const userPrompt = buildStrategyUserPrompt(context)
     const { content: contentMarkdown, modelId } = await callStrategyLLM(
       STRATEGY_SYSTEM_PROMPT,
       userPrompt,
+      AI_CONFIG.strategy.synthesisModel,
     )
 
     await db
