@@ -13,7 +13,9 @@ SaaS для российских компаний. Минимальный intake
 
 ## Стек
 
-Next.js 14 App Router · TypeScript strict · Tailwind v4 · shadcn/ui · Drizzle · Postgres+pgvector · Vercel AI SDK + OpenRouter (DeepSeek). Детали: [docs/tech-spec.md](docs/tech-spec.md), [docs/directory-structure.md](docs/directory-structure.md)
+Next.js 14 App Router · TypeScript strict · Tailwind v4 · shadcn/ui · Drizzle · Postgres+pgvector · Vercel (Fluid Compute, maxDuration 300с).
+
+AI-провайдеры по этапам: OpenAI gpt-4o-mini + web_search (research) · OpenRouter → Claude Sonnet 4.6 (стратегия/синтез/brief) · DeepSeek V4 Pro (парсинг intake). Полная схема моделей и env-override: [docs/ai-pipeline.md](docs/ai-pipeline.md). Детали стека: [docs/tech-spec.md](docs/tech-spec.md), [docs/directory-structure.md](docs/directory-structure.md)
 
 ## Рабочий процесс
 
