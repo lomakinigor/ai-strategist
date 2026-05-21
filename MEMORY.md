@@ -78,6 +78,9 @@
 | 2026-04-28 | Антигаллюцинационные правила в STRATEGY_SYSTEM_PROMPT: только факты из контекста, [ФАКТ]/[ГИПОТЕЗА]/[НЕДОСТАТОЧНО ДАННЫХ] обязательны | Ключевой guardrail против LLM-домыслов о конкретной компании |
 | 2026-04-28 | MVP-stabilization-pass-01: features F-001..F-009 → Done, plan stages 1..6 → Done, tasks T-006/T-007/T-008/T-011 feature ID исправлены, tech-spec полностью приведён к реальному MVP | Docs были заморожены на Planned, tech-spec описывал устаревшие пути и технологии |
 | 2026-04-28 | beep-pre-tool.ps1 переписан: тройной сигнал строго по hook_event_name == "onShellCommandConfirmationRequested", убрана timestamp-эвристика; в settings.json добавлен хук onShellCommandConfirmationRequested | Timestamp-порог давал ложные срабатывания и пропуски; теперь привязка к реальному событию |
+| 2026-05-21 | Методология визуализации Tufte/Knaflic/Berinato в brief (V1–V8) | Executive Snapshot + anti-duplication; раньше только текстовая (Minto). Детали: [memory/2026-05-21.md](memory/2026-05-21.md) |
+| 2026-05-21 | Claude Sonnet 4.6 на синтезе, Flash на секциях/brief | Синтез — главный результат (~$0.05/отчёт); лёгкие задачи дешевле на Flash |
+| 2026-05-21 | maxDuration 60 → 300 (Vercel Fluid Compute) | Hobby max = 300с с апр 2025; старое ограничение 60с снято |
 
 ## Ссылки
 
