@@ -5,8 +5,9 @@ const RF_CHANNELS = [
   'TikTok', 'Одноклассники', 'Яндекс.Дзен', 'Авито', 'MAX',
 ]
 
-// Flash variant has much higher throughput limits and is more than enough for JSON extraction.
-const PARSE_MODEL = process.env.OPENROUTER_PARSE_MODEL ?? 'deepseek/deepseek-v4-flash'
+// Pro variant for intake parsing — stronger extraction quality on messy free-text input.
+// (Fluid Compute lifted the 300s limit, so Pro's longer latency is no longer a 504 risk.)
+const PARSE_MODEL = process.env.OPENROUTER_PARSE_MODEL ?? 'deepseek/deepseek-v4-pro'
 
 interface OpenRouterResponse {
   choices: Array<{ message: { content: string } }>

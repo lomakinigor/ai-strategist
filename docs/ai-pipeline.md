@@ -19,7 +19,7 @@
 
 | # | Этап | Что делает | Провайдер | Модель |
 |---|------|-----------|-----------|--------|
-| 0 | **Парсинг intake** | Свободный текст/clipboard клиента → структурированный JSON компании | OpenRouter | DeepSeek V4 Flash |
+| 0 | **Парсинг intake** | Свободный текст/clipboard клиента → структурированный JSON компании | OpenRouter | DeepSeek V4 Pro |
 | 1a | **Сбор данных — 5 потоков research** (параллельно) | Business / Market / Audience / Channels / Competitors с веб-поиском и цитированием | OpenAI | `gpt-4o-mini` + `web_search_preview` |
 | 1b | **Site marketing-анализ** | Разбор страницы клиента (USP, CTA, тексты) | OpenAI | `gpt-4o-mini` + `web_search_preview` |
 | 2 | **Внешние метрики** (детерминированные) | LCP/CLS/Lighthouse + VK-аудитория и охваты | — | Google PageSpeed API, VK API (без LLM) |
