@@ -197,14 +197,20 @@ const SECTION_MAX_TOKENS = 3000
 export async function generateSectionDraft(
   sectionType: StrategySectionType,
   context: ResearchContext,
+  kbRequirements?: string,
 ): Promise<StrategySection> {
   const title = SECTION_TITLES[sectionType]
   const generatedAt = new Date().toISOString()
 
   try {
-    const systemPrompt = buildSectionSystemPrompt(sectionType)
+    const systemPrompt = buildSectionSystemPrompt(sectionType, kbRequirements)
     const userPrompt = buildSectionUserPrompt(sectionType, context)
-    const { content, modelId } = await callOpenRouter(systemPrompt, userPrompt, SECTION_MAX_TOKENS)
+    const { content, modelId } = await callOpenRouter(
+      systemPrompt,
+      userPrompt,
+      SECTION_MAX_TOKENS,
+      AI_CONFIG.strategy.defaultModel,
+    )
     const trimmed = content.trim()
     // OpenRouter sometimes returns 200 OK with empty content (provider timeout, content
     // filter, or model returning only reasoning tokens). Without this guard the section
@@ -237,15 +243,18 @@ export async function generateSectionDraft(
 
 export async function generateAllSectionsParallel(
   context: ResearchContext,
+  kbRequirements?: string,
 ): Promise<StrategySection[]> {
   return Promise.all(
-    STAGE_ONE_SECTION_TYPES.map((type) => generateSectionDraft(type, context)),
+    STAGE_ONE_SECTION_TYPES.map((type) => generateSectionDraft(type, context, kbRequirements)),
   )
 }
 
 // ─── Stage 2: synthesis ──────────────────────────────────────────────────────
 
-const SYNTHESIS_MAX_TOKENS = 2500
+// Синтез теперь генерит 3 раздела (6 AI-автоматизация, 7 Стратегия, 8 Гипотезы),
+// а не один — лимит повышен.
+const SYNTHESIS_MAX_TOKENS = 6000
 
 // FULL_REPORT — 8 разделов, 3000–5000 слов русского текста. Русский токенизируется
 // дороже (~2–3 токена/слово), поэтому лимит сильно выше синтеза. Vercel maxDuration=300
@@ -266,7 +275,8 @@ function assembleFullMarkdown(
     blocks.push(`## ${idx + 1}. ${s.title}\n\n${body}`)
   })
 
-  blocks.push(`## ${ordered.length + 1}. Стратегия и рекомендации\n\n${synthesisBody.trim()}`)
+  // synthesisBody уже содержит разделы 6, 7, 8 с собственными заголовками «## N. ...».
+  blocks.push(synthesisBody.trim())
 
   return blocks.join('\n\n')
 }
@@ -302,8 +312,19 @@ export async function synthesizeStrategy(artifactId: string): Promise<StrategyDr
     )
   }
 
+  // Подгружаем требования базы знаний по нише компании для синтеза разделов 6–8.
+  const [company] = await db
+    .select({ name: companies.name, industry: companies.industry, description: companies.description })
+    .from(companies)
+    .where(eq(companies.id, artifact.companyId))
+    .limit(1)
+  const nicheId = await detectNiche(
+    [company?.industry, company?.name, company?.description].filter(Boolean).join(' '),
+  )
+  const reqs = await loadReportRequirements(nicheId)
+
   try {
-    const userPrompt = buildSynthesisUserPrompt(partial.sections)
+    const userPrompt = buildSynthesisUserPrompt(partial.sections, reqs.combinedMarkdown)
     const { content: synthesisBody, modelId } = await callOpenRouter(
       STRATEGY_SYNTHESIS_SYSTEM_PROMPT,
       userPrompt,
@@ -352,7 +373,27 @@ export async function regenerateSection(
   const db = getDb()
 
   const context = await buildResearchContext(jobId)
-  const newSection = await generateSectionDraft(sectionType, context)
+
+  // KB-требования по нише — чтобы перегенерированная секция следовала тем же правилам.
+  const [job] = await db
+    .select({ companyId: researchJobs.companyId })
+    .from(researchJobs)
+    .where(eq(researchJobs.id, jobId))
+    .limit(1)
+  let kbRequirements: string | undefined
+  if (job?.companyId) {
+    const [company] = await db
+      .select({ name: companies.name, industry: companies.industry, description: companies.description })
+      .from(companies)
+      .where(eq(companies.id, job.companyId))
+      .limit(1)
+    const nicheId = await detectNiche(
+      [company?.industry, company?.name, company?.description].filter(Boolean).join(' '),
+    )
+    kbRequirements = (await loadReportRequirements(nicheId)).combinedMarkdown
+  }
+
+  const newSection = await generateSectionDraft(sectionType, context, kbRequirements)
 
   const rows = await db
     .select()
@@ -438,9 +479,15 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
       }
     }
 
+    // KB-требования (universal + ниша) — нужны и Stage 1 (направления), и one-shot.
+    const nicheId = await detectNiche(
+      [company?.industry, company?.name, company?.description].filter(Boolean).join(' '),
+    )
+    const reqs = await loadReportRequirements(nicheId)
+
     if (twoStage) {
-      // Stage 1: 5 parallel section drafts, persist as partial.
-      const sections = await generateAllSectionsParallel(context)
+      // Stage 1: 5 параллельных черновиков направлений (разделы 1–5), persist as partial.
+      const sections = await generateAllSectionsParallel(context, reqs.combinedMarkdown)
       const contentJson: PartialStrategyContent = { stage: 1, sections }
 
       await db
@@ -465,15 +512,8 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
       }
     }
 
-    // One-shot path (twoStageReview=false): полный отчёт FULL_REPORT (8 разделов).
-    // Подгружаем требования базы знаний (universal + ниша по detectNiche) и
-    // прокидываем в промпт. Тяжёлый синтез → synthesisModel (Claude Sonnet 4.6),
-    // повышенный лимит токенов под объём 3000–5000 слов.
-    const nicheText = [company?.industry, company?.name, company?.description]
-      .filter(Boolean)
-      .join(' ')
-    const nicheId = await detectNiche(nicheText)
-    const reqs = await loadReportRequirements(nicheId)
+    // One-shot path (twoStageReview=false): полный отчёт FULL_REPORT (8 разделов)
+    // одним вызовом на synthesisModel, повышенный лимит токенов под 3000–5000 слов.
     const { system, user } = buildFullReportPrompt({
       companyName: company?.name ?? 'Компания',
       companySite: company?.website ?? undefined,

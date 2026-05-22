@@ -306,34 +306,39 @@ describe('synthesizeStrategy', () => {
         contentJson: {
           stage: 1,
           sections: [
-            { id: 'business', title: 'Анализ бизнеса', content: 'B [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
-            { id: 'market', title: 'Анализ рынка', content: 'M [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
-            { id: 'audience', title: 'Анализ целевой аудитории', content: 'A [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
-            { id: 'channels', title: 'Анализ каналов', content: 'C [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
-            { id: 'competitors', title: 'Анализ конкурентов', content: 'X [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
+            { id: 'business', title: 'Профиль бизнеса', content: 'B [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
+            { id: 'market', title: 'Рыночная позиция', content: 'M [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
+            { id: 'audience', title: 'Целевая аудитория', content: 'A [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
+            { id: 'channels', title: 'Каналы привлечения', content: 'C [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
+            { id: 'competitors', title: 'Конкурентный ландшафт', content: 'X [ФАКТ]', generatedAt: '2026-05-01T00:00:00Z', modelId: 'deepseek/deepseek-v4-flash', error: null },
           ],
         },
       },
     ])
     mockUpdateWhere.mockResolvedValue([])
-    vi.stubGlobal('fetch', makeFetchMock('Стратегия и рекомендации [ФАКТ]'))
+    // Синтез возвращает три раздела 6/7/8 с собственными заголовками.
+    vi.stubGlobal(
+      'fetch',
+      makeFetchMock(
+        '## 6. AI-АВТОМАТИЗАЦИЯ\nсценарии [ФАКТ]\n\n## 7. СТРАТЕГИЯ РОСТА\nгоризонты [ФАКТ]\n\n## 8. ГИПОТЕЗЫ ДЛЯ ПРОВЕРКИ (H1–H6)\nH1 [ФАКТ]',
+      ),
+    )
   })
 
-  it('updates artifact with status=done and full markdown including synthesis section', async () => {
+  it('собирает 8 разделов: 5 направлений (Stage 1) + 3 синтезированных (6/7/8)', async () => {
     await synthesizeStrategy('artifact-1')
     expect(mockUpdateSet).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'done',
-        contentMarkdown: expect.stringContaining('## 6. Стратегия и рекомендации'),
-      }),
+      expect.objectContaining({ status: 'done' }),
     )
     const callArg = mockUpdateSet.mock.calls.at(-1)![0] as { contentMarkdown: string }
-    expect(callArg.contentMarkdown).toContain('## 1. Анализ бизнеса')
-    expect(callArg.contentMarkdown).toContain('## 2. Анализ рынка')
-    expect(callArg.contentMarkdown).toContain('## 3. Анализ целевой аудитории')
-    expect(callArg.contentMarkdown).toContain('## 4. Анализ каналов')
-    expect(callArg.contentMarkdown).toContain('## 5. Анализ конкурентов')
-    expect(callArg.contentMarkdown).toContain('## 6. Стратегия и рекомендации')
+    expect(callArg.contentMarkdown).toContain('## 1. Профиль бизнеса')
+    expect(callArg.contentMarkdown).toContain('## 2. Рыночная позиция')
+    expect(callArg.contentMarkdown).toContain('## 3. Целевая аудитория')
+    expect(callArg.contentMarkdown).toContain('## 4. Каналы привлечения')
+    expect(callArg.contentMarkdown).toContain('## 5. Конкурентный ландшафт')
+    expect(callArg.contentMarkdown).toContain('## 6. AI-АВТОМАТИЗАЦИЯ')
+    expect(callArg.contentMarkdown).toContain('## 7. СТРАТЕГИЯ РОСТА')
+    expect(callArg.contentMarkdown).toContain('## 8. ГИПОТЕЗЫ ДЛЯ ПРОВЕРКИ')
   })
 
   it('rejects synthesis when any section has error', async () => {

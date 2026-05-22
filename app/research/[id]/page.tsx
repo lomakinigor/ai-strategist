@@ -105,7 +105,7 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
   ]
 
   const overallStatus = job.status as ResearchStatus
-  const modeLabel = researchMode === 'real' ? 'Perplexity (real)' : 'mock'
+  const modeLabel = researchMode === 'real' ? 'OpenAI (real)' : 'mock'
   const modeBadgeClass = researchMode === 'real' ? 'text-purple-700 bg-purple-50' : 'text-gray-500 bg-gray-100'
 
   return (
@@ -168,12 +168,12 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-yellow-800 mb-3">
               {researchMode === 'real'
-                ? 'Запустить реальное исследование через Perplexity Sonar по всем 4 потокам.'
-                : 'Запустить имитацию исследования (mock-режим, без реальных запросов в Perplexity).'}
+                ? 'Запустить реальное исследование через OpenAI (веб-поиск) по всем потокам. Это займёт 30–60 секунд — дождитесь завершения.'
+                : 'Запустить имитацию исследования (mock-режим, без реальных запросов).'}
             </p>
             <TriggerResearchButton
               jobId={job.id}
-              label={researchMode === 'real' ? 'Запустить исследование Perplexity' : 'Запустить имитацию исследования (mock)'}
+              label={researchMode === 'real' ? 'Запустить исследование' : 'Запустить имитацию исследования (mock)'}
             />
           </div>
         )}
@@ -182,8 +182,8 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-blue-800">
               {researchMode === 'real'
-                ? 'Идёт исследование через Perplexity Sonar… Обновите страницу для проверки статуса.'
-                : 'Идёт mock-исследование по всем 4 потокам… Обновите страницу для проверки статуса.'}
+                ? 'Идёт исследование через OpenAI… Обновите страницу для проверки статуса.'
+                : 'Идёт mock-исследование по всем потокам… Обновите страницу для проверки статуса.'}
             </p>
           </div>
         )}
@@ -192,7 +192,7 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 space-y-3">
             <p className="text-sm text-green-800">
               {researchMode === 'real'
-                ? 'Исследование Perplexity завершено. Данные с источниками готовы для валидации.'
+                ? 'Исследование OpenAI завершено. Данные с источниками готовы для валидации.'
                 : 'Mock-исследование завершено. Данные готовы для валидации фактов.'}
             </p>
             <NavButton
@@ -243,9 +243,9 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
             <p className="text-sm text-red-800">
               {job.errorMessage ?? 'Произошла ошибка при выполнении исследования.'}
             </p>
-            {researchMode === 'real' && job.errorMessage?.includes('PERPLEXITY_API_KEY') && (
+            {researchMode === 'real' && job.errorMessage?.includes('OPENAI_API_KEY') && (
               <p className="text-xs text-red-600 mt-2">
-                Перейдите в режим mock (RESEARCH_MODE=mock) или задайте PERPLEXITY_API_KEY.
+                Перейдите в режим mock (RESEARCH_MODE=mock) или задайте OPENAI_API_KEY.
               </p>
             )}
           </div>
