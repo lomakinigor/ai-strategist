@@ -94,15 +94,5 @@ export function parseBriefReport(raw: string): BriefReportBlock {
           kpi: String(a.kpi ?? ''),
         }))
       : [],
-
-    ab_hypotheses: Array.isArray(data.ab_hypotheses)
-      ? (data.ab_hypotheses as Record<string, unknown>[]).map((h) => ({
-          id: String(h.id ?? ''),
-          hypothesis: String(h.hypothesis ?? ''),
-          metric: String(h.metric ?? ''),
-          test_method: String(h.test_method ?? ''),
-          deadline: String(h.deadline ?? ''),
-        }))
-      : [],
   }
 }

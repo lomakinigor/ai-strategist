@@ -1,5 +1,5 @@
 // BRIEF_REPORT (Этап 2 двухэтапной методологии) — дистилляция полного отчёта
-// в 6 структурированных блоков. Модель возвращает JSON (без response_format —
+// в 5 структурированных блоков (БЕЗ гипотез — бриф только ФАКТ). Модель возвращает JSON (без response_format —
 // только промпт-инструкция + устойчивый парсер, см. brief-parser.ts), что обходит
 // несовместимость OpenRouter json_schema с throughput-роутингом.
 
@@ -54,21 +54,12 @@ export interface NextAction {
   kpi: string
 }
 
-export interface ABHypothesis {
-  id: string
-  hypothesis: string
-  metric: string
-  test_method: string
-  deadline: string
-}
-
 export interface BriefReportBlock {
   market_position: MarketPositionTable
   critical_bottlenecks: Bottleneck[]
   growth_potential: GrowthPotentialTable
   ai_levers: AILever[]
   next_actions: NextAction[]
-  ab_hypotheses: ABHypothesis[]
 }
 
 // ─── Промпт Этапа 2 ────────────────────────────────────────────────────────────
@@ -94,6 +85,7 @@ ${fullReport}
 
 ## Правила дистилляции
 - Используй ТОЛЬКО факты с маркировкой [ФАКТ] из полного отчёта.
+- Гипотезы, предположения и блоки A/B-тестов в краткий отчёт НЕ включать — только подтверждённые ФАКТ.
 - Каждое утверждение содержит конкретную цифру.
 - Нет вводных фраз: «таким образом», «следует отметить», «необходимо учитывать».
 - Объём — строго 600–900 слов суммарно по всем блокам.
@@ -122,9 +114,6 @@ ${fullReport}
   ],
   "next_actions": [
     { "action": "конкретное действие", "deadline": "дедлайн", "owner": "ответственный", "kpi": "измеримый результат" }
-  ],
-  "ab_hypotheses": [
-    { "id": "H1", "hypothesis": "формулировка гипотезы", "metric": "метрика проверки", "test_method": "способ проверки", "deadline": "срок" }
   ]
 }
 
@@ -134,7 +123,6 @@ ${fullReport}
 - growth_potential: 4–6 строк
 - ai_levers: ровно 3
 - next_actions: ровно 3
-- ab_hypotheses: 2–3 гипотезы (H1, H2, H3)
 
 ## Статусы светофора
 - "red"    — значение хуже нормы более чем на 30%

@@ -31,10 +31,6 @@ const VALID_BRIEF: BriefReportBlock = {
     { action: 'Запустить Яндекс.Директ', deadline: '1 неделя', owner: 'маркетолог', kpi: '50+ заявок/мес' },
     { action: 'Установить AI чат-бот', deadline: '2 недели', owner: 'собственник', kpi: '+30% конверсия' },
   ],
-  ab_hypotheses: [
-    { id: 'H1', hypothesis: 'Калькулятор повысит конверсию', metric: 'Конверсия', test_method: 'A/B тест', deadline: '30 дней' },
-    { id: 'H2', hypothesis: 'Кейсы повысят доверие', metric: 'CTR кнопки', test_method: 'A/B страниц', deadline: '45 дней' },
-  ],
 }
 
 describe('parseBriefReport', () => {
@@ -44,7 +40,6 @@ describe('parseBriefReport', () => {
     expect(result.critical_bottlenecks).toHaveLength(3)
     expect(result.ai_levers).toHaveLength(3)
     expect(result.next_actions).toHaveLength(3)
-    expect(result.ab_hypotheses).toHaveLength(2)
   })
 
   it('парсит JSON в markdown-обёртке ```json```', () => {
@@ -75,7 +70,6 @@ describe('parseBriefReport', () => {
     const result = parseBriefReport('{}')
     expect(result.critical_bottlenecks).toEqual([])
     expect(result.ai_levers).toEqual([])
-    expect(result.ab_hypotheses).toEqual([])
     expect(result.market_position.rows).toEqual([])
   })
 
@@ -107,14 +101,14 @@ describe('buildBriefReportPrompt', () => {
     expect(prompt).toContain('ТЕКСТ ОТЧЁТА')
   })
 
-  it('содержит все 6 ключей JSON-структуры', () => {
+  it('содержит все 5 ключей JSON-структуры (без гипотез)', () => {
     const prompt = buildBriefReportPrompt('X', 'legal', 'report', 'kb')
     expect(prompt).toContain('market_position')
     expect(prompt).toContain('critical_bottlenecks')
     expect(prompt).toContain('growth_potential')
     expect(prompt).toContain('ai_levers')
     expect(prompt).toContain('next_actions')
-    expect(prompt).toContain('ab_hypotheses')
+    expect(prompt).not.toContain('ab_hypotheses')
   })
 
   it('задаёт объём 600–900 слов', () => {

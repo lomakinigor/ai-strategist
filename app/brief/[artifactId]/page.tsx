@@ -42,13 +42,16 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
   })
 
   return (
-    <main className="min-h-screen bg-stone-50">
-      <div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
+    <main className="neon-report relative min-h-screen bg-[#0d0d0f] text-[#e8e8f0]">
+      <div className="nr-bg-grid no-print" aria-hidden />
+      <div className="nr-scanline no-print" aria-hidden />
+
+      <div className="relative z-10 max-w-5xl mx-auto px-6 py-10 sm:py-14">
         {/* ── Top toolbar (hidden in print) ─────────────────────────── */}
-        <div className="no-print flex items-center justify-between mb-10 -mt-4">
+        <div className="no-print flex items-center justify-between mb-10">
           <a
             href={`/research/${artifact.researchJobId}/report`}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-[#8888a0] hover:text-[#00d4aa] transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
               <path
@@ -62,18 +65,30 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
           <PrintButton />
         </div>
 
-        {/* ── Header ────────────────────────────────────────────────── */}
-        <header className="brief-header mb-12">
-          <p className="text-[11px] font-semibold text-indigo-600 uppercase tracking-[0.25em] mb-3">
-            Краткий отчёт · AI-Стратег
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight tracking-tight">
-            {artifact.companyName ?? 'Компания'}
+        {/* ── Hero ──────────────────────────────────────────────────── */}
+        <header className="brief-header mb-14">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] tracking-[0.07em] text-[#00d4aa] bg-[#00d4aa]/12 border border-[#00d4aa]/30 mb-6">
+            <span className="nr-dot" /> СТРАТЕГИЧЕСКИЙ АНАЛИЗ · AI-СТРАТЕГ
+          </span>
+          <h1 className="text-4xl sm:text-5xl font-extrabold leading-[1.05] tracking-tight">
+            <span className="nr-grad">{artifact.companyName ?? 'Компания'}</span>
           </h1>
-          {artifact.industry && <p className="mt-2 text-base text-gray-600">{artifact.industry}</p>}
-          <p className="mt-3 text-xs text-gray-400">
-            Исследование от {dateStr} · дистилляция полного отчёта
-          </p>
+          <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2">
+            {artifact.industry && (
+              <div className="text-[11px] tracking-[0.06em] text-[#44445a]">
+                <span className="block text-xs text-[#8888a0]">{artifact.industry}</span>
+                Ниша
+              </div>
+            )}
+            <div className="text-[11px] tracking-[0.06em] text-[#44445a]">
+              <span className="block text-xs text-[#8888a0]">{dateStr}</span>
+              Дата исследования
+            </div>
+            <div className="text-[11px] tracking-[0.06em] text-[#44445a]">
+              <span className="block text-xs text-[#8888a0]">Дистилляция полного отчёта</span>
+              Формат
+            </div>
+          </div>
         </header>
 
         {/* ── 6 блоков BRIEF_REPORT (кеш / генерация по кнопке) ─────── */}
