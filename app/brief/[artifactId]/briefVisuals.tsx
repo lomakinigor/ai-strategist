@@ -239,3 +239,43 @@ export function GrowthBar({ points }: { points: GrowthPoint[] }) {
     </div>
   )
 }
+
+// ─── ScoreBar — шкала Lighthouse 0..100 с анимацией заливки при появлении ────────
+const BAR_COLOR: Record<'red' | 'amber' | 'green', string> = {
+  red: C.red,
+  amber: C.amber,
+  green: C.green,
+}
+
+export function ScoreBar({
+  label,
+  value,
+  color,
+}: {
+  label: string
+  value: number
+  color: 'red' | 'amber' | 'green'
+}) {
+  const { ref, inView } = useInView<HTMLDivElement>()
+  const c = BAR_COLOR[color]
+  return (
+    <div ref={ref}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-sm text-[#e8e8f0]">{label}</span>
+        <span className="nr-mono text-sm" style={{ color: c }}>
+          <CountUp value={value} suffix=" / 100" />
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: inView ? `${value}%` : '0%',
+            background: c,
+            transition: 'width 900ms cubic-bezier(.16,1,.3,1)',
+          }}
+        />
+      </div>
+    </div>
+  )
+}

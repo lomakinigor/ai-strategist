@@ -119,6 +119,8 @@ export const researchJobs = pgTable(
     audienceStatus: researchStatusEnum('audience_status').default('pending'),
     channelsStatus: researchStatusEnum('channels_status').default('pending'),
     competitorsStatus: researchStatusEnum('competitors_status').default('pending').notNull(),
+    // Структурные снимки Lighthouse сайта клиента (PageSpeed): { clientUrl, pagespeed: [...] }
+    metricsJson: jsonb('metrics_json'),
     errorMessage: text('error_message'),
     startedAt: timestamp('started_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),

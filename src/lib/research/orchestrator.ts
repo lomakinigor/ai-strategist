@@ -99,6 +99,15 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
   )
 
   await insertFacts(companyId, jobId, allPoints, true)
+
+  // Структурные снимки Lighthouse сайта клиента → research_jobs.metrics_json.
+  // Рисуются в брифе как 4 шкалы напрямую (RS4-факт, без дистилляции через LLM).
+  if (external.snapshots.length > 0) {
+    await getDb()
+      .update(researchJobs)
+      .set({ metricsJson: { clientUrl: query.website ?? null, pagespeed: external.snapshots } })
+      .where(eq(researchJobs.id, jobId))
+  }
 }
 
 export async function startResearchJob(jobId: string): Promise<void> {

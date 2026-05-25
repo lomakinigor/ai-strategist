@@ -4,6 +4,7 @@ import {
   deriveKpis,
   statusCounts,
   growthChartData,
+  lighthouseBars,
 } from '../brief-derive'
 import type { MarketPositionTable, GrowthPotentialTable } from '../brief'
 
@@ -98,6 +99,41 @@ describe('growthChartData', () => {
     expect(data).toEqual([
       { label: 'SEO', value: 40, priority: 'high' },
       { label: 'Telegram Ads', value: 25, priority: 'medium' },
+    ])
+  })
+})
+
+describe('lighthouseBars', () => {
+  it('возвращает пусто, если снимка нет', () => {
+    expect(lighthouseBars(null)).toEqual([])
+    expect(lighthouseBars(undefined)).toEqual([])
+  })
+
+  it('строит 4 шкалы с цветом по порогам Lighthouse', () => {
+    const bars = lighthouseBars({
+      performanceScore: 42,
+      seoScore: 87,
+      accessibilityScore: 100,
+      bestPracticesScore: 73,
+    })
+    expect(bars).toEqual([
+      { label: 'Производительность', value: 42, color: 'red' },
+      { label: 'SEO', value: 87, color: 'amber' },
+      { label: 'Доступность', value: 100, color: 'green' },
+      { label: 'Best Practices', value: 73, color: 'amber' },
+    ])
+  })
+
+  it('пропускает оценки null', () => {
+    const bars = lighthouseBars({
+      performanceScore: 90,
+      seoScore: null,
+      accessibilityScore: null,
+      bestPracticesScore: 50,
+    })
+    expect(bars).toEqual([
+      { label: 'Производительность', value: 90, color: 'green' },
+      { label: 'Best Practices', value: 50, color: 'amber' },
     ])
   })
 })

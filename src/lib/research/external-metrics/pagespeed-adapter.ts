@@ -6,7 +6,7 @@ import type { RawDataPoint } from '@/lib/types'
 
 const API_BASE = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
 
-interface PageSpeedSnapshot {
+export interface PageSpeedSnapshot {
   url: string
   performanceScore: number | null // 0..100
   seoScore: number | null

@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
 import { getDb } from '@/db'
-import { reportArtifacts, companies } from '@/db/schema'
+import { reportArtifacts, companies, researchJobs } from '@/db/schema'
 import type { BriefReportBlock } from '@/lib/strategy/brief'
+import type { LighthouseScores } from '@/lib/strategy/brief-derive'
 import { BriefClient } from './BriefClient'
 import { PrintButton } from './PrintButton'
 import { BriefFooter } from './BriefFooter'
@@ -34,6 +35,18 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
 
   // Кеш: если brief уже сгенерирован — отдаём из БД; иначе клиент сгенерирует по кнопке.
   const initialBrief = (artifact.briefJson as BriefReportBlock | null) ?? null
+
+  // Lighthouse сайта клиента из research_jobs.metrics_json (структурный RS4-факт).
+  let lighthouse: LighthouseScores | null = null
+  if (artifact.researchJobId) {
+    const jobRows = await db
+      .select({ metricsJson: researchJobs.metricsJson })
+      .from(researchJobs)
+      .where(eq(researchJobs.id, artifact.researchJobId))
+      .limit(1)
+    const m = jobRows[0]?.metricsJson as { pagespeed?: LighthouseScores[] } | null
+    lighthouse = m?.pagespeed?.[0] ?? null
+  }
 
   const dateStr = artifact.createdAt.toLocaleDateString('ru-RU', {
     day: '2-digit',
@@ -91,8 +104,12 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
           </div>
         </header>
 
-        {/* ── 6 блоков BRIEF_REPORT (кеш / генерация по кнопке) ─────── */}
-        <BriefClient artifactId={params.artifactId} initialBrief={initialBrief} />
+        {/* ── Блоки BRIEF_REPORT (кеш / генерация по кнопке) ────────── */}
+        <BriefClient
+          artifactId={params.artifactId}
+          initialBrief={initialBrief}
+          lighthouse={lighthouse}
+        />
 
         <BriefFooter />
       </div>

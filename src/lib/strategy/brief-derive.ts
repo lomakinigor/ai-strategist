@@ -103,3 +103,45 @@ export function growthChartData(growth: GrowthPotentialTable): GrowthPoint[] {
     }))
     .filter((p): p is GrowthPoint => p.value != null)
 }
+
+// ─── Lighthouse сайта клиента (PageSpeed Insights, RS4) ─────────────────────────
+// Структурный факт, рисуется напрямую из снимка — без дистилляции через LLM.
+// Подмножество PageSpeedSnapshot (адаптер) — достаточно 4 оценок 0..100.
+
+export interface LighthouseScores {
+  performanceScore: number | null
+  seoScore: number | null
+  accessibilityScore: number | null
+  bestPracticesScore: number | null
+}
+
+export interface LighthouseBar {
+  label: string
+  value: number // 0..100
+  color: 'red' | 'amber' | 'green'
+}
+
+const LH_LABELS: Array<[keyof LighthouseScores, string]> = [
+  ['performanceScore', 'Производительность'],
+  ['seoScore', 'SEO'],
+  ['accessibilityScore', 'Доступность'],
+  ['bestPracticesScore', 'Best Practices'],
+]
+
+// Пороги цвета — как в самом Lighthouse: 0–49 красный, 50–89 жёлтый, 90–100 зелёный.
+function scoreColor(v: number): LighthouseBar['color'] {
+  return v >= 90 ? 'green' : v >= 50 ? 'amber' : 'red'
+}
+
+/** 4 шкалы Lighthouse по сайту клиента; null-оценки пропускаются. */
+export function lighthouseBars(scores: LighthouseScores | null | undefined): LighthouseBar[] {
+  if (!scores) return []
+  const bars: LighthouseBar[] = []
+  for (const [key, label] of LH_LABELS) {
+    const v = scores[key]
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      bars.push({ label, value: v, color: scoreColor(v) })
+    }
+  }
+  return bars
+}

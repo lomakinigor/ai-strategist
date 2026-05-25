@@ -1,8 +1,14 @@
 'use client'
 
 import type { BriefReportBlock } from '@/lib/strategy/brief'
-import { deriveKpis, statusCounts, growthChartData } from '@/lib/strategy/brief-derive'
-import { CountUp, Reveal, StatusDoughnut, GrowthBar } from './briefVisuals'
+import {
+  deriveKpis,
+  statusCounts,
+  growthChartData,
+  lighthouseBars,
+  type LighthouseScores,
+} from '@/lib/strategy/brief-derive'
+import { CountUp, Reveal, StatusDoughnut, GrowthBar, ScoreBar } from './briefVisuals'
 
 const STATUS_COLOR: Record<string, string> = {
   green: '#00d4aa',
@@ -36,11 +42,18 @@ function SectionHeader({ n, title, badge }: { n: string; title: string; badge?: 
   )
 }
 
-export function BriefReport({ brief }: { brief: BriefReportBlock }) {
+export function BriefReport({
+  brief,
+  lighthouse,
+}: {
+  brief: BriefReportBlock
+  lighthouse?: LighthouseScores | null
+}) {
   const kpis = deriveKpis(brief.market_position)
   const counts = statusCounts(brief.market_position)
   const growth = growthChartData(brief.growth_potential)
   const totalMetrics = counts.green + counts.yellow + counts.red
+  const lhBars = lighthouseBars(lighthouse)
 
   return (
     <div className="space-y-16">
@@ -84,6 +97,24 @@ export function BriefReport({ brief }: { brief: BriefReportBlock }) {
                 </div>
               ))}
             </div>
+
+            {/* Lighthouse сайта клиента — 4 шкалы (PageSpeed, RS4-факт) */}
+            {lhBars.length > 0 && (
+              <div className="nr-card p-5 mt-4">
+                <p className="nr-eyebrow mb-4 text-[#8888a0]">
+                  Lighthouse — техническое качество сайта
+                </p>
+                <div className="grid gap-x-10 gap-y-4 sm:grid-cols-2">
+                  {lhBars.map((b) => (
+                    <ScoreBar key={b.label} label={b.label} value={b.value} color={b.color} />
+                  ))}
+                </div>
+                <p className="text-[11px] text-[#44445a] mt-5 leading-relaxed">
+                  Оценка Google PageSpeed (0–100): 90+ — хорошо, 50–89 — средне, ниже 50 — требует
+                  доработки.
+                </p>
+              </div>
+            )}
           </section>
         </Reveal>
       )}

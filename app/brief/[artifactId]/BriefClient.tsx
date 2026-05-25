@@ -1,22 +1,25 @@
 'use client'
 
 import type { BriefReportBlock } from '@/lib/strategy/brief'
+import type { LighthouseScores } from '@/lib/strategy/brief-derive'
 import { BriefReport } from './BriefReport'
 import { useGenerateBrief } from './useGenerateBrief'
 
 export function BriefClient({
   artifactId,
   initialBrief,
+  lighthouse,
 }: {
   artifactId: string
   initialBrief: BriefReportBlock | null
+  lighthouse?: LighthouseScores | null
 }) {
   const { status, brief, error, generate } = useGenerateBrief(artifactId, initialBrief)
 
   if (status === 'success' && brief) {
     return (
       <div className="space-y-8">
-        <BriefReport brief={brief} />
+        <BriefReport brief={brief} lighthouse={lighthouse} />
         <div className="no-print text-center pt-2">
           <button
             type="button"
