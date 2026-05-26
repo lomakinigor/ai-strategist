@@ -57,6 +57,17 @@ function emptyBlock(): ConfirmBlock {
   return { items: [], unknown: false }
 }
 
+// Подмешать подтверждённые клиентом значения (intake) в начало блока — они авторитетнее AI-догадок.
+// AI-найденные элементы остаются ниже, без дублей (сравнение по lower-case тексту).
+export function seedBlock(block: ConfirmBlock, intakeItems: string[]): ConfirmBlock {
+  const items = intakeItems.map((t) => t.trim()).filter(Boolean)
+  if (items.length === 0) return block
+  const seeded: ConfirmItem[] = items.map((text) => ({ text, provenance: 'brief' }))
+  const seen = new Set(items.map((t) => t.toLowerCase()))
+  const rest = block.items.filter((i) => !seen.has(i.text.toLowerCase()))
+  return { items: [...seeded, ...rest], unknown: false }
+}
+
 export function emptyConfirmation(): Confirmation {
   return {
     directions: emptyBlock(),

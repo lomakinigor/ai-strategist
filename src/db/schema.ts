@@ -80,6 +80,11 @@ export const companies = pgTable(
     description: text('description'),
     website: text('website'),
     channels: text('channels').array(),
+    // Направления деятельности из intake: { items: string[]; independent: boolean | null }.
+    // independent=true → разные ниши (анализировать раздельно), false → одно связанное предложение.
+    directions: jsonb('directions'),
+    // Рекламные каналы, которые клиент УЖЕ использует (из чеклиста intake). Факт, не гипотеза.
+    adChannels: text('ad_channels').array(),
     competitors: text('competitors'),
     goals: text('goals'),
     region: text('region').default('RU').notNull(),

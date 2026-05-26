@@ -16,6 +16,25 @@ export async function createResearchJob(formData: FormData) {
   // Collect channel links (direct URLs)
   const channels = (formData.getAll('channel_link') as string[]).filter(Boolean)
 
+  // Направления деятельности + флаг связи (independent: разные ниши / связанное предложение)
+  const directionItems = (formData.getAll('direction') as string[])
+    .map((d) => d.trim())
+    .filter(Boolean)
+  const independentRaw = formData.get('directions_independent') as string | null
+  const directionsIndependent =
+    independentRaw === '1' ? true : independentRaw === '0' ? false : null
+  const directions =
+    directionItems.length > 0 ? { items: directionItems, independent: directionsIndependent } : null
+
+  // Используемые рекламные каналы (факт от клиента). «Не знаю» → пустой список.
+  const adChannelsUnknown = formData.get('ad_channels_unknown') === '1'
+  const adChannels = adChannelsUnknown
+    ? null
+    : (() => {
+        const list = (formData.getAll('ad_channel') as string[]).map((c) => c.trim()).filter(Boolean)
+        return list.length ? list : null
+      })()
+
   // Chain / network info
   const isChain = formData.get('is_chain') === '1'
   const chainScope = isChain ? ((formData.get('chain_scope') as string | null) ?? 'network') : null
@@ -36,6 +55,8 @@ export async function createResearchJob(formData: FormData) {
       website,
       goals,
       channels: channels.length ? channels : null,
+      directions,
+      adChannels,
       competitors: competitors || null,
       region: 'RU',
       status: 'active',
@@ -51,6 +72,9 @@ export async function createResearchJob(formData: FormData) {
       website,
       research_goal: goals,
       channels,
+      directions,
+      ad_channels: adChannels,
+      ad_channels_unknown: adChannelsUnknown,
       competitors,
       context_notes: contextNotes,
       is_chain: isChain,

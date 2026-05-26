@@ -2,22 +2,39 @@
 
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
-import { researchJobs } from '@/db/schema'
+import { researchJobs, companies } from '@/db/schema'
 import { buildConfirmDraft } from '@/lib/strategy/confirm'
-import type { Confirmation } from '@/lib/strategy/confirm-types'
+import { seedBlock, type Confirmation } from '@/lib/strategy/confirm-types'
 import { generateStrategyDraft } from '@/lib/strategy/generator'
 
-// Черновик гейта: уже подтверждённое (если есть) либо свежий LLM-проход по фактам.
+// Черновик гейта: уже подтверждённое (если есть) либо свежий LLM-проход по фактам,
+// предзаполненный данными из intake (направления + используемые каналы).
 export async function getConfirmDraftAction(jobId: string): Promise<Confirmation> {
   const db = getDb()
   const rows = await db
-    .select({ c: researchJobs.confirmationsJson })
+    .select({ c: researchJobs.confirmationsJson, companyId: researchJobs.companyId })
     .from(researchJobs)
     .where(eq(researchJobs.id, jobId))
     .limit(1)
   const existing = rows[0]?.c as Confirmation | null
   if (existing) return existing
-  return buildConfirmDraft(jobId)
+
+  const draft = await buildConfirmDraft(jobId)
+
+  // Предзаполнение из intake: направления и используемые рекламные каналы.
+  const companyId = rows[0]?.companyId
+  if (companyId) {
+    const [company] = await db
+      .select({ directions: companies.directions, adChannels: companies.adChannels })
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .limit(1)
+    const dir = company?.directions as { items?: string[] } | null
+    draft.directions = seedBlock(draft.directions, dir?.items ?? [])
+    draft.channelsUsed = seedBlock(draft.channelsUsed, company?.adChannels ?? [])
+  }
+
+  return draft
 }
 
 type GenResult = { redirectTo: string } | { error: string }

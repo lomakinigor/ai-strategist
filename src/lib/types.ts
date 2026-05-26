@@ -51,6 +51,10 @@ export interface ResearchQuery {
   website?: string
   channels?: string[]
   competitors?: string
+  // Направления деятельности из intake (раздельно). independent=true → разные ниши.
+  directions?: { items: string[]; independent: boolean | null }
+  // Рекламные каналы, которые клиент УЖЕ использует (факт из intake-чеклиста).
+  adChannels?: string[]
 }
 
 // Raw output from a research adapter before reliability classification

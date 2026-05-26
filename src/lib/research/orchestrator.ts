@@ -129,6 +129,7 @@ export async function startResearchJob(jobId: string): Promise<void> {
 
   if (!company) return
 
+  const directions = company.directions as { items: string[]; independent: boolean | null } | null
   const query: ResearchQuery = {
     companyName: company.name,
     industry: company.industry,
@@ -136,6 +137,8 @@ export async function startResearchJob(jobId: string): Promise<void> {
     website: company.website ?? undefined,
     channels: company.channels ?? undefined,
     competitors: company.competitors ?? undefined,
+    directions: directions && directions.items?.length ? directions : undefined,
+    adChannels: company.adChannels ?? undefined,
   }
 
   await db

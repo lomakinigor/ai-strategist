@@ -3,6 +3,17 @@
 import { useState } from 'react'
 import { createResearchJob } from './actions'
 
+const AD_CHANNEL_OPTIONS = [
+  'Яндекс.Директ',
+  'Авито',
+  'SEO',
+  'ВКонтакте',
+  'Telegram',
+  '2ГИС/Карты',
+  'Email-рассылка',
+  'Выставки/тендеры',
+] as const
+
 function Spinner() {
   return (
     <svg className="animate-spin h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -20,6 +31,11 @@ export default function IntakeForm() {
   const [goals, setGoals] = useState('')
   const [competitors, setCompetitors] = useState('')
   const [contextNotes, setContextNotes] = useState('')
+  const [directions, setDirections] = useState<string[]>([''])
+  const [directionsIndependent, setDirectionsIndependent] = useState<boolean | null>(null)
+  const [adChannels, setAdChannels] = useState<string[]>([])
+  const [adChannelOther, setAdChannelOther] = useState('')
+  const [adChannelsUnknown, setAdChannelsUnknown] = useState(false)
   const [isChain, setIsChain] = useState(false)
   const [chainScope, setChainScope] = useState<'network' | 'location'>('network')
   const [city, setCity] = useState('')
@@ -74,6 +90,22 @@ export default function IntakeForm() {
     if (isChain) {
       formData.set('chain_scope', chainScope)
       if (chainScope === 'location') formData.set('city', city)
+    }
+
+    // Направления (по строкам) + флаг связи (только если их 2+)
+    const filledDirections = directions.map((d) => d.trim()).filter(Boolean)
+    filledDirections.forEach((d) => formData.append('direction', d))
+    if (filledDirections.length >= 2 && directionsIndependent !== null) {
+      formData.set('directions_independent', directionsIndependent ? '1' : '0')
+    }
+
+    // Используемые рекламные каналы
+    if (adChannelsUnknown) {
+      formData.set('ad_channels_unknown', '1')
+    } else {
+      adChannels.forEach((c) => formData.append('ad_channel', c))
+      const other = adChannelOther.trim()
+      if (other) formData.append('ad_channel', `Другое: ${other}`)
     }
     try {
       await createResearchJob(formData)
@@ -201,6 +233,75 @@ export default function IntakeForm() {
         />
       </div>
 
+      {/* ── Directions ── */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Направления деятельности</label>
+        <p className="text-xs text-gray-400 mb-2">
+          Если направлений несколько и они не связаны (разные продукты / разные клиенты) — добавьте каждое
+          отдельной строкой. Это не даст приложению склеить разные ниши в одну.
+        </p>
+        <div className="space-y-2">
+          {directions.map((d, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={d}
+                onChange={(e) =>
+                  setDirections((prev) => prev.map((x, j) => (j === i ? e.target.value : x)))
+                }
+                placeholder={
+                  i === 0 ? 'например: производство промышленного оборудования' : 'ещё одно направление'
+                }
+                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {directions.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setDirections((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-gray-300 hover:text-red-500 text-xl leading-none cursor-pointer"
+                  aria-label="Убрать направление"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setDirections((prev) => [...prev, ''])}
+          className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 cursor-pointer"
+        >
+          + добавить направление
+        </button>
+
+        {directions.map((d) => d.trim()).filter(Boolean).length >= 2 && (
+          <div className="mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 space-y-2">
+            <p className="text-xs font-medium text-amber-800">Как связаны эти направления?</p>
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="dir_rel_ui"
+                checked={directionsIndependent === true}
+                onChange={() => setDirectionsIndependent(true)}
+                className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+              Разные направления — разные клиенты / рынки (анализировать раздельно)
+            </label>
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="dir_rel_ui"
+                checked={directionsIndependent === false}
+                onChange={() => setDirectionsIndependent(false)}
+                className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+              Одно связанное предложение для одного клиента
+            </label>
+          </div>
+        )}
+      </div>
+
       {/* ── Description ── */}
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
@@ -231,6 +332,61 @@ export default function IntakeForm() {
           placeholder="https://example.ru"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      {/* ── Ad channels already used ── */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Какими каналами рекламы уже пользуетесь?
+        </label>
+        <p className="text-xs text-gray-400 mb-2">
+          Отметьте те, что реально используете. Это не даст приложению ошибочно решить, что канал не
+          используется.
+        </p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {AD_CHANNEL_OPTIONS.map((c) => (
+            <label
+              key={c}
+              className={`flex items-center gap-2 text-sm cursor-pointer select-none ${
+                adChannelsUnknown ? 'opacity-40' : 'text-gray-700'
+              }`}
+            >
+              <input
+                type="checkbox"
+                disabled={adChannelsUnknown}
+                checked={adChannels.includes(c)}
+                onChange={(e) =>
+                  setAdChannels((prev) => (e.target.checked ? [...prev, c] : prev.filter((x) => x !== c)))
+                }
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+              {c}
+            </label>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={adChannelOther}
+          disabled={adChannelsUnknown}
+          onChange={(e) => setAdChannelOther(e.target.value)}
+          placeholder="Другое (через запятую)"
+          className="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-40"
+        />
+        <label className="mt-2 flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={adChannelsUnknown}
+            onChange={(e) => {
+              setAdChannelsUnknown(e.target.checked)
+              if (e.target.checked) {
+                setAdChannels([])
+                setAdChannelOther('')
+              }
+            }}
+            className="rounded border-gray-300 cursor-pointer"
+          />
+          пока не знаю / не уверен
+        </label>
       </div>
 
       {/* ── Competitors ── */}
