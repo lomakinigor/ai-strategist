@@ -37,7 +37,7 @@ export default function IntakeForm() {
   const [adChannelOther, setAdChannelOther] = useState('')
   const [adChannelsUnknown, setAdChannelsUnknown] = useState(false)
   const [isChain, setIsChain] = useState(false)
-  const [chainScope, setChainScope] = useState<'network' | 'location'>('network')
+  const [chainScope, setChainScope] = useState<'network' | 'location'>('location')
   const [city, setCity] = useState('')
   const [isParsing, setIsParsing] = useState(false)
   const [parseError, setParseError] = useState<string | null>(null)
@@ -180,18 +180,11 @@ export default function IntakeForm() {
         </label>
         {isChain && (
           <div className="mt-3 ml-6 space-y-2">
+            <p className="text-xs text-gray-500">
+              По умолчанию анализируем одну вашу точку, а не всю сеть.
+            </p>
             <p className="text-xs font-medium text-gray-600">Что анализировать?</p>
             <div className="flex gap-5">
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
-                <input
-                  type="radio"
-                  name="chain_scope_ui"
-                  checked={chainScope === 'network'}
-                  onChange={() => setChainScope('network')}
-                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
-                />
-                Всю сеть целиком
-              </label>
               <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
                 <input
                   type="radio"
@@ -201,6 +194,16 @@ export default function IntakeForm() {
                   className="text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 Одну конкретную точку
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="chain_scope_ui"
+                  checked={chainScope === 'network'}
+                  onChange={() => setChainScope('network')}
+                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                Всю сеть целиком
               </label>
             </div>
             {chainScope === 'location' && (
