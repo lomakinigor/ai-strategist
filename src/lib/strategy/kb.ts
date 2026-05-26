@@ -8,7 +8,13 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-export type NicheId = 'legal_services' | 'marketing' | 'ecommerce' | 'b2b_saas' | 'consulting'
+export type NicheId =
+  | 'legal_services'
+  | 'marketing'
+  | 'ecommerce'
+  | 'b2b_saas'
+  | 'consulting'
+  | 'industrial_equipment'
 
 interface NicheMapEntry {
   display_name: string

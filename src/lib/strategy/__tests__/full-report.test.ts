@@ -67,6 +67,19 @@ describe('buildFullReportPrompt — decision-driven форма §0–8', () => {
     expect(user).toMatch(/RS/)
     expect(user).toMatch(/дат/i)
   })
+
+  it('кодирует анти-домысел гарды: нет-вывода-из-отсутствия, раздельные направления, named-конкуренты, полнота каналов', () => {
+    const { system, user } = buildFullReportPrompt(baseCtx)
+    const both = system + user
+    // запрет вывода из отсутствия данных
+    expect(both).toMatch(/ЗАПРЕТ ВЫВОДА ИЗ ОТСУТСТВИЯ|не выводи отрицание/i)
+    // ≥2 направления — раздельно, без склейки
+    expect(user).toMatch(/РАЗДЕЛЬНО|СКЛЕЙКИ/i)
+    // конкуренты названы конкретно, с пометкой найден AI
+    expect(user).toMatch(/найден AI/i)
+    // все перспективные каналы ниши, каждый рекомендуем/не сейчас
+    expect(user).toMatch(/ВСЕ перспективные|не сейчас/i)
+  })
 })
 
 describe('parseSections — новая форма §0–8', () => {
