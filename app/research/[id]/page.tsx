@@ -4,7 +4,7 @@ import { getDb } from '@/db'
 import { researchJobs, companies, facts, sources, reportArtifacts } from '@/db/schema'
 import type { ResearchStatus, ResearchType } from '@/lib/types'
 import { AI_CONFIG } from '@/lib/ai/config'
-import { TriggerResearchButton, GenerateStrategyButton, NavButton } from './ResearchActions'
+import { TriggerResearchButton, NavButton } from './ResearchActions'
 
 // Research-trigger and strategy-generate actions run on this segment; need >10s budget.
 // 300 = Vercel Hobby max with Fluid Compute (Pro allows up to 800).
@@ -212,7 +212,12 @@ export default async function ResearchStatusPage({ params }: { params: { id: str
                   : 'Стратегия генерируется… →'}
               </NavButton>
             ) : (
-              <GenerateStrategyButton jobId={job.id} />
+              <NavButton
+                href={`/research/${params.id}/confirm`}
+                className="w-full bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors"
+              >
+                Подтвердить данные и сгенерировать →
+              </NavButton>
             )}
           </div>
         )}

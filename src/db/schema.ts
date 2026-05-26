@@ -121,6 +121,9 @@ export const researchJobs = pgTable(
     competitorsStatus: researchStatusEnum('competitors_status').default('pending').notNull(),
     // Структурные снимки Lighthouse сайта клиента (PageSpeed): { clientUrl, pagespeed: [...] }
     metricsJson: jsonb('metrics_json'),
+    // Гейт «Подтверди и поправь»: подтверждённые клиентом 5 блоков (направления,
+    // каналы клиента, клиенты/кейсы, отзывы, конкуренты). Перекрывают домыслы при генерации.
+    confirmationsJson: jsonb('confirmations_json'),
     errorMessage: text('error_message'),
     startedAt: timestamp('started_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),

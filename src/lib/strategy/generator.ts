@@ -12,6 +12,7 @@ import {
   SECTION_TITLES,
 } from './prompts'
 import { detectNiche, loadReportRequirements } from './kb'
+import { serializeConfirmation, type Confirmation } from './confirm-types'
 import type {
   PartialStrategyContent,
   StrategySection,
@@ -467,7 +468,7 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
   const db = getDb()
 
   const jobRows = await db
-    .select({ companyId: researchJobs.companyId })
+    .select({ companyId: researchJobs.companyId, confirmationsJson: researchJobs.confirmationsJson })
     .from(researchJobs)
     .where(eq(researchJobs.id, jobId))
     .limit(1)
@@ -476,6 +477,10 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
   if (!companyId) {
     throw new Error(`Research job not found: ${jobId}`)
   }
+  // Подтверждённые клиентом данные (гейт «Подтверди и поправь») — авторитетный префикс,
+  // перекрывает домыслы research при генерации FULL_REPORT.
+  const confirmation = jobRows[0]?.confirmationsJson as Confirmation | null
+  const confirmedPreamble = confirmation ? serializeConfirmation(confirmation) : ''
 
   const companyRows = await db
     .select()
@@ -560,7 +565,9 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
       companySite: company?.website ?? undefined,
       niche: reqs.niche,
       goal: company?.goals ?? '',
-      factsMarkdown: serializeContext(context),
+      factsMarkdown: confirmedPreamble
+        ? `${confirmedPreamble}\n\n${serializeContext(context)}`
+        : serializeContext(context),
       kbRequirements: reqs.combinedMarkdown,
     })
     const { content: contentMarkdown, modelId } = await callOpenRouter(
