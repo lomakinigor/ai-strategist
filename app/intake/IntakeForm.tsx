@@ -176,7 +176,7 @@ export default function IntakeForm() {
             onChange={(e) => setIsChain(e.target.checked)}
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
           />
-          Это сетевая компания или франшиза
+          У компании несколько точек или филиалов (сеть или франшиза)
         </label>
         {isChain && (
           <div className="mt-3 ml-6 space-y-2">
@@ -385,7 +385,7 @@ export default function IntakeForm() {
             }}
             className="rounded border-gray-300 cursor-pointer"
           />
-          пока не знаю / не уверен
+          пока не знаю / не уверен, какими каналами пользуемся
         </label>
       </div>
 
