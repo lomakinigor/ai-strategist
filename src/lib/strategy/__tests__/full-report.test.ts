@@ -11,23 +11,35 @@ const baseCtx: FullReportPromptContext = {
   kbRequirements: '# Универсальные требования\nМаркировка ФАКТ/ГИПОТЕЗА',
 }
 
-describe('buildFullReportPrompt', () => {
-  it('содержит все 8 заголовков разделов в формате «## N. ...»', () => {
+describe('buildFullReportPrompt — decision-driven форма §0–8', () => {
+  it('содержит все 9 заголовков новой формы в формате «## N. ...»', () => {
     const { user } = buildFullReportPrompt(baseCtx)
-    expect(user).toContain('## 1. ПРОФИЛЬ БИЗНЕСА')
-    expect(user).toContain('## 2. РЫНОЧНАЯ ПОЗИЦИЯ')
-    expect(user).toContain('## 3. ЦЕЛЕВАЯ АУДИТОРИЯ')
-    expect(user).toContain('## 4. КАНАЛЫ ПРИВЛЕЧЕНИЯ')
-    expect(user).toContain('## 5. КОНКУРЕНТНЫЙ ЛАНДШАФТ')
-    expect(user).toContain('## 6. AI-АВТОМАТИЗАЦИЯ')
-    expect(user).toContain('## 7. СТРАТЕГИЯ РОСТА')
-    expect(user).toContain('## 8. ГИПОТЕЗЫ ДЛЯ ПРОВЕРКИ')
+    expect(user).toContain('## 0. РЕЗЮМЕ ДЛЯ СОБСТВЕННИКА')
+    expect(user).toContain('## 1. ДИАГНОЗ РОСТА')
+    expect(user).toContain('## 2. ПОЗИЦИОНИРОВАНИЕ И АУДИТОРИЯ')
+    expect(user).toContain('## 3. МАРКЕТИНГОВЫЙ МИКС')
+    expect(user).toContain('## 4. AI-АВТОМАТИЗАЦИЯ')
+    expect(user).toContain('## 5. ПЛАН ДЕЙСТВИЙ')
+    expect(user).toContain('## 6. ПРОГРАММА ТЕСТОВ')
+    expect(user).toContain('## 7. РИСКИ И МЕРЫ')
+    expect(user).toContain('## 8. ИСТОЧНИКИ')
   })
 
-  it('задаёт объём 3000–5000 слов', () => {
+  it('кодирует ключевые принципы формы: факт один раз, привязка к узкому месту, два исхода теста', () => {
+    const { user } = buildFullReportPrompt(baseCtx)
+    // §1 — факты заявляются один раз
+    expect(user).toMatch(/один раз|дальше.*используются/i)
+    // §4 — каждый AI-рычаг ссылается на узкое место (\S, т.к. \w не матчит кириллицу)
+    expect(user).toMatch(/узк\S* мест/i)
+    // §6 — у теста два исхода
+    expect(user).toMatch(/при провале|два исхода/i)
+  })
+
+  it('задаёт компактный объём (не 3000–5000, а ~1500–2500 слов)', () => {
     const { system, user } = buildFullReportPrompt(baseCtx)
-    expect(system).toMatch(/3000.*5000|3000–5000/)
-    expect(user).toMatch(/3000.*5000|3000–5000/)
+    const both = system + user
+    expect(both).toMatch(/1500.*2500|1500–2500/)
+    expect(both).not.toMatch(/3000.*5000|3000–5000/)
   })
 
   it('прокидывает требования базы знаний и факты в user-промпт', () => {
@@ -48,34 +60,65 @@ describe('buildFullReportPrompt', () => {
     expect(system).toContain('[ФАКТ]')
     expect(system).toContain('рубл')
   })
+
+  it('требует приложение «Источники» с источником, датой и RS', () => {
+    const { user } = buildFullReportPrompt(baseCtx)
+    expect(user).toMatch(/источник/i)
+    expect(user).toMatch(/RS/)
+    expect(user).toMatch(/дат/i)
+  })
 })
 
-describe('parseSections — новые 8 разделов FULL_REPORT', () => {
-  it('распознаёт заголовки FULL_REPORT, включая AI-автоматизацию и Гипотезы', () => {
+describe('parseSections — новая форма §0–8', () => {
+  it('распознаёт заголовки decision-driven формы в новые id', () => {
+    const md = `## 0. РЕЗЮМЕ ДЛЯ СОБСТВЕННИКА
+текст
+## 1. ДИАГНОЗ РОСТА — УЗКИЕ МЕСТА
+текст
+## 2. ПОЗИЦИОНИРОВАНИЕ И АУДИТОРИЯ
+текст
+## 3. МАРКЕТИНГОВЫЙ МИКС ПОД НИШУ
+текст
+## 4. AI-АВТОМАТИЗАЦИЯ
+текст
+## 5. ПЛАН ДЕЙСТВИЙ ПО ГОРИЗОНТАМ
+текст
+## 6. ПРОГРАММА ТЕСТОВ ПРОДВИЖЕНИЯ
+текст
+## 7. РИСКИ И МЕРЫ
+текст
+## 8. ИСТОЧНИКИ
+текст`
+    const ids = parseSections(md).map((s) => s.id)
+    expect(ids).toEqual([
+      'summary',
+      'diagnosis',
+      'positioning',
+      'channel_mix',
+      'ai_automation',
+      'action_plan',
+      'tests',
+      'risks',
+      'sources',
+    ])
+  })
+
+  it('сохраняет обратную совместимость со старой тематической формой', () => {
     const md = `## 1. ПРОФИЛЬ БИЗНЕСА
 текст
 ## 2. РЫНОЧНАЯ ПОЗИЦИЯ
 текст
-## 6. AI-АВТОМАТИЗАЦИЯ
+## 4. КАНАЛЫ ПРИВЛЕЧЕНИЯ
+текст
+## 7. СТРАТЕГИЯ РОСТА
 текст
 ## 8. ГИПОТЕЗЫ ДЛЯ ПРОВЕРКИ (H1–H6)
 текст`
-    const sections = parseSections(md)
-    const ids = sections.map((s) => s.id)
+    const ids = parseSections(md).map((s) => s.id)
     expect(ids).toContain('business')
     expect(ids).toContain('market')
-    expect(ids).toContain('ai_automation')
-    expect(ids).toContain('hypotheses')
-  })
-
-  it('сохраняет обратную совместимость со старыми заголовками', () => {
-    const md = `## 1. Анализ бизнеса
-текст
-## 5. Стратегия и рекомендации
-текст`
-    const sections = parseSections(md)
-    const ids = sections.map((s) => s.id)
-    expect(ids).toContain('business')
+    expect(ids).toContain('channels')
     expect(ids).toContain('strategy')
+    expect(ids).toContain('hypotheses')
   })
 })

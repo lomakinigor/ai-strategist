@@ -202,11 +202,21 @@ describe('generateStrategyDraft — mock mode (no API key)', () => {
     )
   })
 
-  it('returns 5 sections in mock draft', async () => {
+  it('returns decision-driven form §0–8 sections in mock draft', async () => {
     const result = await generateStrategyDraft('job-1')
-    expect(result.sections).toHaveLength(5)
+    expect(result.sections).toHaveLength(9)
     const ids = result.sections.map((s) => s.id)
-    expect(ids).toEqual(['business', 'market', 'audience', 'channels', 'strategy'])
+    expect(ids).toEqual([
+      'summary',
+      'diagnosis',
+      'positioning',
+      'channel_mix',
+      'ai_automation',
+      'action_plan',
+      'tests',
+      'risks',
+      'sources',
+    ])
   })
 
   it('throws when job is not found', async () => {

@@ -15,45 +15,82 @@ export const maxDuration = 300
 // ─── Section metadata ─────────────────────────────────────────────────────────
 
 const SECTION_LABELS: Record<string, string> = {
+  // decision-driven форма §0–8
+  summary: 'Резюме для собственника',
+  diagnosis: 'Диагноз роста — узкие места',
+  positioning: 'Позиционирование и аудитория',
+  channel_mix: 'Маркетинговый микс',
+  ai_automation: 'AI-автоматизация',
+  action_plan: 'План действий',
+  tests: 'Программа тестов',
+  risks: 'Риски и меры',
+  sources: 'Источники',
+  // legacy
   business: 'Профиль бизнеса',
   market: 'Рыночная позиция',
   audience: 'Целевая аудитория',
   channels: 'Каналы привлечения',
   competitors: 'Конкурентный ландшафт',
-  ai_automation: 'AI-автоматизация',
   strategy: 'Стратегия роста',
   hypotheses: 'Гипотезы для проверки',
 }
 
 const SECTION_BORDER: Record<string, string> = {
+  summary: 'border-slate-300',
+  diagnosis: 'border-rose-200',
+  positioning: 'border-purple-200',
+  channel_mix: 'border-teal-200',
+  ai_automation: 'border-indigo-200',
+  action_plan: 'border-green-200',
+  tests: 'border-blue-200',
+  risks: 'border-amber-200',
+  sources: 'border-gray-200',
+  // legacy
   business: 'border-blue-200',
   market: 'border-purple-200',
   audience: 'border-orange-200',
   channels: 'border-teal-200',
   competitors: 'border-rose-200',
-  ai_automation: 'border-indigo-200',
   strategy: 'border-green-200',
   hypotheses: 'border-slate-200',
 }
 
 const SECTION_BG: Record<string, string> = {
+  summary: 'bg-slate-50',
+  diagnosis: 'bg-rose-50',
+  positioning: 'bg-purple-50',
+  channel_mix: 'bg-teal-50',
+  ai_automation: 'bg-indigo-50',
+  action_plan: 'bg-green-50',
+  tests: 'bg-blue-50',
+  risks: 'bg-amber-50',
+  sources: 'bg-gray-50',
+  // legacy
   business: 'bg-blue-50',
   market: 'bg-purple-50',
   audience: 'bg-orange-50',
   channels: 'bg-teal-50',
   competitors: 'bg-rose-50',
-  ai_automation: 'bg-indigo-50',
   strategy: 'bg-green-50',
   hypotheses: 'bg-slate-50',
 }
 
 const SECTION_HEADING: Record<string, string> = {
+  summary: 'text-slate-900',
+  diagnosis: 'text-rose-800',
+  positioning: 'text-purple-800',
+  channel_mix: 'text-teal-800',
+  ai_automation: 'text-indigo-800',
+  action_plan: 'text-green-800',
+  tests: 'text-blue-800',
+  risks: 'text-amber-800',
+  sources: 'text-gray-700',
+  // legacy
   business: 'text-blue-800',
   market: 'text-purple-800',
   audience: 'text-orange-800',
   channels: 'text-teal-800',
   competitors: 'text-rose-800',
-  ai_automation: 'text-indigo-800',
   strategy: 'text-green-800',
   hypotheses: 'text-slate-800',
 }
