@@ -109,7 +109,7 @@ export function BriefReport({
                     <ScoreBar key={b.label} label={b.label} value={b.value} color={b.color} />
                   ))}
                 </div>
-                <p className="text-[11px] text-[#44445a] mt-5 leading-relaxed">
+                <p className="text-xs text-[#8888a0] mt-5 leading-relaxed">
                   Оценка Google PageSpeed (0–100): 90+ — хорошо, 50–89 — средне, ниже 50 — требует
                   доработки.
                 </p>
@@ -185,7 +185,7 @@ export function BriefReport({
                 </table>
               </div>
             </div>
-            <p className="text-[11px] text-[#44445a] mt-3 leading-relaxed">
+            <p className="text-xs text-[#8888a0] mt-3 leading-relaxed">
               «Срок» — ориентировочное время, за которое направление можно внедрить и получить
               указанный прирост. Например, «30 дней» — результат примерно через месяц после старта
               работ, «14 дней» — через две недели.

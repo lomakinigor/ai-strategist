@@ -177,6 +177,9 @@ const PRIORITY_COLOR: Record<GrowthPoint['priority'], string> = {
   low: C.amber,
 }
 
+// Подписи направлений длинные — на оси обрезаем с «…», полный текст уходит в тултип.
+const truncate = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1) + '…' : s)
+
 export function GrowthBar({ points }: { points: GrowthPoint[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { ref: wrapRef, inView } = useInView<HTMLDivElement>()
@@ -187,7 +190,7 @@ export function GrowthBar({ points }: { points: GrowthPoint[] }) {
     const chart = new Chart(canvas, {
       type: 'bar',
       data: {
-        labels: points.map((p) => p.label),
+        labels: points.map((p) => truncate(p.label, 20)),
         datasets: [
           {
             data: points.map((p) => p.value),
@@ -213,7 +216,10 @@ export function GrowthBar({ points }: { points: GrowthPoint[] }) {
             titleColor: C.text,
             bodyColor: C.muted,
             padding: 10,
-            callbacks: { label: (ctx) => ` +${ctx.parsed.x}% потенциал роста` },
+            callbacks: {
+              title: (items) => points[items[0].dataIndex]?.label ?? '',
+              label: (ctx) => ` +${ctx.parsed.x}% потенциал роста`,
+            },
           },
         },
         scales: {
@@ -224,7 +230,7 @@ export function GrowthBar({ points }: { points: GrowthPoint[] }) {
           },
           y: {
             grid: { display: false },
-            ticks: { color: C.text, font: { size: 12 } },
+            ticks: { color: C.text, font: { size: 11 }, autoSkip: false },
             border: { display: false },
           },
         },
