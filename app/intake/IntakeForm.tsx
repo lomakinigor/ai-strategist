@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createResearchJob } from './actions'
+import { normalizeAdChannel } from './normalize'
 
 const AD_CHANNEL_OPTIONS = [
   'Яндекс.Директ',
@@ -74,7 +75,24 @@ export default function IntakeForm() {
       if (parsed.goals && !goals) setGoals(parsed.goals)
       if (parsed.competitors && !competitors) setCompetitors(parsed.competitors)
 
+      // Направления — заполняем, только если пользователь ещё ничего не ввёл
+      if (Array.isArray(parsed.directions) && directions.every((d) => !d.trim())) {
+        const dirs = parsed.directions.map((d: unknown) => String(d).trim()).filter(Boolean)
+        if (dirs.length) setDirections(dirs)
+      }
 
+      // Рекламные каналы — предотметка из текста (черновик, пользователь подтвердит)
+      if (Array.isArray(parsed.ad_channels) && adChannels.length === 0 && !adChannelsUnknown) {
+        const matched = new Set<string>()
+        const extras: string[] = []
+        for (const c of parsed.ad_channels) {
+          const norm = normalizeAdChannel(String(c))
+          if (norm) matched.add(norm)
+          else if (String(c).trim()) extras.push(String(c).trim())
+        }
+        if (matched.size) setAdChannels(Array.from(matched))
+        if (extras.length && !adChannelOther) setAdChannelOther(extras.join(', '))
+      }
     } catch {
       setParseError('Ошибка парсинга — заполните поля вручную')
     } finally {

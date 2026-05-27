@@ -5,6 +5,12 @@ const RF_CHANNELS = [
   'TikTok', 'Одноклассники', 'Яндекс.Дзен', 'Авито', 'MAX',
 ]
 
+// Канонический список рекламных каналов intake-чеклиста (должен совпадать с AD_CHANNEL_OPTIONS формы).
+const AD_CHANNELS = [
+  'Яндекс.Директ', 'Авито', 'SEO', 'ВКонтакте',
+  'Telegram', '2ГИС/Карты', 'Email-рассылка', 'Выставки/тендеры',
+]
+
 // Pro variant for intake parsing — stronger extraction quality on messy free-text input.
 // (Fluid Compute lifted the 300s limit, so Pro's longer latency is no longer a 504 risk.)
 const PARSE_MODEL = process.env.OPENROUTER_PARSE_MODEL ?? 'deepseek/deepseek-v4-pro'
@@ -44,6 +50,8 @@ async function callOpenRouterParse(text: string, attempt = 1): Promise<Response>
 - competitors: string — список конкурентов через запятую
 - channel_urls: string[] — ВСЕ ссылки на каналы присутствия
 - channels: string[] — названия каналов из заданного списка
+- directions: string[] — направления деятельности компании (разные продукты/услуги/ниши). Если их несколько и они РАЗНЫЕ — каждое отдельным элементом, НЕ склеивай в одно.
+- ad_channels: string[] — рекламные каналы, которые компания УЖЕ использует ИЛИ планирует использовать для продвижения. ТОЛЬКО канонические названия из списка ниже; синонимы приводи к ним (Директ → Яндекс.Директ; 2GIS / 2ГИС / карты → 2ГИС/Карты; Телеграм → Telegram; почтовая рассылка → Email-рассылка; тендеры → Выставки/тендеры). Канал, которого нет в тексте, НЕ добавляй.
 
 Правила для channel_urls:
 - Включай: https://t.me/..., https://vk.com/..., https://linku.su/..., https://youtube.com/... и любые другие ссылки на каналы/боты/чаты/агрегаторы
@@ -52,7 +60,7 @@ async function callOpenRouterParse(text: string, attempt = 1): Promise<Response>
         },
         {
           role: 'user',
-          content: `Извлеки информацию о компании. channel_urls — ВСЕ ссылки на каналы (Telegram-каналы, боты, чаты, ВКонтакте, YouTube, агрегаторы), включая Telegram-хендлы вида @имя (преобразуй их в https://t.me/имя). channels — только названия из списка: ${RF_CHANNELS.join(', ')}.
+          content: `Извлеки информацию о компании. channel_urls — ВСЕ ссылки на каналы (Telegram-каналы, боты, чаты, ВКонтакте, YouTube, агрегаторы), включая Telegram-хендлы вида @имя (преобразуй их в https://t.me/имя). channels — только названия из списка: ${RF_CHANNELS.join(', ')}. ad_channels — только канонические названия рекламных каналов из списка: ${AD_CHANNELS.join(', ')}.
 
 Верни ТОЛЬКО JSON-объект, без markdown-обрамления и комментариев.
 
