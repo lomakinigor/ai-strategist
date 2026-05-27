@@ -178,11 +178,11 @@ export default function IntakeForm() {
           />
           У компании несколько точек или филиалов (сеть или франшиза)
         </label>
+        <p className="text-xs text-gray-400 mt-1 ml-6">
+          Если отметите — уточним, что анализировать: одну вашу точку (по умолчанию) или всю сеть.
+        </p>
         {isChain && (
           <div className="mt-3 ml-6 space-y-2">
-            <p className="text-xs text-gray-500">
-              По умолчанию анализируем одну вашу точку, а не всю сеть.
-            </p>
             <p className="text-xs font-medium text-gray-600">Что анализировать?</p>
             <div className="flex gap-5">
               <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
