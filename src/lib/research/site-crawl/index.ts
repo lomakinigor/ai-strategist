@@ -1,0 +1,122 @@
+// Обход сайта клиента (MVP): каскад обнаружения страниц → отбор → fetch →
+// извлечение грунтованных фактов (RS:4). Вход — URL главной (origin выводится сам).
+// robots.txt читаем ТОЛЬКО ради директив Sitemap; Disallow в MVP не форсим —
+// это собственный сайт клиента, объём мал (≤ кап), UA честный.
+//
+// Любой сбой на любом шаге деградирует тихо (возвращаем что собрали), чтобы
+// не валить весь research-джоб из-за одной недоступной страницы.
+
+import type { RawDataPoint } from '@/lib/types'
+import {
+  deriveOrigin,
+  parseSitemapsFromRobots,
+  isSitemapIndex,
+  parseLocsFromSitemap,
+  parseUrlsFromText,
+  extractSameOriginLinks,
+  htmlToText,
+  extractTitle,
+} from './parse'
+import { rankAndCap } from './rank'
+import { extractSiteFacts, type CrawledPage } from './extract'
+
+const UA = 'ai-strategist-bot/1.0 (+анализ сайта клиента)'
+const PAGE_CHARS = 2800 // кап текста на страницу (токены под контролем)
+const PAGE_CAP = 12 // максимум страниц на fetch
+const FETCH_TIMEOUT = 8000
+
+export interface SiteCrawlResult {
+  points: RawDataPoint[]
+  stats: { discovered: number; fetched: number; facts: number }
+}
+
+const EMPTY: SiteCrawlResult = { points: [], stats: { discovered: 0, fetched: 0, facts: 0 } }
+
+async function safeFetch(url: string, timeout = FETCH_TIMEOUT): Promise<string | null> {
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), timeout)
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml,text/plain,*/*' },
+      redirect: 'follow',
+    })
+    if (!res.ok) return null
+    return await res.text()
+  } catch {
+    return null
+  } finally {
+    clearTimeout(t)
+  }
+}
+
+async function discoverUrls(origin: string, homepageHtml: string | null): Promise<string[]> {
+  const urls: string[] = [origin + '/']
+
+  // 1. llms.txt — дешёвый зонд (для РФ-SMB почти всегда 404, но стоит копейки).
+  const llms = await safeFetch(origin + '/llms.txt')
+  if (llms) urls.push(...parseUrlsFromText(llms))
+
+  // 2. robots.txt → директивы Sitemap.
+  const robots = await safeFetch(origin + '/robots.txt')
+  let sitemaps = robots ? parseSitemapsFromRobots(robots) : []
+
+  // 3. Прямые пути, если robots не дал sitemap.
+  if (sitemaps.length === 0) sitemaps = [origin + '/sitemap.xml', origin + '/sitemap_index.xml']
+
+  // Парсим до 2 sitemap; один уровень вложенности sitemap-index.
+  for (const sm of sitemaps.slice(0, 2)) {
+    const xml = await safeFetch(sm)
+    if (!xml) continue
+    if (isSitemapIndex(xml)) {
+      const child = parseLocsFromSitemap(xml)[0]
+      if (child) {
+        const childXml = await safeFetch(child)
+        if (childXml) urls.push(...parseLocsFromSitemap(childXml))
+      }
+    } else {
+      urls.push(...parseLocsFromSitemap(xml))
+    }
+  }
+
+  // 4. Ссылки с главной — fallback, если sitemap ничего не дал.
+  if (urls.length <= 1 && homepageHtml) urls.push(...extractSameOriginLinks(homepageHtml, origin))
+
+  return urls
+}
+
+export async function crawlClientSite(homepageUrl: string | null | undefined): Promise<SiteCrawlResult> {
+  if (!homepageUrl) return EMPTY
+  const origin = deriveOrigin(homepageUrl)
+  if (!origin) return EMPTY
+
+  try {
+    const homepageHtml = await safeFetch(homepageUrl)
+    const discovered = await discoverUrls(origin, homepageHtml)
+    const ranked = rankAndCap(discovered, origin, PAGE_CAP)
+    if (ranked.length === 0) return EMPTY
+
+    // Текст главной уже скачан — переиспользуем, остальное тянем параллельно.
+    const settled = await Promise.allSettled(
+      ranked.map(async (url) => {
+        const html = url === origin + '/' && homepageHtml ? homepageHtml : await safeFetch(url)
+        if (!html) return null
+        const text = htmlToText(html).slice(0, PAGE_CHARS)
+        if (text.length < 80) return null // пустая/JS-рендеренная страница
+        return { url, title: extractTitle(html), text } satisfies CrawledPage
+      }),
+    )
+
+    const pages: CrawledPage[] = settled
+      .filter((r): r is PromiseFulfilledResult<CrawledPage | null> => r.status === 'fulfilled')
+      .map((r) => r.value)
+      .filter((p): p is CrawledPage => p !== null)
+
+    if (pages.length === 0) return { points: [], stats: { discovered: discovered.length, fetched: 0, facts: 0 } }
+
+    const points = await extractSiteFacts(pages)
+    return { points, stats: { discovered: discovered.length, fetched: pages.length, facts: points.length } }
+  } catch {
+    return EMPTY
+  }
+}

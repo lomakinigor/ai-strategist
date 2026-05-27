@@ -12,6 +12,7 @@ import { audienceAdapterMock } from './audience-adapter.mock'
 import { channelsAdapterMock } from './channels-adapter.mock'
 import { competitorsAdapterMock } from './competitors-adapter.mock'
 import { collectExternalMetrics } from './external-metrics'
+import { crawlClientSite } from './site-crawl'
 import type { RawDataPoint } from '@/lib/types'
 
 const MOCK_ADAPTERS = [
@@ -83,19 +84,26 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
     ? provider.research({ query, researchType: 'site_marketing', modelId }).then((r) => r.points)
     : Promise.resolve([] as RawDataPoint[])
 
-  const [streamResults, external, siteMarketingPoints] = await Promise.all([
+  // Обход сайта клиента: каскад sitemap → ключевые страницы → грунтованные факты (RS:4).
+  const siteCrawlStream = crawlClientSite(query.website)
+
+  const [streamResults, external, siteMarketingPoints, siteCrawl] = await Promise.all([
     Promise.all(
       STREAM_TYPES.map((type) => provider.research({ query, researchType: type, modelId })),
     ),
     collectExternalMetrics(siteUrls),
     siteMarketingStream,
+    siteCrawlStream,
   ])
 
   const providerPoints = streamResults.flatMap((r) => r.points)
-  const allPoints = [...providerPoints, ...external.points, ...siteMarketingPoints]
+  const allPoints = [...providerPoints, ...external.points, ...siteMarketingPoints, ...siteCrawl.points]
 
   console.log(
     `[orchestrator] external-metrics: requested=${external.stats.requested} succeeded=${external.stats.succeeded} skipped=${external.stats.skipped} failed=${external.stats.failed}`,
+  )
+  console.log(
+    `[orchestrator] site-crawl: discovered=${siteCrawl.stats.discovered} fetched=${siteCrawl.stats.fetched} facts=${siteCrawl.stats.facts}`,
   )
 
   await insertFacts(companyId, jobId, allPoints, true)
