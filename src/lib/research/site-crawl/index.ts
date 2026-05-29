@@ -50,12 +50,15 @@ async function safeFetch(url: string, timeout = FETCH_TIMEOUT): Promise<string |
   }
 }
 
-async function discoverUrls(origin: string, homepageHtml: string | null): Promise<string[]> {
+async function discoverUrls(
+  origin: string,
+  homepageHtml: string | null,
+  llmsTxtContent: string | null,
+): Promise<string[]> {
   const urls: string[] = [origin + '/']
 
-  // 1. llms.txt — дешёвый зонд (для РФ-SMB почти всегда 404, но стоит копейки).
-  const llms = await safeFetch(origin + '/llms.txt')
-  if (llms) urls.push(...parseUrlsFromText(llms))
+  // 1. llms.txt — URL уже получен снаружи (используем для discovery; статус — отдельный факт).
+  if (llmsTxtContent) urls.push(...parseUrlsFromText(llmsTxtContent))
 
   // 2. robots.txt → директивы Sitemap.
   const robots = await safeFetch(origin + '/robots.txt')
@@ -85,16 +88,33 @@ async function discoverUrls(origin: string, homepageHtml: string | null): Promis
   return urls
 }
 
+// Безусловный факт о llms.txt — стандарт 2024 для AI-агентов.
+// Эмитится ВСЕГДА (есть или нет), чтобы синтез и бриф обязательно отразили статус.
+function buildLlmsTxtFact(origin: string, present: boolean): RawDataPoint {
+  const url = origin + '/llms.txt'
+  const date = new Date().toISOString().slice(0, 10)
+  const data = present
+    ? `На сайте опубликован llms.txt — стандарт 2024 для AI-агентов (структурированное описание сайта для LLM). Положительный сигнал AI-readiness: помогает ChatGPT/Perplexity/Claude корректно цитировать компанию.`
+    : `На сайте НЕТ llms.txt — стандарта 2024 для AI-агентов (структурированное описание сайта для LLM, помогает корректному цитированию ChatGPT/Perplexity/Claude). Публикация — быстрая и дешёвая AI-discoverability мера.`
+  return { data, source: url, date, rs: 4, researchType: 'business' }
+}
+
 export async function crawlClientSite(homepageUrl: string | null | undefined): Promise<SiteCrawlResult> {
   if (!homepageUrl) return EMPTY
   const origin = deriveOrigin(homepageUrl)
   if (!origin) return EMPTY
 
   try {
-    const homepageHtml = await safeFetch(homepageUrl)
-    const discovered = await discoverUrls(origin, homepageHtml)
+    const [homepageHtml, llmsTxtContent] = await Promise.all([
+      safeFetch(homepageUrl),
+      safeFetch(origin + '/llms.txt'),
+    ])
+    const llmsTxtFact = buildLlmsTxtFact(origin, llmsTxtContent !== null)
+    const discovered = await discoverUrls(origin, homepageHtml, llmsTxtContent)
     const ranked = rankAndCap(discovered, origin, PAGE_CAP)
-    if (ranked.length === 0) return EMPTY
+    if (ranked.length === 0) {
+      return { points: [llmsTxtFact], stats: { discovered: discovered.length, fetched: 0, facts: 1 } }
+    }
 
     // Текст главной уже скачан — переиспользуем, остальное тянем параллельно.
     const settled = await Promise.allSettled(
@@ -112,9 +132,12 @@ export async function crawlClientSite(homepageUrl: string | null | undefined): P
       .map((r) => r.value)
       .filter((p): p is CrawledPage => p !== null)
 
-    if (pages.length === 0) return { points: [], stats: { discovered: discovered.length, fetched: 0, facts: 0 } }
+    if (pages.length === 0) {
+      return { points: [llmsTxtFact], stats: { discovered: discovered.length, fetched: 0, facts: 1 } }
+    }
 
-    const points = await extractSiteFacts(pages)
+    const sitePoints = await extractSiteFacts(pages)
+    const points = [llmsTxtFact, ...sitePoints]
     return { points, stats: { discovered: discovered.length, fetched: pages.length, facts: points.length } }
   } catch {
     return EMPTY
