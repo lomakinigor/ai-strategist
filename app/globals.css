@@ -1,119 +1,121 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════════════════
- * LIGHT-PREMIUM — светлая тема лендинга (Linear / Stripe / Vercel вайб).
- * Префикс lp-, белый фон, индиго-акцент, Inter, много воздуха.
- * Палитра: indigo #5046E5 · navy #0A1838 · muted #6B7280 · off-white #F8F9FC.
+ * EDITORIAL-WARM — кремовая editorial-тема лендинга (Substack/Medium вайб).
+ * Префикс lp-, серифные H1 (Lora), тёплая палитра, body Inter.
+ * Палитра: cream #FAF6F0 · charcoal #2D1F18 · warm red #B8443E · soft #F3EEE5.
  * ════════════════════════════════════════════════════════════════════════════ */
 :root {
-  --lp-bg: #ffffff;
-  --lp-bg-soft: #f8f9fc;
-  --lp-text: #0a1838;
-  --lp-text-muted: #6b7280;
-  --lp-text-faint: #9ca3af;
-  --lp-border: #e5e7eb;
-  --lp-accent: #5046e5;
-  --lp-accent-hover: #4338ca;
-  --lp-accent-soft: #eef2ff;
+  --lp-bg: #faf6f0;
+  --lp-bg-soft: #f3eee5;
+  --lp-text: #2d1f18;
+  --lp-text-muted: #6b5b50;
+  --lp-text-faint: #a89889;
+  --lp-border: #e8dfd2;
+  --lp-accent: #b8443e;
+  --lp-accent-hover: #8f3530;
+  --lp-accent-soft: #fdf2ed;
 }
 
-/* Подключаем Inter как дефолтный шрифт страницы */
+/* Дефолтный шрифт страницы — Inter (body); H1 переключаются через .lp-serif */
 html {
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--lp-bg);
 }
 
-/* Декор: радиальная подсветка под Hero */
+/* Серифный класс для editorial-заголовков */
+.lp-serif {
+  font-family: var(--font-lora), Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.lp-serif-italic {
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Декор: тёплая радиальная подсветка под Hero */
 .lp-hero-glow {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(80% 50% at 50% 0%, rgba(80, 70, 229, 0.08) 0%, transparent 60%),
-    radial-gradient(60% 40% at 50% 100%, rgba(80, 70, 229, 0.04) 0%, transparent 50%);
+    radial-gradient(80% 50% at 50% 0%, rgba(184, 68, 62, 0.07) 0%, transparent 60%),
+    radial-gradient(60% 40% at 50% 100%, rgba(184, 68, 62, 0.03) 0%, transparent 50%);
 }
 
-/* Декор: тонкая сетка как подложка */
-.lp-grid {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(80, 70, 229, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(80, 70, 229, 0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+/* Декор: editorial — горизонтальная разделительная черта вместо сетки */
+.lp-rule {
+  width: 60px;
+  height: 1px;
+  background: var(--lp-accent);
+  margin: 0 auto;
+  opacity: 0.5;
 }
 
-/* Eyebrow — маленькая надпись над заголовком */
+/* Eyebrow — editorial-метка с тонкой подчёркивающей линией */
 .lp-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: var(--lp-accent-soft);
+  gap: 10px;
+  font-family: var(--font-inter);
   color: var(--lp-accent);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.lp-eyebrow-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+.lp-eyebrow::before,
+.lp-eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1px;
   background: var(--lp-accent);
-  animation: lp-pulse 2s infinite;
-}
-@keyframes lp-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+  opacity: 0.4;
 }
 
-/* Градиент-текст для акцента в заголовке */
-.lp-grad {
-  background: linear-gradient(135deg, #5046e5 0%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+/* Акцент в заголовке — italic-курсив (классика editorial) */
+.lp-em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--lp-accent);
 }
 
-/* Карточки */
+/* Карточки — белые на кремовом фоне, мягкая граница и тень */
 .lp-card {
   background: #ffffff;
   border: 1px solid var(--lp-border);
-  border-radius: 16px;
+  border-radius: 12px;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .lp-card:hover {
-  border-color: rgba(80, 70, 229, 0.25);
+  border-color: rgba(184, 68, 62, 0.25);
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px -8px rgba(10, 24, 56, 0.08), 0 4px 12px -4px rgba(10, 24, 56, 0.06);
+  box-shadow: 0 12px 32px -8px rgba(45, 31, 24, 0.1), 0 4px 12px -4px rgba(45, 31, 24, 0.06);
 }
 
 /* Кнопки */
 .lp-btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: var(--lp-accent);
   color: #ffffff;
+  font-family: var(--font-inter);
   font-weight: 600;
   font-size: 16px;
-  padding: 14px 28px;
-  border-radius: 10px;
+  padding: 14px 30px;
+  border-radius: 6px;
   transition: all 0.2s;
-  box-shadow: 0 4px 14px -2px rgba(80, 70, 229, 0.3);
+  box-shadow: 0 4px 14px -2px rgba(184, 68, 62, 0.25);
 }
 .lp-btn-primary:hover {
   background: var(--lp-accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px -4px rgba(80, 70, 229, 0.4);
+  box-shadow: 0 8px 22px -4px rgba(184, 68, 62, 0.35);
 }
 .lp-btn-ghost {
   display: inline-flex;
@@ -123,25 +125,21 @@ html {
   font-size: 14px;
   font-weight: 500;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 6px;
   transition: color 0.2s;
 }
 .lp-btn-ghost:hover {
   color: var(--lp-text);
 }
 
-/* Step-номер (для блока «3 шага») */
+/* Step-номер — серифная римская/арабская цифра как в editorial */
 .lp-step-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--lp-accent-soft);
+  font-family: var(--font-lora);
+  font-size: 36px;
+  font-weight: 600;
   color: var(--lp-accent);
-  font-weight: 700;
-  font-size: 14px;
+  line-height: 1;
+  font-feature-settings: "lnum";
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
