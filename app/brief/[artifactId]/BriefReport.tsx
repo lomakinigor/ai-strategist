@@ -144,11 +144,79 @@ export function BriefReport({
         </Reveal>
       )}
 
-      {/* ── 3. Потенциал роста: bar + список ────────────────────────────────── */}
+      {/* ── 3. Конкурентная картина: компактные профили + паттерны + белые пятна ── */}
+      {brief.competitor_landscape.competitors.length > 0 && (
+        <Reveal>
+          <section className="nr-sec">
+            <SectionHeader
+              n="03"
+              title="Конкурентная картина"
+              badge={`${brief.competitor_landscape.competitors.length} конкурента`}
+            />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {brief.competitor_landscape.competitors.map((c, i) => (
+                <div key={i} className="nr-card p-5">
+                  <h3 className="text-sm font-bold text-[#e8e8f0] leading-snug mb-2.5">{c.name}</h3>
+                  <p className="text-xs text-[#8888a0] leading-relaxed mb-3">{c.focus}</p>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="nr-mono px-2 py-0.5 rounded bg-[#00d4aa]/12 text-[#00d4aa] border border-[#00d4aa]/30 text-[10px] shrink-0">
+                        сила
+                      </span>
+                      <p className="text-xs text-[#e8e8f0] leading-snug">{c.strength}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="nr-mono px-2 py-0.5 rounded bg-[#ff6b6b]/12 text-[#ff6b6b] border border-[#ff6b6b]/25 text-[10px] shrink-0">
+                        слабость
+                      </span>
+                      <p className="text-xs text-[#e8e8f0] leading-snug">{c.weakness}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {(brief.competitor_landscape.patterns.length > 0 ||
+              brief.competitor_landscape.white_spots.length > 0) && (
+              <div className="grid gap-4 sm:grid-cols-2 mt-4">
+                {brief.competitor_landscape.patterns.length > 0 && (
+                  <div className="nr-card p-5">
+                    <p className="nr-eyebrow mb-3 text-[#5b9cf6]">Общие паттерны</p>
+                    <ul className="space-y-2">
+                      {brief.competitor_landscape.patterns.map((p, i) => (
+                        <li key={i} className="text-xs text-[#e8e8f0] leading-relaxed flex gap-2">
+                          <span className="text-[#5b9cf6] shrink-0">•</span>
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {brief.competitor_landscape.white_spots.length > 0 && (
+                  <div className="nr-card p-5">
+                    <p className="nr-eyebrow mb-3" style={{ color: '#c084fc' }}>
+                      Белые пятна — зона отстройки
+                    </p>
+                    <ul className="space-y-2">
+                      {brief.competitor_landscape.white_spots.map((w, i) => (
+                        <li key={i} className="text-xs text-[#e8e8f0] leading-relaxed flex gap-2">
+                          <span style={{ color: '#c084fc' }} className="shrink-0">★</span>
+                          <span>{w}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        </Reveal>
+      )}
+
+      {/* ── 4. Потенциал роста: bar + список ────────────────────────────────── */}
       {brief.growth_potential.rows.length > 0 && (
         <Reveal>
           <section className="nr-sec">
-            <SectionHeader n="03" title="Потенциал роста" />
+            <SectionHeader n="04" title="Потенциал роста" />
             <div className="grid gap-5 lg:grid-cols-2">
               {growth.length > 0 && (
                 <div className="nr-card p-5">
@@ -194,11 +262,11 @@ export function BriefReport({
         </Reveal>
       )}
 
-      {/* ── 4. AI-автоматизация: before → after ─────────────────────────────── */}
+      {/* ── 5. AI-автоматизация: before → after ─────────────────────────────── */}
       {brief.ai_levers.length > 0 && (
         <Reveal>
           <section className="nr-sec">
-            <SectionHeader n="04" title="AI-автоматизация" badge="рычаги роста" />
+            <SectionHeader n="05" title="AI-автоматизация" badge="рычаги роста" />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {brief.ai_levers.map((lever, i) => (
                 <div key={i} className="nr-card nr-aic p-6">
@@ -228,11 +296,11 @@ export function BriefReport({
         </Reveal>
       )}
 
-      {/* ── 5. Следующие 3 действия: timeline ───────────────────────────────── */}
+      {/* ── 6. Следующие 3 действия: timeline ───────────────────────────────── */}
       {brief.next_actions.length > 0 && (
         <Reveal>
           <section className="nr-sec">
-            <SectionHeader n="05" title="Следующие действия" badge="дорожная карта" />
+            <SectionHeader n="06" title="Следующие действия" badge="дорожная карта" />
             <div className="nr-timeline">
               {brief.next_actions.map((a, i) => (
                 <div key={i} className="nr-ti">

@@ -54,9 +54,23 @@ export interface NextAction {
   kpi: string
 }
 
+export interface CompetitorCard {
+  name: string
+  focus: string
+  strength: string
+  weakness: string
+}
+
+export interface CompetitorLandscape {
+  competitors: CompetitorCard[]
+  patterns: string[]
+  white_spots: string[]
+}
+
 export interface BriefReportBlock {
   market_position: MarketPositionTable
   critical_bottlenecks: Bottleneck[]
+  competitor_landscape: CompetitorLandscape
   growth_potential: GrowthPotentialTable
   ai_levers: AILever[]
   next_actions: NextAction[]
@@ -93,6 +107,10 @@ ${fullReport}
 - Суммы — только в рублях (₽). Весь текст — на русском.
 - ОБЯЗАТЕЛЬНО для любой ниши: отрази статус llms.txt сайта клиента (стандарт 2024 для AI-агентов). Если в полном отчёте указано отсутствие — добавь «Опубликовать llms.txt» в next_actions (короткий дедлайн, KPI «опубликован»). Если присутствует — упомяни в market_position или ai_levers как положительный AI-readiness сигнал.
 - ОБЯЗАТЕЛЬНО для любой ниши: отрази статус AI-агентов / чат-ботов клиента (сайт + указанные каналы). Если отсутствуют — один из 3 ai_levers = «AI-агент для квалификации лидов» (инструмент, эффект на CPL/время ответа, срок). Если найден операторский чат — ai_levers = «Апгрейд чата до AI-агента». Если уже AI-powered — упомяни в market_position как сильный сигнал.
+- ОБЯЗАТЕЛЬНО (если в §2 полного отчёта есть сводка по нескольким конкурентам, fan-out 6 уровней): заполни competitor_landscape компактной сравнительной картиной. Иначе верни competitors:[], patterns:[], white_spots:[]. Правила:
+  • competitors — ровно те конкуренты, что разобраны в §2 (имена клиент назвал); по каждому: focus = одна фраза «оффер для аудитории»; strength = главная сильная сторона из 6 уровней; weakness = главное слабое место/отсутствие (если по уровню «НЕ НАЙДЕН: сайт не подтверждён» — strength/weakness = «нет данных»).
+  • patterns — 1–3 пункта, что делают 3+ конкурентов из набора (общие приёмы, к которым клиенту не отстроиться повторением).
+  • white_spots — 1–3 пункта, чего НЕ делает НИКТО из конкурентов (зона отстройки для клиента); каждый пункт — фактическое отсутствие, не гипотеза.
 
 ## Обязательная структура вывода (JSON)
 Верни результат ТОЛЬКО как валидный JSON без markdown-обёртки и комментариев:
@@ -106,6 +124,13 @@ ${fullReport}
   "critical_bottlenecks": [
     { "problem": "конкретная проблема", "metric": "цифра, подтверждающая проблему", "consequence": "что произойдёт, если не исправить" }
   ],
+  "competitor_landscape": {
+    "competitors": [
+      { "name": "имя конкурента", "focus": "оффер для аудитории, одной фразой", "strength": "главная сильная сторона", "weakness": "слабое место или отсутствие" }
+    ],
+    "patterns": ["что делают 3+ конкурентов"],
+    "white_spots": ["чего НЕ делает никто из конкурентов"]
+  },
   "growth_potential": {
     "rows": [
       { "direction": "направление роста", "potential_pct": "+XX%", "deadline": "срок", "priority": "high|medium|low" }
@@ -122,6 +147,9 @@ ${fullReport}
 ## Требования к количеству элементов
 - market_position: 5–7 строк
 - critical_bottlenecks: ровно 3
+- competitor_landscape.competitors: столько, сколько разобрано в §2 (обычно 2–6); если fan-out конкурентов в §2 нет — пустой массив
+- competitor_landscape.patterns: 1–3 пункта (или [] если конкурентов нет)
+- competitor_landscape.white_spots: 1–3 пункта (или [] если конкурентов нет)
 - growth_potential: 4–6 строк
 - ai_levers: ровно 3
 - next_actions: ровно 3

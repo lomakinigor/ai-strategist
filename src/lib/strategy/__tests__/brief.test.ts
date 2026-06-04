@@ -15,6 +15,14 @@ const VALID_BRIEF: BriefReportBlock = {
     { problem: 'Нет контекстной рекламы', metric: '0 ₽/мес', consequence: 'Конкуренты занимают платный спрос' },
     { problem: 'SEO в хвосте', metric: 'Позиции 15–40', consequence: 'CTR < 1%' },
   ],
+  competitor_landscape: {
+    competitors: [
+      { name: 'Юском', focus: 'Защита бизнеса под ключ для МСБ', strength: 'Прозрачная воронка', weakness: 'Нет соц.доказательств' },
+      { name: 'Генезис', focus: 'Корпоративное право для FTSE', strength: 'Крупные клиенты (Huawei)', weakness: 'Не пересекается с МСБ' },
+    ],
+    patterns: ['Все 3 акцентируют опыт 10+ лет'],
+    white_spots: ['Никто не даёт калькулятор стоимости онлайн'],
+  },
   growth_potential: {
     rows: [
       { direction: 'SEO-оптимизация', potential_pct: '+300%', deadline: '3 месяца', priority: 'high' },
@@ -71,6 +79,27 @@ describe('parseBriefReport', () => {
     expect(result.critical_bottlenecks).toEqual([])
     expect(result.ai_levers).toEqual([])
     expect(result.market_position.rows).toEqual([])
+    expect(result.competitor_landscape.competitors).toEqual([])
+    expect(result.competitor_landscape.patterns).toEqual([])
+    expect(result.competitor_landscape.white_spots).toEqual([])
+  })
+
+  it('парсит competitor_landscape с фильтрацией пустых имён и капом 6', () => {
+    const data = {
+      competitor_landscape: {
+        competitors: [
+          { name: 'A', focus: 'f1', strength: 's1', weakness: 'w1' },
+          { name: '', focus: 'игнор', strength: 'игнор', weakness: 'игнор' },
+          { name: 'B', focus: 'f2', strength: 's2', weakness: 'w2' },
+        ],
+        patterns: ['p1', 'p2', 'p3', 'p4'],
+        white_spots: ['ws1', '  ', 'ws2'],
+      },
+    }
+    const result = parseBriefReport(JSON.stringify(data))
+    expect(result.competitor_landscape.competitors.map((c) => c.name)).toEqual(['A', 'B'])
+    expect(result.competitor_landscape.patterns).toHaveLength(3) // cap
+    expect(result.competitor_landscape.white_spots).toEqual(['ws1', 'ws2']) // empty/space filtered
   })
 
   it('ограничивает critical_bottlenecks/ai_levers/next_actions тремя элементами', () => {
@@ -101,14 +130,23 @@ describe('buildBriefReportPrompt', () => {
     expect(prompt).toContain('ТЕКСТ ОТЧЁТА')
   })
 
-  it('содержит все 5 ключей JSON-структуры (без гипотез)', () => {
+  it('содержит все 6 ключей JSON-структуры (без гипотез, с competitor_landscape)', () => {
     const prompt = buildBriefReportPrompt('X', 'legal', 'report', 'kb')
     expect(prompt).toContain('market_position')
     expect(prompt).toContain('critical_bottlenecks')
+    expect(prompt).toContain('competitor_landscape')
     expect(prompt).toContain('growth_potential')
     expect(prompt).toContain('ai_levers')
     expect(prompt).toContain('next_actions')
     expect(prompt).not.toContain('ab_hypotheses')
+  })
+
+  it('задаёт правила competitor_landscape (fan-out 6 уровней, patterns, white_spots)', () => {
+    const prompt = buildBriefReportPrompt('X', 'legal', 'report', 'kb')
+    expect(prompt).toMatch(/competitor_landscape/)
+    expect(prompt).toMatch(/patterns/)
+    expect(prompt).toMatch(/white_spots/)
+    expect(prompt).toMatch(/fan-out|6 уровн/i)
   })
 
   it('задаёт объём 600–900 слов', () => {

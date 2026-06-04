@@ -40,6 +40,35 @@ function rowsOf(block: unknown): Record<string, unknown>[] {
   return Array.isArray(rows) ? (rows as Record<string, unknown>[]) : []
 }
 
+function parseStringArray(input: unknown, maxLen: number): string[] {
+  if (!Array.isArray(input)) return []
+  return (input as unknown[])
+    .map((s) => String(s ?? '').trim())
+    .filter((s) => s.length > 0)
+    .slice(0, maxLen)
+}
+
+function parseCompetitorLandscape(input: unknown): {
+  competitors: Array<{ name: string; focus: string; strength: string; weakness: string }>
+  patterns: string[]
+  white_spots: string[]
+} {
+  const obj = (input ?? {}) as Record<string, unknown>
+  const competitors = Array.isArray(obj.competitors)
+    ? (obj.competitors as Record<string, unknown>[]).slice(0, 6).map((c) => ({
+        name: String(c.name ?? '').trim(),
+        focus: String(c.focus ?? '').trim(),
+        strength: String(c.strength ?? '').trim(),
+        weakness: String(c.weakness ?? '').trim(),
+      })).filter((c) => c.name.length > 0)
+    : []
+  return {
+    competitors,
+    patterns: parseStringArray(obj.patterns, 3),
+    white_spots: parseStringArray(obj.white_spots, 3),
+  }
+}
+
 export function parseBriefReport(raw: string): BriefReportBlock {
   const jsonStr = extractJSON(raw)
 
@@ -67,6 +96,8 @@ export function parseBriefReport(raw: string): BriefReportBlock {
           consequence: String(b.consequence ?? ''),
         }))
       : [],
+
+    competitor_landscape: parseCompetitorLandscape(data.competitor_landscape),
 
     growth_potential: {
       rows: rowsOf(data.growth_potential).map((row) => ({
