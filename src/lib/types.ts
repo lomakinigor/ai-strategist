@@ -55,6 +55,8 @@ export interface ResearchQuery {
   directions?: { items: string[]; independent: boolean | null }
   // Рекламные каналы, которые клиент УЖЕ использует (факт из intake-чеклиста).
   adChannels?: string[]
+  // Имя одного конкурента для fan-out per-competitor разбора (researchType='competitor_single').
+  competitorName?: string
 }
 
 // Raw output from a research adapter before reliability classification

@@ -13,6 +13,7 @@ import { channelsAdapterMock } from './channels-adapter.mock'
 import { competitorsAdapterMock } from './competitors-adapter.mock'
 import { collectExternalMetrics } from './external-metrics'
 import { crawlClientSite } from './site-crawl'
+import { parseCompetitorNames } from './competitor-names'
 import type { RawDataPoint } from '@/lib/types'
 
 const MOCK_ADAPTERS = [
@@ -87,23 +88,52 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
   // Обход сайта клиента: каскад sitemap → ключевые страницы → грунтованные факты (RS:4).
   const siteCrawlStream = crawlClientSite(query.website)
 
-  const [streamResults, external, siteMarketingPoints, siteCrawl] = await Promise.all([
+  // Fan-out: глубокий разбор каждого названного клиентом конкурента по 6-уровневой схеме
+  // (offer/audience/pain/proof/creative/landing). Параллельно, чистый контекст у каждого
+  // субагента → не дрейфует к концу. Кап 6 — защита от расходов.
+  const competitorNames = parseCompetitorNames(query.competitors)
+  const competitorFanoutStream: Promise<RawDataPoint[]> = competitorNames.length > 0
+    ? Promise.all(
+        competitorNames.map((name) =>
+          provider
+            .research({
+              query: { ...query, competitorName: name },
+              researchType: 'competitor_single',
+              modelId,
+            })
+            .then((r) => r.points)
+            .catch(() => [] as RawDataPoint[]), // один упавший конкурент не валит остальных
+        ),
+      ).then((arr) => arr.flat())
+    : Promise.resolve([])
+
+  const [streamResults, external, siteMarketingPoints, siteCrawl, competitorFanoutPoints] = await Promise.all([
     Promise.all(
       STREAM_TYPES.map((type) => provider.research({ query, researchType: type, modelId })),
     ),
     collectExternalMetrics(siteUrls),
     siteMarketingStream,
     siteCrawlStream,
+    competitorFanoutStream,
   ])
 
   const providerPoints = streamResults.flatMap((r) => r.points)
-  const allPoints = [...providerPoints, ...external.points, ...siteMarketingPoints, ...siteCrawl.points]
+  const allPoints = [
+    ...providerPoints,
+    ...external.points,
+    ...siteMarketingPoints,
+    ...siteCrawl.points,
+    ...competitorFanoutPoints,
+  ]
 
   console.log(
     `[orchestrator] external-metrics: requested=${external.stats.requested} succeeded=${external.stats.succeeded} skipped=${external.stats.skipped} failed=${external.stats.failed}`,
   )
   console.log(
     `[orchestrator] site-crawl: discovered=${siteCrawl.stats.discovered} fetched=${siteCrawl.stats.fetched} facts=${siteCrawl.stats.facts}`,
+  )
+  console.log(
+    `[orchestrator] competitor-fanout: names=${competitorNames.length} facts=${competitorFanoutPoints.length}`,
   )
 
   await insertFacts(companyId, jobId, allPoints, true)

@@ -79,6 +79,23 @@ const RESEARCH_PROMPTS: Record<ExtendedResearchType, (q: ResearchRequest['query'
     )
   },
 
+  // Fan-out: разбор ОДНОГО конкурента в 6-уровневой схеме (offer/audience/pain/proof/creative/landing).
+  // Результаты на возврате тегируются как 'competitors' (см. dbResearchType).
+  competitor_single: (q) =>
+    `Глубокий разбор ОДНОГО конкурента: «${q.competitorName ?? '<не указан>'}» в нише «${q.industry}», РФ.` +
+    ` Целевая компания (контекст отстройки): «${q.companyName}»${q.website ? ` (${q.website})` : ''}.` +
+    ` Шаги: 1) найди ОФИЦИАЛЬНЫЙ сайт конкурента; если не подтверждён — «[НЕ НАЙДЕН: сайт не подтверждён]» и стоп.` +
+    ` 2) По сайту заполни 6 уровней, каждый одним абзацем с цитатой и URL:` +
+    ` (1) Offer — конкретная услуга/обещание/формат.` +
+    ` (2) Audience — сегмент B2B/B2C (МСБ / корпорации / ИП / физлица).` +
+    ` (3) Pain — какую боль адресует.` +
+    ` (4) Proof — соц.доказательства: цифры (дел, ₽, годы), клиенты, отзывы, рейтинги. Нет — [НЕДОСТАТОЧНО ДАННЫХ].` +
+    ` (5) Creative — визуальный стиль и тон лендинга. Креативы из рекламы НЕ выдумывай.` +
+    ` (6) Landing structure — структура первой страницы.` +
+    ` Каждый блок начинай с «### Offer/Audience/...».` +
+    ` Завершающая строка: «**Краткий вывод по конкуренту:** 1–2 предложения о ключевой отстройке.»` +
+    VERIFIABILITY_RULE,
+
   site_marketing: (q) =>
     // Маркетинговый аудит сайта — по методологии Стива Круга (Don't Make Me Think) и Тима Эша (Landing Page Optimization)
     `Проведи маркетинговый аудит сайта «${q.website}» компании «${q.companyName}» в нише «${q.industry}».` +
@@ -163,9 +180,13 @@ export class PerplexityResearchProvider implements ResearchProvider {
     const prompt = RESEARCH_PROMPTS[request.researchType](request.query)
     const start = Date.now()
 
-    // site_marketing results are tagged as 'business' for DB storage (no separate enum value)
+    // Расширенные типы маппятся обратно в core ResearchType для хранения в БД.
     const dbResearchType: ResearchType =
-      request.researchType === 'site_marketing' ? 'business' : request.researchType
+      request.researchType === 'site_marketing'
+        ? 'business'
+        : request.researchType === 'competitor_single'
+          ? 'competitors'
+          : request.researchType
 
     const response = await fetch(this.baseUrl, {
       method: 'POST',

@@ -99,6 +99,24 @@ export const RESEARCH_PROMPTS: Record<ExtendedResearchType, (q: ResearchRequest[
     )
   },
 
+  // Fan-out: глубокий разбор ОДНОГО конкурента в 6-уровневой схеме.
+  // Результаты на возврате тегируются как researchType='competitors' (см. dbResearchType).
+  competitor_single: (q) =>
+    `Глубокий разбор ОДНОГО конкурента: «${q.competitorName ?? '<не указан>'}» в нише «${q.industry}», РФ.` +
+    ` Целевая компания (для контекста отстройки): «${q.companyName}»${q.website ? ` (${q.website})` : ''}.` +
+    ` ШАГИ:` +
+    ` 1) Найди ОФИЦИАЛЬНЫЙ сайт конкурента (по названию + ниша + регион). Если сайт не подтверждён публичными источниками — верни «[НЕ НАЙДЕН: сайт не подтверждён]» и стоп.` +
+    ` 2) По найденному сайту (главная + 1–2 внутренние страницы, если доступны) заполни 6-уровневую карточку — каждый уровень одним абзацем, с цитатой и URL-источником:` +
+    ` (1) Offer — конкретная услуга/обещание/формат (например «взыскание под ключ», «фикс. тариф»).` +
+    ` (2) Audience — на какой сегмент B2B/B2C нацелен (МСБ / корпорации / ИП / физлица).` +
+    ` (3) Pain — какую боль клиента адресует.` +
+    ` (4) Proof — соц.доказательства: цифры (выигранных дел, сумма, годы опыта), названия клиентов, отзывы, рейтинги, награды, лицензии. Если нет — «[НЕДОСТАТОЧНО ДАННЫХ]».` +
+    ` (5) Creative — визуальный стиль лендинга (премиум/корпоративный/массовый) и тон (формальный/доверительный/прямой). Креативы из рекламы НЕ выдумывай — только публичный лендинг.` +
+    ` (6) Landing structure — структура первой страницы: первый экран (заголовок + CTA), последующие блоки.` +
+    ` Каждый блок начинай с «### Offer/Audience/...» — это поможет синтезу собрать сводную таблицу.` +
+    ` Завершающая строка: «**Краткий вывод по конкуренту:** 1–2 предложения о ключевой отстройке.»` +
+    VERIFIABILITY_RULE,
+
   site_marketing: (q) =>
     `Проведи маркетинговый аудит сайта «${q.website}» компании «${q.companyName}» в нише «${q.industry}».` +
     (q.competitors ? ` Конкуренты для сравнения: ${q.competitors}.` : '') +
@@ -155,8 +173,13 @@ export class OpenAIResearchProvider implements ResearchProvider {
     const prompt = RESEARCH_PROMPTS[request.researchType](request.query)
     const start = Date.now()
 
+    // Расширенные типы маппятся обратно в core ResearchType для хранения в БД.
     const dbResearchType: ResearchType =
-      request.researchType === 'site_marketing' ? 'business' : request.researchType
+      request.researchType === 'site_marketing'
+        ? 'business'
+        : request.researchType === 'competitor_single'
+          ? 'competitors'
+          : request.researchType
 
     const response = await fetch(this.baseUrl, {
       method: 'POST',

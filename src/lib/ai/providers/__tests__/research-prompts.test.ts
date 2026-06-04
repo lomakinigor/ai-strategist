@@ -34,6 +34,26 @@ describe('RESEARCH_PROMPTS — direction threading (business)', () => {
   })
 })
 
+describe('RESEARCH_PROMPTS — competitor_single (fan-out, 6 уровней)', () => {
+  it('включает имя конкурента, ниши и все 6 уровней с метками', () => {
+    const q: ResearchQuery = { ...base, competitorName: 'Юском' }
+    const prompt = RESEARCH_PROMPTS.competitor_single(q)
+    expect(prompt).toContain('Юском')
+    expect(prompt).toContain(base.industry)
+    // Все 6 уровней — это и есть жёсткий контракт схемы
+    for (const level of ['Offer', 'Audience', 'Pain', 'Proof', 'Creative', 'Landing structure']) {
+      expect(prompt).toContain(level)
+    }
+    // Анти-домысел: если сайт не подтверждён — стоп, не выдумываем
+    expect(prompt).toMatch(/НЕ НАЙДЕН|сайт не подтверждён/i)
+  })
+
+  it('без competitorName ставит явный «<не указан>», чтобы не молча уйти', () => {
+    const prompt = RESEARCH_PROMPTS.competitor_single(base)
+    expect(prompt).toContain('<не указан>')
+  })
+})
+
 describe('RESEARCH_PROMPTS — used-channels threading (channels)', () => {
   it('перечисляет подтверждённые клиентом каналы и запрещает вывод «не использует»', () => {
     const q: ResearchQuery = { ...base, adChannels: ['Яндекс.Директ', 'Авито'] }

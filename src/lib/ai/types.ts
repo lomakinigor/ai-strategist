@@ -3,8 +3,9 @@ import type { RawDataPoint, ResearchQuery, ResearchType } from '../types'
 export type AIProviderId = 'perplexity' | 'anthropic' | 'openai' | 'deepseek' | 'openrouter' | 'mock'
 export type AIModelId = string
 
-// site_marketing — дополнительный тип только для провайдера; в БД хранится как 'business'
-export type ExtendedResearchType = ResearchType | 'site_marketing'
+// site_marketing — доп. тип только для провайдера, в БД хранится как 'business'.
+// competitor_single — fan-out по одному конкуренту, в БД хранится как 'competitors'.
+export type ExtendedResearchType = ResearchType | 'site_marketing' | 'competitor_single'
 
 export interface ResearchRequest {
   query: ResearchQuery
