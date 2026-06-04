@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Lora } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { ArchiveHotkey } from './ArchiveHotkey'
 
@@ -7,13 +7,6 @@ const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-inter',
   display: 'swap',
-})
-
-const lora = Lora({
-  subsets: ['latin', 'cyrillic'],
-  variable: '--font-lora',
-  display: 'swap',
-  weight: ['500', '600', '700'],
 })
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-strategist-bice.vercel.app'
@@ -66,7 +59,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ru" className={`${inter.variable} ${lora.variable}`}>
+    <html lang="ru" className={inter.variable}>
       <body>
         <ArchiveHotkey />
         {children}

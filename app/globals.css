@@ -1,23 +1,23 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════════════════
- * EDITORIAL-WARM — кремовая editorial-тема лендинга (Substack/Medium вайб).
- * Префикс lp-, серифные H1 (Lora), тёплая палитра, body Inter.
- * Палитра: cream #FAF6F0 · charcoal #2D1F18 · warm red #B8443E · soft #F3EEE5.
+ * MINIMAL — чистая минималистичная тема лендинга.
+ * Префикс lp-, без курсива, без декора, только типографика и воздух.
+ * Палитра: white · near-black #0a0a0a · zinc-600 #525252 · zinc-100 #f4f4f5.
  * ════════════════════════════════════════════════════════════════════════════ */
 :root {
-  --lp-bg: #faf6f0;
-  --lp-bg-soft: #f3eee5;
-  --lp-text: #2d1f18;
-  --lp-text-muted: #6b5b50;
-  --lp-text-faint: #a89889;
-  --lp-border: #e8dfd2;
-  --lp-accent: #b8443e;
-  --lp-accent-hover: #8f3530;
-  --lp-accent-soft: #fdf2ed;
+  --lp-bg: #ffffff;
+  --lp-bg-soft: #fafafa;
+  --lp-text: #0a0a0a;
+  --lp-text-muted: #525252;
+  --lp-text-faint: #a3a3a3;
+  --lp-border: #e5e5e5;
+  --lp-accent: #0a0a0a;
+  --lp-accent-hover: #1f1f1f;
+  --lp-accent-soft: #f4f4f5;
 }
 
-/* Дефолтный шрифт страницы — Inter (body); H1 переключаются через .lp-serif */
+/* Один шрифт на всю страницу — Inter */
 html {
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -25,79 +25,29 @@ html {
   background: var(--lp-bg);
 }
 
-/* Серифный класс для editorial-заголовков */
-.lp-serif {
-  font-family: var(--font-lora), Georgia, 'Times New Roman', serif;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-}
-.lp-serif-italic {
-  font-style: italic;
-  font-weight: 500;
-}
-
-/* Декор: тёплая радиальная подсветка под Hero */
-.lp-hero-glow {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(80% 50% at 50% 0%, rgba(184, 68, 62, 0.07) 0%, transparent 60%),
-    radial-gradient(60% 40% at 50% 100%, rgba(184, 68, 62, 0.03) 0%, transparent 50%);
-}
-
-/* Декор: editorial — горизонтальная разделительная черта вместо сетки */
-.lp-rule {
-  width: 60px;
-  height: 1px;
-  background: var(--lp-accent);
-  margin: 0 auto;
-  opacity: 0.5;
-}
-
-/* Eyebrow — editorial-метка с тонкой подчёркивающей линией */
+/* Eyebrow — короткая uppercase-метка без декора */
 .lp-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-inter);
-  color: var(--lp-accent);
+  display: inline-block;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-}
-.lp-eyebrow::before,
-.lp-eyebrow::after {
-  content: '';
-  width: 24px;
-  height: 1px;
-  background: var(--lp-accent);
-  opacity: 0.4;
+  color: var(--lp-text-muted);
 }
 
-/* Акцент в заголовке — italic-курсив (классика editorial) */
-.lp-em {
-  font-style: italic;
-  font-weight: 500;
-  color: var(--lp-accent);
-}
-
-/* Карточки — белые на кремовом фоне, мягкая граница и тень */
+/* Карточки — без теней по умолчанию, только border; легчайший hover */
 .lp-card {
-  background: #ffffff;
+  background: var(--lp-bg);
   border: 1px solid var(--lp-border);
-  border-radius: 12px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 8px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
 }
 .lp-card:hover {
-  border-color: rgba(184, 68, 62, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px -8px rgba(45, 31, 24, 0.1), 0 4px 12px -4px rgba(45, 31, 24, 0.06);
+  border-color: var(--lp-text);
+  transform: translateY(-1px);
 }
 
-/* Кнопки */
+/* Кнопки — heavy weight (700), увеличенный padding */
 .lp-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -105,17 +55,16 @@ html {
   background: var(--lp-accent);
   color: #ffffff;
   font-family: var(--font-inter);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
-  padding: 14px 30px;
-  border-radius: 6px;
-  transition: all 0.2s;
-  box-shadow: 0 4px 14px -2px rgba(184, 68, 62, 0.25);
+  letter-spacing: -0.005em;
+  padding: 16px 32px;
+  border-radius: 8px;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 .lp-btn-primary:hover {
   background: var(--lp-accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px -4px rgba(184, 68, 62, 0.35);
 }
 .lp-btn-ghost {
   display: inline-flex;
@@ -123,7 +72,7 @@ html {
   gap: 6px;
   color: var(--lp-text-muted);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 8px 14px;
   border-radius: 6px;
   transition: color 0.2s;
@@ -132,14 +81,15 @@ html {
   color: var(--lp-text);
 }
 
-/* Step-номер — серифная римская/арабская цифра как в editorial */
+/* Step-номер — крупная моноширинная цифра, near-black */
 .lp-step-num {
-  font-family: var(--font-lora);
-  font-size: 36px;
-  font-weight: 600;
-  color: var(--lp-accent);
+  font-family: var(--font-inter);
+  font-size: 28px;
+  font-weight: 700;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.02em;
+  color: var(--lp-text);
   line-height: 1;
-  font-feature-settings: "lnum";
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
