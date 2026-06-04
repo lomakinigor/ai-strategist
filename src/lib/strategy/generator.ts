@@ -169,6 +169,15 @@ interface OpenRouterChatResponse {
   choices: Array<{ message: { content: string } }>
 }
 
+// OpenRouter 402 при низком балансе возвращает «can only afford N tokens» — выдёргиваем N,
+// чтобы один раз перезапустить с уменьшенным max_tokens вместо падения всего отчёта.
+function parseAffordableTokens(body: string): number | null {
+  const m = body.match(/can only afford\s+(\d+)/i)
+  if (!m) return null
+  const n = Number(m[1])
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
 export async function callOpenRouter(
   systemPrompt: string,
   userPrompt: string,
@@ -181,24 +190,42 @@ export async function callOpenRouter(
   }
   const model = modelId ?? AI_CONFIG.strategy.defaultModel
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
-      'X-Title': 'ai-strategist',
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      provider: { allow_fallbacks: true, sort: 'throughput' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  })
+  const doFetch = (tokens: number) =>
+    fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
+        'X-Title': 'ai-strategist',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: tokens,
+        provider: { allow_fallbacks: true, sort: 'throughput' },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      }),
+    })
+
+  let response = await doFetch(maxTokens)
+
+  // 402 «can only afford N» → одна попытка с пониженным лимитом (минус 100 на safety-margin).
+  if (response.status === 402) {
+    const errText = await response.text()
+    const afford = parseAffordableTokens(errText)
+    if (afford && afford < maxTokens) {
+      const retryTokens = Math.max(1024, afford - 100)
+      console.warn(
+        `[callOpenRouter] 402 insufficient credits: requested=${maxTokens} afford=${afford} → retry with ${retryTokens}`,
+      )
+      response = await doFetch(retryTokens)
+    } else {
+      throw new Error(`OpenRouter API error 402: ${errText}`)
+    }
+  }
 
   if (!response.ok) {
     const text = await response.text()
