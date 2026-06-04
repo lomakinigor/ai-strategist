@@ -9,7 +9,7 @@ SaaS для российских компаний. Минимальный intake
 
 > Каждый факт — с источником, датой и reliability score. Нет данных — нет вывода.
 
-Подробнее: [.claude/rules/data-reliability.md](.claude/rules/data-reliability.md), [.claude/rules/russia-context.md](.claude/rules/russia-context.md), [.claude/rules/llms-txt.md](.claude/rules/llms-txt.md), [.claude/rules/hooks.md](.claude/rules/hooks.md)
+Подробнее: [.claude/rules/data-reliability.md](.claude/rules/data-reliability.md), [.claude/rules/russia-context.md](.claude/rules/russia-context.md), [.claude/rules/llms-txt.md](.claude/rules/llms-txt.md), [.claude/rules/ai-agents.md](.claude/rules/ai-agents.md), [.claude/rules/hooks.md](.claude/rules/hooks.md)
 
 ## Стек
 

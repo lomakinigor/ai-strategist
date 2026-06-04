@@ -42,7 +42,12 @@ export default function IntakeForm() {
   const [city, setCity] = useState('')
   const [isParsing, setIsParsing] = useState(false)
   const [parseError, setParseError] = useState<string | null>(null)
+  // Запускался ли AI-разбор успешно — нужно, чтобы потребовать подтверждение от клиента.
+  const [aiParseRan, setAiParseRan] = useState(false)
+  // Клиент явно подтвердил, что AI всё понял правильно (после ручной проверки полей).
+  const [parseConfirmed, setParseConfirmed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   async function handleParse() {
     if (!contextNotes.trim()) return
@@ -93,6 +98,11 @@ export default function IntakeForm() {
         if (matched.size) setAdChannels(Array.from(matched))
         if (extras.length && !adChannelOther) setAdChannelOther(extras.join(', '))
       }
+
+      // AI-разбор прошёл успешно → требуем явное подтверждение клиента (правило 4)
+      setAiParseRan(true)
+      setParseConfirmed(false)
+      setSubmitError(null)
     } catch {
       setParseError('Ошибка парсинга — заполните поля вручную')
     } finally {
@@ -102,6 +112,26 @@ export default function IntakeForm() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setSubmitError(null)
+
+    const filledDirections = directions.map((d) => d.trim()).filter(Boolean)
+
+    // Правило 2: при 2+ направлениях обязательно выбрать характер связи (разные / одно).
+    if (filledDirections.length >= 2 && directionsIndependent === null) {
+      setSubmitError(
+        'Уточните, как связаны направления (разные / одно связанное предложение) — это критично для корректного анализа.',
+      )
+      return
+    }
+
+    // Правило 4: если был AI-разбор — нужна явная отметка, что AI всё понял правильно.
+    if (aiParseRan && !parseConfirmed) {
+      setSubmitError(
+        'Поставьте отметку «AI всё понял правильно» в блоке «AI-разбор информации» (или поправьте поля и подтвердите).',
+      )
+      return
+    }
+
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set('is_chain', isChain ? '1' : '0')
@@ -111,7 +141,6 @@ export default function IntakeForm() {
     }
 
     // Направления (по строкам) + флаг связи (только если их 2+)
-    const filledDirections = directions.map((d) => d.trim()).filter(Boolean)
     filledDirections.forEach((d) => formData.append('direction', d))
     if (filledDirections.length >= 2 && directionsIndependent !== null) {
       formData.set('directions_independent', directionsIndependent ? '1' : '0')
@@ -160,10 +189,48 @@ export default function IntakeForm() {
             {isParsing ? 'Разбираю…' : 'Разобрать с помощью AI →'}
           </button>
           {parseError && <span className="text-xs text-red-500">{parseError}</span>}
-          {!parseError && (
+          {!parseError && !isParsing && !aiParseRan && (
             <span className="text-xs text-gray-400">Необязательно. Чем больше данных — тем точнее стратегия.</span>
           )}
         </div>
+
+        {/* Видимый индикатор обработки (правило 3) */}
+        {isParsing && (
+          <div className="mt-3 flex items-center gap-3 rounded-md bg-blue-50 border border-blue-200 px-4 py-3">
+            <Spinner />
+            <p className="text-sm text-blue-800">
+              Обрабатываем информацию — это занимает 10–30 секунд. Пожалуйста, подождите…
+            </p>
+          </div>
+        )}
+
+        {/* Подтверждение после AI-разбора (правило 4) */}
+        {aiParseRan && !isParsing && (
+          <div
+            className={`mt-3 rounded-md border px-4 py-3 ${
+              parseConfirmed ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
+            }`}
+          >
+            <p className={`text-sm mb-2 ${parseConfirmed ? 'text-green-800' : 'text-amber-900'}`}>
+              AI заполнил поля ниже. Просмотрите их и при необходимости поправьте — затем подтвердите,
+              что мы поняли информацию правильно.
+            </p>
+            <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={parseConfirmed}
+                onChange={(e) => {
+                  setParseConfirmed(e.target.checked)
+                  if (e.target.checked) setSubmitError(null)
+                }}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer"
+              />
+              <span className={parseConfirmed ? 'text-green-900' : 'text-amber-900 font-medium'}>
+                Да, мы правильно интерпретировали информацию — AI всё понял верно
+              </span>
+            </label>
+          </div>
+        )}
       </div>
 
       <hr className="border-gray-100" />
@@ -298,7 +365,9 @@ export default function IntakeForm() {
 
         {directions.map((d) => d.trim()).filter(Boolean).length >= 2 && (
           <div className="mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 space-y-2">
-            <p className="text-xs font-medium text-amber-800">Как связаны эти направления?</p>
+            <p className="text-xs font-medium text-amber-800">
+              Как связаны эти направления? <span className="text-red-600">обязательно</span>
+            </p>
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
               <input
                 type="radio"
@@ -451,6 +520,11 @@ export default function IntakeForm() {
         {isSubmitting ? <Spinner /> : null}
         {isSubmitting ? 'Запускаю исследование…' : 'Запустить исследование'}
       </button>
+      {submitError && (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mt-2">
+          {submitError}
+        </p>
+      )}
     </form>
   )
 }
