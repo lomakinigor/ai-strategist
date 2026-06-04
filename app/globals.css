@@ -87,6 +87,43 @@ html {
 .lp-btn-ghost:hover {
   color: var(--lp-text);
 }
+/* Secondary — белая с навy-бордером, для не-featured тарифов */
+.lp-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: transparent;
+  color: var(--lp-accent);
+  font-family: var(--font-inter);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 16px 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--lp-border);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.lp-btn-secondary:hover {
+  border-color: var(--lp-accent);
+  background: var(--lp-accent-soft);
+}
+
+/* Таблица сравнения */
+.lp-cmp-th {
+  padding: 18px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--lp-text-muted);
+  text-align: left;
+}
+.lp-cmp-td {
+  padding: 18px 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  vertical-align: top;
+}
 
 /* Step-номер — крупная цифра в навy-акценте */
 .lp-step-num {

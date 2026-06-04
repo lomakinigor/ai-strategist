@@ -105,6 +105,133 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Тарифы ────────────────────────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-6xl mx-auto px-6 py-24">
+          <div className="mb-14 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Тарифы</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
+              Выберите формат работы
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {TARIFFS.map((t, i) => (
+              <article
+                key={i}
+                className={`lp-card p-8 flex flex-col ${
+                  t.featured ? 'border-2 border-[#1e3a8a]' : ''
+                }`}
+              >
+                {t.badge && (
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#1e3a8a] mb-4">
+                    {t.badge}
+                  </p>
+                )}
+                <h3 className="text-2xl font-bold tracking-[-0.015em] mb-2">{t.name}</h3>
+                <p className="text-sm text-[#525252] mb-7 leading-relaxed">{t.subtitle}</p>
+
+                <div className="mb-7 pb-7 border-b border-[#e5e5e5]">
+                  <p className="text-3xl font-bold tracking-[-0.02em]">{t.price}</p>
+                  <p className="text-xs text-[#a3a3a3] mt-1.5">{t.priceHint}</p>
+                </div>
+
+                <ul className="space-y-3 mb-8 flex-1">
+                  {t.features.map((f, j) => (
+                    <li
+                      key={j}
+                      className="flex gap-3 text-sm text-[#525252] leading-[1.55]"
+                    >
+                      <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href={t.href}
+                  className={t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'}
+                >
+                  {t.cta}
+                  <span aria-hidden>→</span>
+                </Link>
+
+                {t.note && (
+                  <p className="text-xs text-[#a3a3a3] mt-4 leading-[1.55]">{t.note}</p>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Сравнение ─────────────────────────────────────────────────────── */}
+      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <div className="mb-14 max-w-3xl">
+            <p className="lp-eyebrow mb-4">Сравнение</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
+              AI-Стратег против стандартного маркетингового аудита
+            </h2>
+          </div>
+
+          <div className="lp-card bg-white overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#e5e5e5]">
+                  <th className="lp-cmp-th"></th>
+                  <th className="lp-cmp-th">Маркетолог-консультант</th>
+                  <th className="lp-cmp-th text-[#1e3a8a]">AI-Стратег</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row, i) => (
+                  <tr key={i} className="border-t border-[#e5e5e5]">
+                    <td className="lp-cmp-td font-semibold text-[#0a0a0a] w-1/3">
+                      {row.label}
+                    </td>
+                    <td className="lp-cmp-td text-[#525252] w-1/3">{row.them}</td>
+                    <td className="lp-cmp-td text-[#0a0a0a] w-1/3 font-medium">
+                      {row.us}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-3xl mx-auto px-6 py-24">
+          <div className="mb-12 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Вопросы и ответы</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
+              Что чаще всего спрашивают
+            </h2>
+          </div>
+
+          <div className="border-t border-[#e5e5e5]">
+            {FAQ.map((f, i) => (
+              <details key={i} className="group border-b border-[#e5e5e5] py-6">
+                <summary className="flex items-start justify-between gap-6 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                  <h3 className="text-lg font-bold tracking-[-0.01em] text-[#0a0a0a] leading-snug">
+                    {f.q}
+                  </h3>
+                  <span className="text-2xl text-[#1e3a8a] font-bold transition-transform group-open:rotate-45 shrink-0 leading-none">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-4 text-[15px] text-[#525252] leading-[1.65] pr-12">
+                  {f.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Финальный CTA ─────────────────────────────────────────────────── */}
       <section className="border-t border-[#e5e5e5]">
         <div className="max-w-3xl mx-auto px-6 py-28 text-center">
@@ -174,5 +301,118 @@ const STEPS = [
     title: 'Отчёт со стратегией',
     body:
       'Что у вас слабее, чем у них. Где «белое пятно» — в чём отстроиться. Готовые формулировки УТП под ваши сегменты. План на 30/60/90 дней.',
+  },
+] as const
+
+const TARIFFS = [
+  {
+    badge: null,
+    name: 'Бесплатно',
+    subtitle: 'Пробник, чтобы понять формат',
+    price: 'Бесплатно',
+    priceHint: '24 часа · Дашборд + email',
+    features: [
+      '2 конкурента — краткий разбор',
+      '2 слабые точки вашего бизнеса',
+      '1 идея УТП — тизер',
+    ],
+    cta: 'Получить',
+    href: '/intake',
+    featured: false,
+    note: null,
+  },
+  {
+    badge: 'Популярный',
+    name: '9 999 ₽',
+    subtitle: 'Разовый отчёт со стратегией',
+    price: '9 999 ₽',
+    priceHint: '24 часа · PDF + дашборд + email',
+    features: [
+      '4–6 конкурентов в полном разборе',
+      'Все слабые точки (3–5) с источниками',
+      '3 готовых варианта УТП под сегменты',
+      'План действий на 30 / 60 / 90 дней',
+    ],
+    cta: 'Заказать',
+    href: '/intake?tier=paid',
+    featured: true,
+    note: null,
+  },
+  {
+    badge: null,
+    name: 'Сопровождение',
+    subtitle: 'Маркетинговая команда: куратор-стратег + AI-движок',
+    price: 'от 100 000 ₽/мес',
+    priceHint: 'От 1 месяца · Договор, персональный куратор',
+    features: [
+      'Всё из тарифа «9 999 ₽»',
+      'Ежемесячный мониторинг конкурентов',
+      'Стратегические сессии с куратором',
+      'Управление маркетинговой стратегией',
+    ],
+    cta: 'Записаться на отбор',
+    href: '/intake?tier=retainer',
+    featured: false,
+    note: 'Работаем с 3 компаниями одновременно. Сначала — бесплатный звонок 30 минут, чтобы понять, подходим ли друг другу.',
+  },
+] as const
+
+const COMPARISON = [
+  {
+    label: 'Срок от заявки до отчёта',
+    them: '2–3 недели',
+    us: '24 часа',
+  },
+  {
+    label: 'Ваше время',
+    them: 'Интервью 2–3 часа + правки',
+    us: 'Анкета 5 минут',
+  },
+  {
+    label: 'Цена',
+    them: 'от 60 000 ₽',
+    us: '9 999 ₽ (или бесплатный пробник)',
+  },
+  {
+    label: 'Источники фактов',
+    them: 'Опыт консультанта',
+    us: 'Каждый факт со ссылкой и датой',
+  },
+  {
+    label: 'Сколько конкурентов разбираем',
+    them: '2–3, выбирает консультант',
+    us: '4–6, выбираете вы или находим сами',
+  },
+  {
+    label: 'Зависит от человека',
+    them: 'Да, от одного эксперта',
+    us: 'Нет, полная автоматизация',
+  },
+] as const
+
+const FAQ = [
+  {
+    q: 'Откуда вы берёте данные о конкурентах?',
+    a: 'Публичные источники: сайты конкурентов, их соцсети, поисковая выдача, базы вакансий, картографические сервисы. Никаких внутренних или закрытых данных — мы анализируем то, что и сами клиенты конкурента видят.',
+  },
+  {
+    q: 'А что, если у меня нет списка конкурентов?',
+    a: 'Назовите нишу и регион — мы найдём по 4–6 ключевым автоматически. Можно дополнить своим списком, если кого-то знаете.',
+  },
+  {
+    q: 'Что если AI ошибётся?',
+    a: 'Каждый факт в отчёте сопровождается источником, датой и оценкой надёжности (5 уровней). Вы сами видите, на чём построен вывод — и можете отбросить недостоверное.',
+  },
+  {
+    q: 'Безопасно ли загружать данные о моём бизнесе?',
+    a: 'Данные хранятся в зашифрованной базе на серверах в РФ. Не передаются третьим лицам, не используются для обучения моделей. Можно удалить по запросу.',
+  },
+  {
+    q: 'Чем это отличается от SEO-сервисов вроде Spywords?',
+    a: 'Spywords показывает сырые ключевые слова — нужно ещё уметь их интерпретировать. AI-Стратег делает стратегию: что ваш бизнес делает слабо, в чём отстроиться, какое УТП написать на первом экране сайта.',
+  },
+  {
+    q: 'Что такое сопровождение и чем отличается от отчёта?',
+    a: 'Разовый отчёт — снимок: смотрим конкурентов, формулируем УТП, даём план на 30/60/90 дней. Этим документом дальше работаете вы или ваш маркетолог. Сопровождение — постоянная работа: каждый месяц мониторим конкурентов и рынок, корректируем стратегию под изменения, участвуем в принятии маркетинговых решений вместе с вами. Это ближе к найму CMO на аутсорс, чем к консультации.',
   },
 ] as const
