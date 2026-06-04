@@ -204,33 +204,6 @@ export default function IntakeForm() {
           </div>
         )}
 
-        {/* Подтверждение после AI-разбора (правило 4) */}
-        {aiParseRan && !isParsing && (
-          <div
-            className={`mt-3 rounded-md border px-4 py-3 ${
-              parseConfirmed ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
-            }`}
-          >
-            <p className={`text-sm mb-2 ${parseConfirmed ? 'text-green-800' : 'text-amber-900'}`}>
-              AI заполнил поля ниже. Просмотрите их и при необходимости поправьте — затем подтвердите,
-              что мы поняли информацию правильно.
-            </p>
-            <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={parseConfirmed}
-                onChange={(e) => {
-                  setParseConfirmed(e.target.checked)
-                  if (e.target.checked) setSubmitError(null)
-                }}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer"
-              />
-              <span className={parseConfirmed ? 'text-green-900' : 'text-amber-900 font-medium'}>
-                Да, мы правильно интерпретировали информацию — AI всё понял верно
-              </span>
-            </label>
-          </div>
-        )}
       </div>
 
       <hr className="border-gray-100" />
@@ -511,6 +484,34 @@ export default function IntakeForm() {
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
       </div>
+
+      {/* Подтверждение AI-интерпретации — у самого низа, прямо перед кнопкой запуска (правило 4) */}
+      {aiParseRan && !isParsing && (
+        <div
+          className={`rounded-md border px-4 py-3 ${
+            parseConfirmed ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
+          }`}
+        >
+          <p className={`text-sm mb-2 ${parseConfirmed ? 'text-green-800' : 'text-amber-900'}`}>
+            AI заполнил поля выше. Просмотрите их и при необходимости поправьте — затем подтвердите,
+            что мы поняли информацию правильно.
+          </p>
+          <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={parseConfirmed}
+              onChange={(e) => {
+                setParseConfirmed(e.target.checked)
+                if (e.target.checked) setSubmitError(null)
+              }}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer"
+            />
+            <span className={parseConfirmed ? 'text-green-900' : 'text-amber-900 font-medium'}>
+              Да, мы правильно интерпретировали информацию — AI всё понял верно
+            </span>
+          </label>
+        </div>
+      )}
 
       <button
         type="submit"
