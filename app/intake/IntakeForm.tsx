@@ -73,6 +73,25 @@ export default function IntakeForm() {
         return
       }
       const parsed = await res.json()
+
+      // Проверка «AI хоть что-то извлёк» — иначе показывать «AI заполнил поля выше» нечестно.
+      const hasAnyParsedField = Boolean(
+        parsed.company_name ||
+          parsed.industry ||
+          parsed.description ||
+          parsed.website ||
+          parsed.goals ||
+          parsed.competitors ||
+          (Array.isArray(parsed.directions) && parsed.directions.length) ||
+          (Array.isArray(parsed.ad_channels) && parsed.ad_channels.length),
+      )
+      if (!hasAnyParsedField) {
+        setParseError(
+          'AI не нашёл данных для заполнения в вашем тексте — дайте больше контекста (название компании, отрасль, описание, ссылки) или заполните поля вручную.',
+        )
+        return
+      }
+
       if (parsed.company_name && !companyName) setCompanyName(parsed.company_name)
       if (parsed.industry && !industry) setIndustry(parsed.industry)
       if (parsed.description && !description) setDescription(parsed.description)

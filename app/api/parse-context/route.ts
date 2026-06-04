@@ -120,6 +120,21 @@ export async function POST(req: NextRequest) {
 
     try {
       const parsed = JSON.parse(jsonStr)
+      // Лог пустого результата: модель ответила «успехом», но не вытащила полей.
+      // Помогает понять, упёрлись ли мы в слабый ввод от клиента или регрессию в промпте.
+      const keys = Object.keys(parsed ?? {})
+      const nonEmpty = keys.filter((k) => {
+        const v = (parsed as Record<string, unknown>)[k]
+        return Array.isArray(v) ? v.length > 0 : Boolean(v)
+      })
+      if (nonEmpty.length === 0) {
+        console.warn(
+          '[parse-context] empty extraction. input chars=',
+          text.length,
+          ' raw response (first 300):',
+          raw.slice(0, 300),
+        )
+      }
       return NextResponse.json(parsed)
     } catch (parseErr) {
       console.error('[parse-context] JSON parse failed. raw:', raw.slice(0, 500))
