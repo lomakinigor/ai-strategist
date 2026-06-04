@@ -59,8 +59,8 @@ export default function Home() {
           <div className="grid gap-6 md:grid-cols-3">
             {PAIN_SCENARIOS.map((p, i) => (
               <article key={i} className="lp-card p-8">
-                <p className="text-4xl font-bold mb-6 text-[#0a0a0a] leading-none">
-                  {p.icon}
+                <p className="lp-pain-num mb-6">
+                  {String(i + 1).padStart(2, '0')}
                 </p>
                 <h3 className="text-lg font-bold leading-snug mb-3 tracking-[-0.01em]">
                   {p.title}
@@ -140,19 +140,16 @@ export default function Home() {
 
 const PAIN_SCENARIOS = [
   {
-    icon: '↓',
     title: 'Снижаете цены, но заявок всё равно меньше, чем у соседа',
     body:
       'Скидки съедают маржу, а клиент всё равно уходит. Значит, дело не в цене — а в том, чего не видно на сайте.',
   },
   {
-    icon: '?',
     title: 'На сайте «20 лет опыта» — а в чём конкретно вы лучше, не объяснить',
     body:
       'У клиента 5 секунд на первый экран. Без чёткого «почему вы» он уходит к тому, кто сформулировал понятнее.',
   },
   {
-    icon: '→',
     title: 'Конкурент делает то же самое, но клиенты идут к нему',
     body:
       'Вы оба продаёте «качество». Он просто упаковал предложение так, что в нём узнают свою боль, а в вашем — нет.',

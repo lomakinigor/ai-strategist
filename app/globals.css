@@ -25,26 +25,27 @@ html {
   background: var(--lp-bg);
 }
 
-/* Eyebrow — короткая uppercase-метка без декора */
+/* Eyebrow — короткая uppercase-метка в акцентном цвете */
 .lp-eyebrow {
   display: inline-block;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--lp-text-muted);
+  color: var(--lp-accent);
 }
 
-/* Карточки — без теней по умолчанию, только border; легчайший hover */
+/* Карточки — без теней по умолчанию, тонкая тень при hover */
 .lp-card {
   background: var(--lp-bg);
   border: 1px solid var(--lp-border);
   border-radius: 8px;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .lp-card:hover {
   border-color: var(--lp-accent);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -6px rgba(30, 58, 138, 0.12), 0 2px 6px -1px rgba(30, 58, 138, 0.06);
 }
 
 /* Кнопки — heavy weight (700), увеличенный padding */
@@ -81,14 +82,25 @@ html {
   color: var(--lp-text);
 }
 
-/* Step-номер — крупная моноширинная цифра, near-black */
+/* Step-номер — крупная цифра в навy-акценте */
 .lp-step-num {
   font-family: var(--font-inter);
   font-size: 28px;
   font-weight: 700;
   font-feature-settings: "tnum";
   letter-spacing: -0.02em;
-  color: var(--lp-text);
+  color: var(--lp-accent);
+  line-height: 1;
+}
+
+/* Pain-номер — большая цифра 01/02/03 в навy-тоне */
+.lp-pain-num {
+  font-family: var(--font-inter);
+  font-size: 40px;
+  font-weight: 700;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.03em;
+  color: var(--lp-accent);
   line-height: 1;
 }
 
