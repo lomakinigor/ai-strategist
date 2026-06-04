@@ -50,7 +50,7 @@ export default function Home() {
       <section className="border-t border-[#e5e5e5]">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
-            <p className="lp-eyebrow mb-4">Знакомо?</p>
+            <p className="lp-eyebrow lp-eyebrow-warm mb-4">Знакомо?</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
               Что вы видите каждый день
             </h2>

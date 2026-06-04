@@ -15,6 +15,8 @@
   --lp-accent: #1e3a8a;
   --lp-accent-hover: #172554;
   --lp-accent-soft: #eff6ff;
+  --lp-accent-warm: #b45309;
+  --lp-accent-warm-soft: #fef3c7;
 }
 
 /* Один шрифт на всю страницу — Inter */
@@ -33,6 +35,10 @@ html {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--lp-accent);
+}
+/* Тёплый вариант eyebrow — для emotional-секций (pain, warning) */
+.lp-eyebrow-warm {
+  color: var(--lp-accent-warm);
 }
 
 /* Карточки — без теней по умолчанию, тонкая тень при hover */
