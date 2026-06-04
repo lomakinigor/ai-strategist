@@ -12,9 +12,9 @@
   --lp-text-muted: #525252;
   --lp-text-faint: #a3a3a3;
   --lp-border: #e5e5e5;
-  --lp-accent: #0a0a0a;
-  --lp-accent-hover: #1f1f1f;
-  --lp-accent-soft: #f4f4f5;
+  --lp-accent: #1e3a8a;
+  --lp-accent-hover: #172554;
+  --lp-accent-soft: #eff6ff;
 }
 
 /* Один шрифт на всю страницу — Inter */
@@ -43,7 +43,7 @@ html {
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 .lp-card:hover {
-  border-color: var(--lp-text);
+  border-color: var(--lp-accent);
   transform: translateY(-1px);
 }
 
