@@ -143,10 +143,12 @@ export default function IntakeForm() {
       return
     }
 
-    // Правило 4: если был AI-разбор — нужна явная отметка, что AI всё понял правильно.
-    if (aiParseRan && !parseConfirmed) {
+    // Правило 4: финальная отметка ОБЯЗАТЕЛЬНА — и после AI-разбора, и при ручном заполнении.
+    if (!parseConfirmed) {
       setSubmitError(
-        'Поставьте отметку «AI всё понял правильно» в блоке «AI-разбор информации» (или поправьте поля и подтвердите).',
+        aiParseRan
+          ? 'Поставьте галочку «Да, AI всё понял верно» в блоке внизу формы — это финальный шаг перед запуском. Если что-то неверно — поправьте прямо в полях выше и затем поставьте галочку.'
+          : 'Поставьте галочку «Да, всё верно» в блоке внизу формы — это финальный шаг перед запуском.',
       )
       return
     }
@@ -179,6 +181,15 @@ export default function IntakeForm() {
       setIsSubmitting(false)
     }
   }
+
+  // Гейты для submit-кнопки — пока не выполнены, кнопка визуально неактивна.
+  const filledDirsForGate = directions.map((d) => d.trim()).filter(Boolean)
+  const directionsGateOk = filledDirsForGate.length < 2 || directionsIndependent !== null
+  // Чекбокс требуется когда есть минимум данных (Название+Отрасль) ИЛИ был AI-разбор —
+  // ровно когда блок подтверждения виден.
+  const confirmationRequired = aiParseRan || Boolean(companyName.trim() && industry.trim())
+  const canSubmit =
+    !isSubmitting && directionsGateOk && (!confirmationRequired || parseConfirmed)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 bg-white p-6 rounded-lg border border-gray-200">
@@ -504,16 +515,37 @@ export default function IntakeForm() {
         />
       </div>
 
-      {/* Подтверждение AI-интерпретации — у самого низа, прямо перед кнопкой запуска (правило 4) */}
-      {aiParseRan && !isParsing && (
+      {/* Финальное подтверждение — единый гейт для AI-fill и manual-fill (правило 4).
+          Показываем когда есть минимум данных (Название+Отрасль) ИЛИ был AI-разбор. */}
+      {!isParsing && (aiParseRan || (companyName.trim() && industry.trim())) && (
         <div
           className={`rounded-md border px-4 py-3 ${
-            parseConfirmed ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
+            parseConfirmed
+              ? 'bg-green-50 border-green-200'
+              : aiParseRan
+                ? 'bg-amber-50 border-amber-200'
+                : 'bg-blue-50 border-blue-200'
           }`}
         >
-          <p className={`text-sm mb-2 ${parseConfirmed ? 'text-green-800' : 'text-amber-900'}`}>
-            AI заполнил поля выше. Просмотрите их и при необходимости поправьте — затем подтвердите,
-            что мы поняли информацию правильно.
+          <p
+            className={`text-sm mb-2 ${
+              parseConfirmed ? 'text-green-800' : aiParseRan ? 'text-amber-900' : 'text-blue-900'
+            }`}
+          >
+            {aiParseRan ? (
+              <>
+                AI заполнил поля выше.{' '}
+                <strong>Если что-то неверно — поправьте прямо в полях</strong> (уберите лишнее,
+                добавьте недостающее). Когда всё проверено — поставьте галочку «Да», кнопка запуска
+                станет активной.
+              </>
+            ) : (
+              <>
+                Просмотрите поля выше.{' '}
+                <strong>Если что-то нужно исправить — измените прямо в полях.</strong> Если
+                заполняли сами — поставьте галочку «Да», кнопка запуска станет активной.
+              </>
+            )}
           </p>
           <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
             <input
@@ -525,8 +557,18 @@ export default function IntakeForm() {
               }}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer"
             />
-            <span className={parseConfirmed ? 'text-green-900' : 'text-amber-900 font-medium'}>
-              Да, мы правильно интерпретировали информацию — AI всё понял верно
+            <span
+              className={
+                parseConfirmed
+                  ? 'text-green-900'
+                  : aiParseRan
+                    ? 'text-amber-900 font-medium'
+                    : 'text-blue-900 font-medium'
+              }
+            >
+              {aiParseRan
+                ? 'Да, мы правильно интерпретировали информацию — AI всё понял верно'
+                : 'Да, все данные верны — можно запускать'}
             </span>
           </label>
         </div>
@@ -534,7 +576,8 @@ export default function IntakeForm() {
 
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={!canSubmit}
+        title={!canSubmit ? 'Поставьте галочку «Да» в блоке выше — это финальный шаг перед запуском' : undefined}
         className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
       >
         {isSubmitting ? <Spinner /> : null}
