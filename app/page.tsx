@@ -8,165 +8,171 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[#0a0a0d] text-[#e8e8f0] overflow-hidden">
-      <div className="nr-bg-grid" />
-
-      {/* ── Навигация (минимальная) ─────────────────────────────────────────── */}
+    <main className="relative min-h-screen bg-white text-[#0a1838]">
+      {/* ── Навигация ─────────────────────────────────────────────────────── */}
       <nav className="relative z-10 max-w-6xl mx-auto px-6 pt-7 flex items-center justify-between">
-        <Link href="/" className="text-sm font-bold tracking-tight">
-          AI-<span className="nr-grad">Стратег</span>
+        <Link href="/" className="text-base font-bold tracking-tight">
+          AI-<span className="lp-grad">Стратег</span>
         </Link>
-        <Link
-          href="/archive"
-          className="text-xs text-[#8888a0] hover:text-[#e8e8f0] transition-colors"
-        >
+        <Link href="/archive" className="lp-btn-ghost">
           Архив отчётов →
         </Link>
       </nav>
 
-      {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-28 text-center">
-        <p className="nr-eyebrow mb-5 inline-flex items-center gap-2">
-          <span className="nr-dot" />
-          Стратегический разбор для российских компаний
-        </p>
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden">
+        <div className="lp-hero-glow" />
+        <div className="lp-grid" />
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.05] mb-6">
-          Конкурент рядом{' '}
-          <span className="nr-grad">забирает ваших клиентов.</span>
-          <br />
-          За 24 часа покажем — почему.
-        </h1>
+        <div className="relative z-10 max-w-4xl mx-auto px-6 pt-20 pb-24 text-center">
+          <span className="lp-eyebrow mb-7">
+            <span className="lp-eyebrow-dot" />
+            Стратегический разбор для российских компаний
+          </span>
 
-        <p className="text-lg sm:text-xl text-[#8888a0] max-w-2xl mx-auto leading-relaxed mb-10">
-          Анкета 5 минут → AI изучит 4–6 ваших конкурентов → отчёт со слабыми
-          точками вашего бизнеса и готовым УТП. Без интервью, с источниками.
-        </p>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[1.05] mb-6 text-[#0a1838]">
+            Конкурент рядом{' '}
+            <span className="lp-grad">забирает ваших клиентов.</span>
+            <br />
+            За 24 часа покажем — почему.
+          </h1>
 
-        <Link
-          href="/intake"
-          className="nr-btn-primary inline-flex items-center gap-2 px-8 py-4 rounded-lg text-base font-bold"
-        >
-          Получить бесплатный разбор →
-        </Link>
-        <p className="text-xs text-[#8888a0] mt-4">
-          Анкета 5 минут. Без оплаты, без звонков менеджера.
-        </p>
+          <p className="text-lg sm:text-xl text-[#6b7280] max-w-2xl mx-auto leading-relaxed mb-10 font-normal">
+            Анкета 5 минут → AI изучит 4–6 ваших конкурентов → отчёт со слабыми
+            точками вашего бизнеса и готовым УТП. Без интервью, с источниками.
+          </p>
+
+          <Link href="/intake" className="lp-btn-primary">
+            Получить бесплатный разбор
+            <span aria-hidden>→</span>
+          </Link>
+          <p className="text-sm text-[#9ca3af] mt-5">
+            Анкета 5 минут. Без оплаты, без звонков менеджера.
+          </p>
+        </div>
       </section>
 
-      {/* ── Pain Scenarios: «Что вы видите каждый день» ─────────────────────── */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 py-20">
-        <div className="text-center mb-14">
-          <p className="nr-eyebrow mb-3">01 · Знакомо?</p>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Что вы видите{' '}
-            <span className="nr-grad">каждый день</span>
+      {/* ── Сценарии боли ─────────────────────────────────────────────────── */}
+      <section className="relative max-w-6xl mx-auto px-6 py-24">
+        <div className="text-center mb-14 max-w-2xl mx-auto">
+          <p className="text-sm font-medium text-[#5046e5] mb-3 tracking-wide uppercase">
+            Знакомо?
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#0a1838] leading-tight">
+            Что вы видите каждый день
           </h2>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {PAIN_SCENARIOS.map((p, i) => (
-            <div key={i} className="nr-card p-7">
+            <div key={i} className="lp-card p-7">
               <div
-                className="nr-mono text-3xl mb-4"
-                style={{ color: p.color }}
+                className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-5"
+                style={{ background: p.bg, color: p.color }}
               >
-                {p.icon}
+                <span className="text-2xl font-bold leading-none">{p.icon}</span>
               </div>
-              <h3 className="text-base font-bold text-[#e8e8f0] leading-snug mb-3">
+              <h3 className="text-lg font-semibold text-[#0a1838] leading-snug mb-3 tracking-tight">
                 {p.title}
               </h3>
-              <p className="text-sm text-[#8888a0] leading-relaxed">{p.body}</p>
+              <p className="text-sm text-[#6b7280] leading-relaxed">{p.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── How it works: 3 шага ────────────────────────────────────────────── */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 py-20">
-        <div className="text-center mb-14">
-          <p className="nr-eyebrow mb-3">02 · Как это работает</p>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Три шага от анкеты до{' '}
-            <span className="nr-grad">готового УТП</span>
-          </h2>
-        </div>
+      {/* ── 3 шага метода ─────────────────────────────────────────────────── */}
+      <section className="relative bg-[#f8f9fc] border-y border-[#e5e7eb]">
+        <div className="max-w-6xl mx-auto px-6 py-24">
+          <div className="text-center mb-14 max-w-2xl mx-auto">
+            <p className="text-sm font-medium text-[#5046e5] mb-3 tracking-wide uppercase">
+              Как это работает
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#0a1838] leading-tight">
+              Три шага от анкеты до готового УТП
+            </h2>
+          </div>
 
-        <div className="nr-timeline max-w-3xl mx-auto">
-          {STEPS.map((s, i) => (
-            <div key={i} className="nr-ti">
-              <span className="nr-tdot" />
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#00d4aa] mb-2 font-mono">
-                Шаг {i + 1} · {s.duration}
-              </p>
-              <h3 className="text-xl font-bold text-[#e8e8f0] mb-2">{s.title}</h3>
-              <p className="text-sm text-[#8888a0] leading-relaxed max-w-xl">
-                {s.body}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Финальный CTA-блок (заглушка под Коммит 2) ──────────────────────── */}
-      <section className="relative z-10 max-w-3xl mx-auto px-6 pb-24">
-        <div className="nr-cta">
-          <p className="nr-eyebrow mb-3">Готовы посмотреть на свой рынок свежим взглядом?</p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-6">
-            Получите <span className="nr-grad">бесплатный разбор</span>
-            <br />
-            за 24 часа
-          </h2>
-          <p className="text-sm text-[#8888a0] mb-7 max-w-md mx-auto leading-relaxed">
-            Назовите своих конкурентов или мы найдём их сами. Отчёт придёт на
-            почту.
-          </p>
-          <Link
-            href="/intake"
-            className="nr-cta-hint hover:bg-[#00f5c4] transition-colors"
-          >
-            Запустить разбор →
-          </Link>
+          <div className="grid gap-6 md:grid-cols-3">
+            {STEPS.map((s, i) => (
+              <div key={i} className="lp-card p-7 bg-white">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="lp-step-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="text-xs font-medium text-[#9ca3af] uppercase tracking-wider">
+                    {s.duration}
+                  </span>
+                </div>
+                <h3 className="text-lg font-semibold text-[#0a1838] mb-3 tracking-tight">
+                  {s.title}
+                </h3>
+                <p className="text-sm text-[#6b7280] leading-relaxed">{s.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── Footer (минимум) ────────────────────────────────────────────────── */}
-      <footer className="relative z-10 max-w-6xl mx-auto px-6 pb-10 pt-6 border-t border-white/5 text-center">
-        <p className="text-xs text-[#44445a]">
-          © {new Date().getFullYear()} AI-Стратег. Стратегический анализ для
-          российских компаний.
+      {/* ── Финальный CTA ─────────────────────────────────────────────────── */}
+      <section className="relative max-w-3xl mx-auto px-6 py-24 text-center">
+        <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#0a1838] leading-tight mb-5">
+          Готовы посмотреть на свой рынок{' '}
+          <span className="lp-grad">свежим взглядом?</span>
+        </h2>
+        <p className="text-base text-[#6b7280] mb-9 max-w-lg mx-auto leading-relaxed">
+          Назовите своих конкурентов или мы найдём их сами. Бесплатный отчёт
+          придёт на почту в течение 24 часов.
         </p>
+        <Link href="/intake" className="lp-btn-primary">
+          Запустить разбор
+          <span aria-hidden>→</span>
+        </Link>
+        <p className="text-sm text-[#9ca3af] mt-5">
+          Анкета 5 минут. Без оплаты, без звонков.
+        </p>
+      </section>
+
+      {/* ── Footer ────────────────────────────────────────────────────────── */}
+      <footer className="border-t border-[#e5e7eb]">
+        <div className="max-w-6xl mx-auto px-6 py-10 text-center">
+          <p className="text-xs text-[#9ca3af]">
+            © {new Date().getFullYear()} AI-Стратег. Стратегический анализ для
+            российских компаний.
+          </p>
+        </div>
       </footer>
     </main>
   )
 }
 
-// ─── Контент: сценарии боли (3 шт., конкретно, без «карточек-плейсхолдеров») ──
+// ─── Контент: 3 конкретных сценария боли (не плейсхолдеры) ────────────────────
 const PAIN_SCENARIOS = [
   {
     icon: '↓',
-    color: '#ff6b6b',
+    color: '#dc2626',
+    bg: '#fef2f2',
     title: 'Снижаете цены, но заявок всё равно меньше, чем у соседа',
     body:
       'Скидки съедают маржу, а клиент всё равно уходит. Значит, дело не в цене — а в том, чего не видно на сайте.',
   },
   {
     icon: '?',
-    color: '#f5a623',
+    color: '#d97706',
+    bg: '#fffbeb',
     title: 'На сайте «20 лет опыта» — а в чём конкретно вы лучше, не объяснить',
     body:
       'У клиента 5 секунд на первый экран. Без чёткого «почему вы» он уходит к тому, кто сформулировал понятнее.',
   },
   {
     icon: '→',
-    color: '#5b9cf6',
+    color: '#5046e5',
+    bg: '#eef2ff',
     title: 'Конкурент делает то же самое, но клиенты идут к нему',
     body:
       'Вы оба продаёте «качество». Он просто упаковал предложение так, что в нём узнают свою боль, а в вашем — нет.',
   },
 ] as const
 
-// ─── Контент: 3 шага метода (без жаргона: никаких «fan-out», «RAG», «RS») ────
+// ─── Контент: 3 шага метода (без жаргона — никаких «fan-out», «RAG», «RS») ───
 const STEPS = [
   {
     duration: '5 минут',
@@ -184,6 +190,6 @@ const STEPS = [
     duration: 'готово',
     title: 'Отчёт со стратегией',
     body:
-      'Что у вас слабее, чем у них. Где «белое пятно» — в чём отстроиться. Готовые формулировки УТП под ваши сегменты. План на ближайшие 30/60/90 дней.',
+      'Что у вас слабее, чем у них. Где «белое пятно» — в чём отстроиться. Готовые формулировки УТП под ваши сегменты. План на 30/60/90 дней.',
   },
 ] as const

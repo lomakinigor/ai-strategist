@@ -1,6 +1,150 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════════════════
+ * LIGHT-PREMIUM — светлая тема лендинга (Linear / Stripe / Vercel вайб).
+ * Префикс lp-, белый фон, индиго-акцент, Inter, много воздуха.
+ * Палитра: indigo #5046E5 · navy #0A1838 · muted #6B7280 · off-white #F8F9FC.
+ * ════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --lp-bg: #ffffff;
+  --lp-bg-soft: #f8f9fc;
+  --lp-text: #0a1838;
+  --lp-text-muted: #6b7280;
+  --lp-text-faint: #9ca3af;
+  --lp-border: #e5e7eb;
+  --lp-accent: #5046e5;
+  --lp-accent-hover: #4338ca;
+  --lp-accent-soft: #eef2ff;
+}
+
+/* Подключаем Inter как дефолтный шрифт страницы */
+html {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Декор: радиальная подсветка под Hero */
+.lp-hero-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(80% 50% at 50% 0%, rgba(80, 70, 229, 0.08) 0%, transparent 60%),
+    radial-gradient(60% 40% at 50% 100%, rgba(80, 70, 229, 0.04) 0%, transparent 50%);
+}
+
+/* Декор: тонкая сетка как подложка */
+.lp-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(80, 70, 229, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80, 70, 229, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+}
+
+/* Eyebrow — маленькая надпись над заголовком */
+.lp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--lp-accent-soft);
+  color: var(--lp-accent);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.lp-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lp-accent);
+  animation: lp-pulse 2s infinite;
+}
+@keyframes lp-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* Градиент-текст для акцента в заголовке */
+.lp-grad {
+  background: linear-gradient(135deg, #5046e5 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Карточки */
+.lp-card {
+  background: #ffffff;
+  border: 1px solid var(--lp-border);
+  border-radius: 16px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lp-card:hover {
+  border-color: rgba(80, 70, 229, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -8px rgba(10, 24, 56, 0.08), 0 4px 12px -4px rgba(10, 24, 56, 0.06);
+}
+
+/* Кнопки */
+.lp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--lp-accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 14px 28px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px -2px rgba(80, 70, 229, 0.3);
+}
+.lp-btn-primary:hover {
+  background: var(--lp-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -4px rgba(80, 70, 229, 0.4);
+}
+.lp-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lp-text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: color 0.2s;
+}
+.lp-btn-ghost:hover {
+  color: var(--lp-text);
+}
+
+/* Step-номер (для блока «3 шага») */
+.lp-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--lp-accent-soft);
+  color: var(--lp-accent);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
  * NEON-REPORT — тёмная neon-cyberpunk тема краткого отчёта (.neon-report).
  * Все классы с префиксом nr- скоупятся к странице брифа. Палитра:
  * green #00d4aa · amber #f5a623 · red #ff6b6b · blue #5b9cf6 · purple #c084fc.
