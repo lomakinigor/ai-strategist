@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import IntakeForm from './IntakeForm'
+import OpenIntakeGoal from './OpenIntakeGoal'
 
 export const metadata = {
   title: 'Новое исследование — AI-Стратег',
@@ -8,6 +9,7 @@ export const metadata = {
 export default function IntakePage() {
   return (
     <main className="min-h-screen bg-white text-[#0a0a0a]">
+      <OpenIntakeGoal />
       <nav className="max-w-2xl mx-auto px-6 pt-8 flex items-center justify-between">
         <Link href="/" className="text-base font-bold tracking-tight">
           AI-Стратег

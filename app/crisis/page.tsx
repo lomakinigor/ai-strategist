@@ -4,11 +4,12 @@
 // История с конкурентами не удалена, но смещена в один из трёх value-props.
 
 import Link from 'next/link'
+import CTALink from '../CTALink'
 
 export const metadata = {
-  title: 'AI-Стратег — больше заявок в кризис без роста бюджета',
+  title: 'AI-Стратег — за 24 часа покажем, где теряете деньги',
   description:
-    'Анализ зон роста, конкурентов и бизнес-процессов за 24 часа. Понимаете, что бесплатно сделать прямо сейчас, куда вкладывать бюджет и где экономить. Без интервью, с источниками.',
+    'Анализ зон роста, конкурентов и бизнес-процессов за 24 часа. Что бесплатно сделать прямо сейчас, куда вкладывать бюджет и где экономить. Без интервью, с источниками.',
 }
 
 export default function CrisisHome() {
@@ -29,21 +30,20 @@ export default function CrisisHome() {
         <p className="lp-eyebrow mb-8">Маркетинг в кризис</p>
 
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.03em] leading-[1.02] mb-8">
-          Больше заявок и продаж — без роста бюджета на рекламу.
+          За 24 часа покажем, где теряете деньги и что сделать бесплатно уже завтра.
         </h1>
 
         <p className="text-lg sm:text-xl text-[#525252] max-w-2xl mx-auto leading-[1.55] mb-12">
-          За 24 часа AI покажет три вещи: что бесплатно сделать прямо сейчас,
-          чтобы завтра пошли заявки; как работают ваши конкуренты и куда
-          тратить бюджет; где оптимизировать бизнес-процессы и снизить
-          издержки.
+          AI разберёт ваш маркетинг и 4–6 конкурентов. Получите три вещи: что
+          бесплатно сделать прямо сейчас, как работают конкуренты и куда тратить
+          бюджет, где оптимизировать бизнес-процессы.
         </p>
 
         <div className="flex flex-col items-center">
-          <Link href="/intake" className="lp-btn-primary">
+          <CTALink href="/intake" goal="open_intake" className="lp-btn-primary">
             Получить бесплатный разбор
             <span aria-hidden>→</span>
-          </Link>
+          </CTALink>
           <p className="text-sm text-[#6b7280] mt-5">
             Анкета 5 минут. Без оплаты, без звонков менеджера.
           </p>
@@ -213,13 +213,14 @@ export default function CrisisHome() {
                   ))}
                 </ul>
 
-                <Link
+                <CTALink
                   href={t.href}
+                  goal={t.goal}
                   className={t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'}
                 >
                   {t.cta}
                   <span aria-hidden>→</span>
-                </Link>
+                </CTALink>
 
                 {t.note && (
                   <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">{t.note}</p>
@@ -268,10 +269,10 @@ export default function CrisisHome() {
             Бесплатный разбор покажет 3 ваших слабых точки и одну идею для
             быстрого роста — без оплаты и без созвона.
           </p>
-          <Link href="/intake" className="lp-btn-primary">
+          <CTALink href="/intake" goal="open_intake" className="lp-btn-primary">
             Запустить разбор
             <span aria-hidden>→</span>
-          </Link>
+          </CTALink>
           <p className="text-sm text-[#6b7280] mt-5">
             Анкета 5 минут. Без оплаты, без звонков.
           </p>
@@ -399,6 +400,7 @@ const TARIFFS = [
     ],
     cta: 'Получить',
     href: '/intake',
+    goal: 'open_intake',
     featured: false,
     note: null,
   },
@@ -415,6 +417,7 @@ const TARIFFS = [
     ],
     cta: 'Заказать',
     href: '/lead/paid',
+    goal: 'paywall_click',
     featured: true,
     note: null,
   },
@@ -432,6 +435,7 @@ const TARIFFS = [
     ],
     cta: 'Записаться на отбор',
     href: '/lead/retainer',
+    goal: 'lead_retainer',
     featured: false,
     note: 'Работаем с 3 компаниями одновременно. Сначала — бесплатный звонок 30 минут, чтобы понять, подходим ли друг другу.',
   },

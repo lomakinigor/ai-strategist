@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ymGoal } from '../../YandexMetrica'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -50,6 +51,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
         const data = (await res.json().catch(() => ({}))) as { error?: string }
         throw new Error(data.error ?? 'unknown_error')
       }
+      ymGoal(type === 'paid' ? 'lead_paid' : 'lead_retainer')
       setStatus('success')
     } catch (err) {
       setStatus('error')

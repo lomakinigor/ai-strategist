@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CTALink from './CTALink'
 
 export const metadata = {
   title: 'AI-Стратег — узнайте, почему клиенты выбирают конкурента',
@@ -36,10 +37,10 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col items-center">
-          <Link href="/intake" className="lp-btn-primary">
+          <CTALink href="/intake" goal="open_intake" className="lp-btn-primary">
             Получить бесплатный разбор
             <span aria-hidden>→</span>
-          </Link>
+          </CTALink>
           <p className="text-sm text-[#6b7280] mt-5">
             Анкета 5 минут. Без оплаты, без звонков менеджера.
           </p>
@@ -68,6 +69,42 @@ export default function Home() {
                 <p className="text-[15px] text-[#525252] leading-[1.6]">
                   {p.body}
                 </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Кому подойдёт ─────────────────────────────────────────────────── */}
+      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <div className="mb-14 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Для кого</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
+              Кто получит результат
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {WHO_BENEFITS.map((w, i) => (
+              <article key={i} className="lp-card bg-white p-8">
+                <p className="text-xs font-bold text-[#1e3a8a] uppercase tracking-[0.12em] mb-4">
+                  {w.role}
+                </p>
+                <h3 className="text-xl font-bold leading-snug mb-4 tracking-[-0.015em]">
+                  {w.headline}
+                </h3>
+                <ul className="space-y-3">
+                  {w.outcomes.map((o, j) => (
+                    <li
+                      key={j}
+                      className="flex gap-3 text-[15px] text-[#525252] leading-[1.55]"
+                    >
+                      <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+                      <span>{o}</span>
+                    </li>
+                  ))}
+                </ul>
               </article>
             ))}
           </div>
@@ -231,13 +268,14 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <Link
+                <CTALink
                   href={t.href}
+                  goal={t.goal}
                   className={t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'}
                 >
                   {t.cta}
                   <span aria-hidden>→</span>
-                </Link>
+                </CTALink>
 
                 {t.note && (
                   <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">{t.note}</p>
@@ -353,10 +391,10 @@ export default function Home() {
             Назовите своих конкурентов или мы найдём их сами. Бесплатный отчёт
             придёт на почту в течение 24&nbsp;часов.
           </p>
-          <Link href="/intake" className="lp-btn-primary">
+          <CTALink href="/intake" goal="open_intake" className="lp-btn-primary">
             Запустить разбор
             <span aria-hidden>→</span>
-          </Link>
+          </CTALink>
           <p className="text-sm text-[#6b7280] mt-5">
             Анкета 5 минут. Без оплаты, без звонков.
           </p>
@@ -493,6 +531,7 @@ const TARIFFS = [
     ],
     cta: 'Получить',
     href: '/intake',
+    goal: 'open_intake',
     featured: false,
     note: null,
   },
@@ -510,6 +549,7 @@ const TARIFFS = [
     ],
     cta: 'Заказать',
     href: '/lead/paid',
+    goal: 'paywall_click',
     featured: true,
     note: null,
   },
@@ -527,8 +567,30 @@ const TARIFFS = [
     ],
     cta: 'Записаться на отбор',
     href: '/lead/retainer',
+    goal: 'lead_retainer',
     featured: false,
     note: 'Работаем с 3 компаниями одновременно. Сначала — бесплатный звонок 30 минут, чтобы понять, подходим ли друг другу.',
+  },
+] as const
+
+const WHO_BENEFITS = [
+  {
+    role: 'Предприниматель',
+    headline: 'Понятно, куда вкладывать бюджет и где сокращать',
+    outcomes: [
+      'Конкретика: где брать заявки, что делать и почему',
+      'Оптимизация отдела маркетинга и снижение расходов без потери качества',
+      'Понимание зон роста бизнеса — не только в маркетинге, но и в процессах',
+    ],
+  },
+  {
+    role: 'Маркетолог',
+    headline: 'Снижение стоимости заявки без потери объёма',
+    outcomes: [
+      'Понимание, как работают конкуренты прямо сейчас и что у них даёт результат',
+      'Оптимизация бюджета без потери количества и качества заявок',
+      'Оптимизация бизнес-процессов в отделе маркетинга — меньше рутины, больше результата',
+    ],
   },
 ] as const
 
