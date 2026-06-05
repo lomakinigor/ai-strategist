@@ -1,8 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createResearchJob } from './actions'
 import { normalizeAdChannel } from './normalize'
+
+// localStorage save-draft: версионированный ключ, чтобы при изменении схемы
+// можно было инвалидировать старые черновики. UX-аудит 2.10 «Память контекста».
+const DRAFT_KEY = 'ai-strategist-intake-draft-v1'
+
+interface DraftV1 {
+  v: 1
+  step: 1 | 2 | 3
+  companyName: string
+  industry: string
+  email: string
+  description: string
+  website: string
+  goals: string
+  competitors: string
+  contextNotes: string
+  directions: string[]
+  directionsIndependent: boolean | null
+  adChannels: string[]
+  adChannelOther: string
+  adChannelsUnknown: boolean
+  isChain: boolean
+  chainScope: 'network' | 'location'
+  city: string
+}
 
 const AD_CHANNEL_OPTIONS = [
   'Яндекс.Директ',
@@ -58,6 +83,105 @@ export default function IntakeForm() {
   // Wizard-state: разбиваем форму на 3 шага (UX-аудит топ-5).
   // 1 «О бизнесе» → 2 «Деятельность и рынок» → 3 «Цели и запуск».
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
+  // Восстановили ли мы драфт — нужно, чтобы показать пользователю явный сигнал
+  // «нашли ваши данные за прошлый раз», а не делать это молча.
+  const [draftRestored, setDraftRestored] = useState(false)
+
+  // Restore из localStorage при монтировании. Запускается один раз.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = window.localStorage.getItem(DRAFT_KEY)
+      if (!raw) return
+      const draft = JSON.parse(raw) as DraftV1
+      if (draft.v !== 1) return
+      // Не восстанавливаем если черновик полностью пустой (от прошлого посещения
+      // когда юзер только открыл и закрыл страницу).
+      const hasContent = Boolean(
+        draft.companyName ||
+          draft.industry ||
+          draft.email ||
+          draft.contextNotes ||
+          draft.description ||
+          draft.competitors,
+      )
+      if (!hasContent) return
+      setCompanyName(draft.companyName ?? '')
+      setIndustry(draft.industry ?? '')
+      setEmail(draft.email ?? '')
+      setDescription(draft.description ?? '')
+      setWebsite(draft.website ?? '')
+      setGoals(draft.goals ?? '')
+      setCompetitors(draft.competitors ?? '')
+      setContextNotes(draft.contextNotes ?? '')
+      setDirections(draft.directions?.length ? draft.directions : [''])
+      setDirectionsIndependent(draft.directionsIndependent ?? null)
+      setAdChannels(draft.adChannels ?? [])
+      setAdChannelOther(draft.adChannelOther ?? '')
+      setAdChannelsUnknown(draft.adChannelsUnknown ?? false)
+      setIsChain(draft.isChain ?? false)
+      setChainScope(draft.chainScope ?? 'location')
+      setCity(draft.city ?? '')
+      setCurrentStep(draft.step ?? 1)
+      setDraftRestored(true)
+    } catch {
+      // Битый JSON — игнорируем, начинаем с чистого листа.
+    }
+  }, [])
+
+  // Save в localStorage при любом изменении состояния. localStorage.setItem
+  // ~1мс, дебаунс не нужен. Не сохраняем пустую форму (избегаем «фантомных»
+  // драфтов от мимолётных посещений).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const hasContent = Boolean(
+      companyName || industry || email || contextNotes || description || competitors,
+    )
+    if (!hasContent) return
+    try {
+      const draft: DraftV1 = {
+        v: 1,
+        step: currentStep,
+        companyName,
+        industry,
+        email,
+        description,
+        website,
+        goals,
+        competitors,
+        contextNotes,
+        directions,
+        directionsIndependent,
+        adChannels,
+        adChannelOther,
+        adChannelsUnknown,
+        isChain,
+        chainScope,
+        city,
+      }
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+    } catch {
+      // Квота localStorage / приватный режим Safari — продолжаем работать без save.
+    }
+  }, [
+    companyName,
+    industry,
+    email,
+    description,
+    website,
+    goals,
+    competitors,
+    contextNotes,
+    directions,
+    directionsIndependent,
+    adChannels,
+    adChannelOther,
+    adChannelsUnknown,
+    isChain,
+    chainScope,
+    city,
+    currentStep,
+  ])
 
   async function handleParse() {
     if (!contextNotes.trim()) return
@@ -207,6 +331,15 @@ export default function IntakeForm() {
       if (other) formData.append('ad_channel', `Другое: ${other}`)
     }
     try {
+      // Очищаем draft до redirect — после createResearchJob клиент уйдёт на
+      // /research/[id] и сюда больше не вернётся, состояние больше не нужно.
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.removeItem(DRAFT_KEY)
+        } catch {
+          /* ignore — приватный режим / квота */
+        }
+      }
       await createResearchJob(formData)
     } catch {
       setIsSubmitting(false)
@@ -264,6 +397,32 @@ export default function IntakeForm() {
 
       {/* ── Прогресс-бар ─────────────────────────────────────────────────── */}
       <StepProgress current={currentStep} />
+
+      {/* ── Сигнал о восстановленном черновике ───────────────────────────── */}
+      {draftRestored && (
+        <div className="rounded-md border border-[#dbeafe] bg-[#eff6ff] px-4 py-3 flex items-start justify-between gap-3">
+          <p className="text-sm text-[#1e3a8a] leading-snug">
+            Восстановили данные с прошлого визита. Если хотите начать с чистого
+            листа — нажмите справа.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                try {
+                  window.localStorage.removeItem(DRAFT_KEY)
+                } catch {
+                  /* ignore */
+                }
+              }
+              window.location.reload()
+            }}
+            className="text-xs font-semibold text-[#1e3a8a] underline hover:text-[#172554] shrink-0 cursor-pointer"
+          >
+            Начать заново
+          </button>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           ШАГ 1 — О бизнесе (контекст + название + email + чейн + отрасль)

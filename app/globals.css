@@ -73,6 +73,13 @@ html {
   background: var(--lp-accent-hover);
   transform: translateY(-1px);
 }
+.lp-btn-primary:focus-visible,
+.lp-btn-secondary:focus-visible,
+.lp-btn-ghost:focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
 .lp-btn-ghost {
   display: inline-flex;
   align-items: center;

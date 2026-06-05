@@ -74,6 +74,42 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── ROI блок (когда отчёт окупается) ──────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-20">
+          <div className="mb-12 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Окупаемость</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
+              9 999 ₽ окупаются с одного клиента
+            </h2>
+            <p className="text-base text-[#525252] leading-[1.65]">
+              Отчёт — это не расход на «посмотреть», а инструмент для одного
+              конкретного действия: переписать первый экран сайта так, чтобы
+              целевой клиент узнавал себя.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {ROI_EXAMPLES.map((ex, i) => (
+              <div key={i} className="lp-card p-7">
+                <p className="text-xs font-semibold text-[#1e3a8a] uppercase tracking-[0.12em] mb-4">
+                  {ex.niche}
+                </p>
+                <p className="text-3xl font-bold tracking-[-0.025em] text-[#0a0a0a] mb-1">
+                  {ex.metric}
+                </p>
+                <p className="text-xs text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-4">
+                  {ex.metricLabel}
+                </p>
+                <p className="text-[14px] text-[#525252] leading-[1.6]">
+                  {ex.payback}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── 3 шага метода ─────────────────────────────────────────────────── */}
       <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
         <div className="max-w-5xl mx-auto px-6 py-24">
@@ -356,6 +392,31 @@ const STEPS = [
     title: 'Отчёт со стратегией',
     body:
       'Что у вас слабее, чем у них. Где «белое пятно» — в чём отстроиться. Готовые формулировки УТП под ваши сегменты. План на 30/60/90 дней.',
+  },
+] as const
+
+// ─── Контент: ROI-примеры (типичные средние чеки по нишам) ───────────────────
+const ROI_EXAMPLES = [
+  {
+    niche: 'Юр. услуги · B2B',
+    metric: 'от 30 000 ₽',
+    metricLabel: 'Средний чек одного дела',
+    payback:
+      'Один клиент, пришедший на новое УТП с первого экрана сайта, окупает отчёт в 3 раза. Один контракт — в 10–30 раз.',
+  },
+  {
+    niche: 'Производство · B2B',
+    metric: 'от 500 000 ₽',
+    metricLabel: 'Средняя сделка',
+    payback:
+      'Прирост конверсии лендинга на 0,2% при текущем трафике окупает отчёт за месяц. Одна сделка — окупает 50 отчётов.',
+  },
+  {
+    niche: 'Локальный бизнес · B2C',
+    metric: '20–40 лидов',
+    metricLabel: 'В месяц с одного канала',
+    payback:
+      'Свободный канал (ВКонтакте + 2ГИС), который не закрывают конкуренты, даёт стабильный поток. Отчёт окупается за 2 недели.',
   },
 ] as const
 
