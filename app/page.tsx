@@ -254,11 +254,19 @@ export default function Home() {
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-5xl mx-auto px-6 py-10 text-center">
-          <p className="text-xs text-[#a3a3a3]">
+        <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-[#a3a3a3] text-center sm:text-left">
             © {new Date().getFullYear()} AI-Стратег. Стратегический анализ для
             российских компаний.
           </p>
+          <div className="flex gap-5 text-xs text-[#a3a3a3]">
+            <Link href="/privacy" className="hover:text-[#0a0a0a]">
+              Политика обработки данных
+            </Link>
+            <Link href="/offer" className="hover:text-[#0a0a0a]">
+              Публичная оферта
+            </Link>
+          </div>
         </div>
       </footer>
     </main>

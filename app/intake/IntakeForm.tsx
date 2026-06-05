@@ -46,6 +46,9 @@ export default function IntakeForm() {
   const [aiParseRan, setAiParseRan] = useState(false)
   // Клиент явно подтвердил, что AI всё понял правильно (после ручной проверки полей).
   const [parseConfirmed, setParseConfirmed] = useState(false)
+  // 152-ФЗ: явное согласие на обработку персональных данных. Не предзаполнено
+  // (требование закона). Без галочки submit заблокирован.
+  const [dataConsent, setDataConsent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -153,6 +156,14 @@ export default function IntakeForm() {
       return
     }
 
+    // 152-ФЗ: без согласия на обработку персональных данных запуск невозможен.
+    if (!dataConsent) {
+      setSubmitError(
+        'Подтвердите согласие на обработку персональных данных и условия публичной оферты — это требование закона.',
+      )
+      return
+    }
+
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set('is_chain', isChain ? '1' : '0')
@@ -189,7 +200,10 @@ export default function IntakeForm() {
   // ровно когда блок подтверждения виден.
   const confirmationRequired = aiParseRan || Boolean(companyName.trim() && industry.trim())
   const canSubmit =
-    !isSubmitting && directionsGateOk && (!confirmationRequired || parseConfirmed)
+    !isSubmitting &&
+    directionsGateOk &&
+    (!confirmationRequired || parseConfirmed) &&
+    dataConsent
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 bg-white p-6 rounded-lg border border-gray-200">
@@ -574,10 +588,47 @@ export default function IntakeForm() {
         </div>
       )}
 
+      {/* 152-ФЗ: согласие на обработку перс. данных и принятие оферты.
+          Чекбокс НЕ предзаполнен — требование закона. */}
+      <div className="rounded-md border border-gray-200 bg-gray-50 px-4 py-3">
+        <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={dataConsent}
+            onChange={(e) => {
+              setDataConsent(e.target.checked)
+              if (e.target.checked) setSubmitError(null)
+            }}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer shrink-0"
+          />
+          <span className="text-gray-700 leading-snug">
+            Я согласен на обработку моих персональных данных в соответствии с{' '}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline hover:text-blue-800"
+            >
+              Политикой обработки персональных данных
+            </a>{' '}
+            и принимаю условия{' '}
+            <a
+              href="/offer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline hover:text-blue-800"
+            >
+              публичной оферты
+            </a>
+            .
+          </span>
+        </label>
+      </div>
+
       <button
         type="submit"
         disabled={!canSubmit}
-        title={!canSubmit ? 'Поставьте галочку «Да» в блоке выше — это финальный шаг перед запуском' : undefined}
+        title={!canSubmit ? 'Поставьте галочку «Да» и согласие 152-ФЗ — это финальный шаг перед запуском' : undefined}
         className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
       >
         {isSubmitting ? <Spinner /> : null}
