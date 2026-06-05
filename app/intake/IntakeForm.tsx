@@ -309,7 +309,21 @@ export default function IntakeForm() {
     }
 
     setIsSubmitting(true)
-    const formData = new FormData(e.currentTarget)
+
+    // ВАЖНО: собираем FormData ИЗ STATE, а не из e.currentTarget. На wizard
+    // в момент submit в DOM есть только поля шага 3 (1 и 2 размонтированы
+    // условным рендером), поэтому FormData(e.currentTarget) был бы пуст по
+    // company_name/industry/email — и серверная валидация ронялась бы тихо.
+    const formData = new FormData()
+    formData.set('company_name', companyName.trim())
+    formData.set('industry', industry.trim())
+    formData.set('email', emailTrimmed)
+    if (description.trim()) formData.set('description', description.trim())
+    if (website.trim()) formData.set('website', website.trim())
+    if (goals.trim()) formData.set('research_goal', goals.trim())
+    if (competitors.trim()) formData.set('competitors', competitors.trim())
+    if (contextNotes.trim()) formData.set('context_notes', contextNotes.trim())
+
     formData.set('is_chain', isChain ? '1' : '0')
     if (isChain) {
       formData.set('chain_scope', chainScope)
@@ -330,6 +344,7 @@ export default function IntakeForm() {
       const other = adChannelOther.trim()
       if (other) formData.append('ad_channel', `Другое: ${other}`)
     }
+
     try {
       // Очищаем draft до redirect — после createResearchJob клиент уйдёт на
       // /research/[id] и сюда больше не вернётся, состояние больше не нужно.
@@ -341,7 +356,17 @@ export default function IntakeForm() {
         }
       }
       await createResearchJob(formData)
-    } catch {
+    } catch (err) {
+      // redirect() в Next.js server-actions кидает специальный NEXT_REDIRECT —
+      // он должен пробрасываться, иначе навигация не произойдёт.
+      if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
+        throw err
+      }
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : 'Не удалось запустить исследование. Попробуйте ещё раз или напишите нам.'
+      setSubmitError(message)
       setIsSubmitting(false)
     }
   }
