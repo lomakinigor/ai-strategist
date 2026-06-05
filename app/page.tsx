@@ -105,8 +105,55 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Тарифы ────────────────────────────────────────────────────────── */}
+      {/* ── Social proof: примеры находок в первом разборе ─────────────────── */}
       <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <div className="mb-14 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Пример работы</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
+              Что мы находим в первом разборе
+            </h2>
+            <p className="text-base text-[#525252] leading-[1.65]">
+              Реалистичные находки на гипотетических компаниях. Реальные кейсы
+              клиентов будут добавлены по мере получения согласия на публикацию.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {PROOF_EXAMPLES.map((ex, i) => (
+              <article key={i} className="lp-card p-7 flex flex-col">
+                <p className="text-xs font-semibold text-[#1e3a8a] uppercase tracking-[0.12em] mb-4">
+                  {ex.niche}
+                </p>
+                <p className="text-sm text-[#525252] leading-[1.6] mb-4">
+                  {ex.context}
+                </p>
+                <p className="text-[15px] text-[#0a0a0a] font-medium leading-[1.55] mb-5">
+                  {ex.finding}
+                </p>
+                <div className="mt-auto pt-5 border-t border-[#e5e5e5]">
+                  <p className="text-xs text-[#6b7280] uppercase tracking-[0.12em] mb-1.5">
+                    Свободная ниша
+                  </p>
+                  <p className="text-[14px] text-[#1e3a8a] font-semibold leading-[1.5]">
+                    {ex.opportunity}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <p className="text-xs text-[#6b7280] mt-8 max-w-3xl leading-[1.65]">
+            В реальном отчёте каждый факт сопровождается ссылкой на источник
+            (сайт, соцсеть, агрегатор), датой получения и оценкой надёжности от 1
+            до 5. Вы видите, на чём построен каждый вывод, и можете его
+            проверить.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Тарифы ────────────────────────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5] bg-[#fafafa]">
         <div className="max-w-6xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Тарифы</p>
@@ -166,7 +213,7 @@ export default function Home() {
       </section>
 
       {/* ── Сравнение ─────────────────────────────────────────────────────── */}
-      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+      <section className="border-t border-[#e5e5e5]">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-3xl">
             <p className="lp-eyebrow mb-4">Сравнение</p>
@@ -175,7 +222,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="lp-card bg-white overflow-hidden">
+          <div className="lp-card bg-[#fafafa] overflow-hidden">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-[#e5e5e5]">
@@ -309,6 +356,37 @@ const STEPS = [
     title: 'Отчёт со стратегией',
     body:
       'Что у вас слабее, чем у них. Где «белое пятно» — в чём отстроиться. Готовые формулировки УТП под ваши сегменты. План на 30/60/90 дней.',
+  },
+] as const
+
+// ─── Контент: примеры находок (гипотетические, явно подписаны) ───────────────
+const PROOF_EXAMPLES = [
+  {
+    niche: 'Юр. компания · Москва · B2B',
+    context:
+      '5 конкурентов в нише «защита бизнеса от налоговых проверок».',
+    finding:
+      '4 из 5 делают упор на «опыт 20+ лет». Один не показывает кейсы вообще. Никто не даёт гарантию результата с цифрами.',
+    opportunity:
+      '«Гарантия результата или возврат» + публичные кейсы — никто из 5 это не закрыл.',
+  },
+  {
+    niche: 'Производство · Урал · B2B',
+    context:
+      'Промышленные дробемёты. 4 прямых конкурента в регионе.',
+    finding:
+      'У 3 из 4 на сайте нет калькулятора стоимости. У 2 — нет фото производства. Цены в КП высылают через 2–3 дня.',
+    opportunity:
+      '«Цена за 60 секунд через калькулятор» — снимает главную боль B2B-закупщика.',
+  },
+  {
+    niche: 'Сеть кафе · СПб · B2C',
+    context:
+      '6 локальных кафе в районе, 4 прямых конкурента по позиционированию.',
+    finding:
+      '80% бюджета конкурентов уходит в Instagram (через VPN). ВКонтакте, MAX и 2ГИС — пусты или заброшены.',
+    opportunity:
+      'Свободные каналы локального трафика: один аккаунт ВК + карточка 2ГИС с фото может закрыть район.',
   },
 ] as const
 
