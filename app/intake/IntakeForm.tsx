@@ -55,6 +55,9 @@ export default function IntakeForm() {
   const [dataConsent, setDataConsent] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  // Wizard-state: разбиваем форму на 3 шага (UX-аудит топ-5).
+  // 1 «О бизнесе» → 2 «Деятельность и рынок» → 3 «Цели и запуск».
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1)
 
   async function handleParse() {
     if (!contextNotes.trim()) return
@@ -140,6 +143,12 @@ export default function IntakeForm() {
     e.preventDefault()
     setSubmitError(null)
 
+    // Если юзер нажал Enter не на финальном шаге — это переход «Далее», не submit.
+    if (currentStep !== 3) {
+      goNext()
+      return
+    }
+
     const filledDirections = directions.map((d) => d.trim()).filter(Boolean)
 
     // Правило 2: при 2+ направлениях обязательно выбрать характер связи (разные / одно).
@@ -218,9 +227,49 @@ export default function IntakeForm() {
     dataConsent &&
     emailValid
 
+  // Валидация перехода между шагами (мягкая — кнопка disabled пока не выполнено).
+  const canAdvanceFromStep1 = Boolean(companyName.trim() && industry.trim()) && emailValid
+  const canAdvanceFromStep2 = directionsGateOk
+
+  function goNext() {
+    setSubmitError(null)
+    if (currentStep === 1) {
+      if (!canAdvanceFromStep1) {
+        setSubmitError('Заполните название, отрасль и корректный email — потом сможем идти дальше.')
+        return
+      }
+      setCurrentStep(2)
+    } else if (currentStep === 2) {
+      if (!canAdvanceFromStep2) {
+        setSubmitError(
+          'Если направлений больше одного — выберите, как они связаны (разные ниши / одно предложение).',
+        )
+        return
+      }
+      setCurrentStep(3)
+    }
+    // Прокрутить наверх формы, чтобы первый блок нового шага был виден.
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function goBack() {
+    setSubmitError(null)
+    if (currentStep === 3) setCurrentStep(2)
+    else if (currentStep === 2) setCurrentStep(1)
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
+      {/* ── Прогресс-бар ─────────────────────────────────────────────────── */}
+      <StepProgress current={currentStep} />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          ШАГ 1 — О бизнесе (контекст + название + email + чейн + отрасль)
+          ═══════════════════════════════════════════════════════════════════ */}
+      {currentStep === 1 && (
+      <>
       {/* ── Context notes (AI parse) ── */}
       <div>
         <label htmlFor="context_notes" className="block text-sm font-medium text-gray-700 mb-1">
@@ -370,7 +419,14 @@ export default function IntakeForm() {
           className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
       </div>
+      </>
+      )}
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          ШАГ 2 — Деятельность и рынок (направления + сайт + каналы + конкуренты)
+          ═══════════════════════════════════════════════════════════════════ */}
+      {currentStep === 2 && (
+      <>
       {/* ── Directions ── */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Направления деятельности</label>
@@ -545,7 +601,14 @@ export default function IntakeForm() {
         />
         <p className="mt-1 text-xs text-gray-400">Через запятую. Желательно указать ссылку на сайт рядом с названием: «Компания А (company-a.ru), Компания Б».</p>
       </div>
+      </>
+      )}
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          ШАГ 3 — Цели и запуск (goal + parseConfirmed + 152-ФЗ + submit)
+          ═══════════════════════════════════════════════════════════════════ */}
+      {currentStep === 3 && (
+      <>
       {/* ── Research goal ── */}
       <div>
         <label htmlFor="research_goal" className="block text-sm font-medium text-gray-700 mb-1">
@@ -668,11 +731,97 @@ export default function IntakeForm() {
         {isSubmitting ? 'Запускаю исследование…' : 'Запустить исследование'}
         {!isSubmitting && <span aria-hidden>→</span>}
       </button>
+      </>
+      )}
+
+      {/* ── Ошибка submit + ошибка navigation ─────────────────────────────── */}
       {submitError && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mt-2">
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
           {submitError}
         </p>
       )}
+
+      {/* ── Навигация шагов (Назад / Далее) ───────────────────────────────── */}
+      {currentStep < 3 && (
+        <div className="flex items-center gap-3 pt-2">
+          {currentStep > 1 && (
+            <button
+              type="button"
+              onClick={goBack}
+              className="lp-btn-secondary"
+            >
+              ← Назад
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={currentStep === 1 ? !canAdvanceFromStep1 : !canAdvanceFromStep2}
+            className="lp-btn-primary justify-center disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+          >
+            Далее
+            <span aria-hidden>→</span>
+          </button>
+        </div>
+      )}
+      {currentStep === 3 && (
+        <button
+          type="button"
+          onClick={goBack}
+          className="lp-btn-secondary"
+        >
+          ← Назад
+        </button>
+      )}
     </form>
+  )
+}
+
+// ─── Прогресс-бар (3 шага) ────────────────────────────────────────────────────
+function StepProgress({ current }: { current: 1 | 2 | 3 }) {
+  const steps = [
+    { n: 1, label: 'О бизнесе' },
+    { n: 2, label: 'Рынок' },
+    { n: 3, label: 'Запуск' },
+  ] as const
+
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      {steps.map((s, i) => {
+        const isActive = current === s.n
+        const isDone = current > s.n
+        return (
+          <div key={s.n} className="flex items-center gap-2 flex-1">
+            <div
+              className={`flex items-center gap-2 ${
+                isActive ? 'text-[#1e3a8a]' : isDone ? 'text-[#0a0a0a]' : 'text-[#6b7280]'
+              }`}
+            >
+              <span
+                className={`flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold shrink-0 ${
+                  isActive
+                    ? 'bg-[#1e3a8a] text-white'
+                    : isDone
+                      ? 'bg-[#0a0a0a] text-white'
+                      : 'bg-[#e5e5e5] text-[#6b7280]'
+                }`}
+              >
+                {isDone ? '✓' : s.n}
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] hidden sm:inline">
+                {s.label}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className={`flex-1 h-0.5 ${
+                  current > s.n ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
+                }`}
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
   )
 }
