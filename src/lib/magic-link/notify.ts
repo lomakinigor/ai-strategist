@@ -10,6 +10,7 @@ import { reportArtifacts, companies } from '@/db/schema'
 import { createMagicLink } from './tokens'
 import { renderFreeReportReadyEmail } from './email-template'
 import { sendEmail } from './sender'
+import { generateBriefReport } from '@/lib/strategy/brief'
 
 export async function notifyArtifactReady(artifactId: string): Promise<void> {
   try {
@@ -17,7 +18,10 @@ export async function notifyArtifactReady(artifactId: string): Promise<void> {
     const rows = await db
       .select({
         tier: reportArtifacts.tier,
+        briefJson: reportArtifacts.briefJson,
+        contentMarkdown: reportArtifacts.contentMarkdown,
         companyName: companies.name,
+        industry: companies.industry,
         clientEmail: companies.clientEmail,
       })
       .from(reportArtifacts)
@@ -33,6 +37,35 @@ export async function notifyArtifactReady(artifactId: string): Promise<void> {
     if (!row.clientEmail) {
       console.log(`[notify] no client_email for artifact ${artifactId} — skipping (legacy intake without email)`)
       return
+    }
+
+    // ── Free-tier: автоматически генерируем brief ДО отправки письма ────────
+    // Чтобы пользователь открыл magic-link → /free-report сразу увидел готовую
+    // карточку, а не «пробник в обработке, нажмите сгенерировать». UX-аудит
+    // топ-2: устранение dead-end в free-flow. Стоимость: ~$0.02 на free-юзера
+    // (Sonnet 4.6 дистилляция). Ошибки логируем — не валим отправку письма.
+    if (
+      row.tier === 'free' &&
+      !row.briefJson &&
+      row.contentMarkdown &&
+      row.companyName
+    ) {
+      try {
+        const { parsed } = await generateBriefReport(
+          row.companyName,
+          row.industry ?? '',
+          row.contentMarkdown,
+        )
+        await db
+          .update(reportArtifacts)
+          .set({ briefJson: parsed, updatedAt: new Date() })
+          .where(eq(reportArtifacts.id, artifactId))
+        console.log(`[notify] auto-generated brief for free artifact ${artifactId}`)
+      } catch (err) {
+        console.error(`[notify] free brief auto-gen failed for ${artifactId}:`, err)
+        // Продолжаем — отправим письмо, юзер увидит «пробник в обработке»
+        // и сможет сгенерировать вручную как раньше.
+      }
     }
 
     const link = await createMagicLink({
