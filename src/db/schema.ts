@@ -237,6 +237,27 @@ export const reportArtifacts = pgTable(
   ],
 )
 
+// Magic links — токены доступа к артефакту по email-ссылке без пароля.
+// Auth-токен TTL 30 дней; артефакт по UUID-URL — бессрочно.
+export const magicLinks = pgTable(
+  'magic_links',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    token: text('token').notNull().unique(),
+    email: text('email').notNull(),
+    artifactId: uuid('artifact_id')
+      .references(() => reportArtifacts.id, { onDelete: 'cascade' })
+      .notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('magic_links_token_idx').on(table.token),
+    index('magic_links_email_idx').on(table.email),
+    index('magic_links_artifact_id_idx').on(table.artifactId),
+  ],
+)
+
 // Embeddings for RAG pipeline
 // NOTE: vector column added in T-007 after pgvector extension is configured.
 // Run: CREATE EXTENSION IF NOT EXISTS vector;
