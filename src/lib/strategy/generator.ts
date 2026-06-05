@@ -13,6 +13,7 @@ import {
 } from './prompts'
 import { detectNiche, loadReportRequirements } from './kb'
 import { serializeConfirmation, type Confirmation } from './confirm-types'
+import { notifyArtifactReady } from '@/lib/magic-link/notify'
 import type {
   PartialStrategyContent,
   StrategySection,
@@ -412,6 +413,9 @@ export async function synthesizeStrategy(artifactId: string): Promise<StrategyDr
       })
       .where(eq(reportArtifacts.id, artifactId))
 
+    // Fire-and-forget: посылаем magic-link клиенту, ошибки не пробрасываем.
+    await notifyArtifactReady(artifactId)
+
     return {
       reportArtifactId: artifactId,
       sections: parseSections(fullMarkdown),
@@ -608,6 +612,9 @@ export async function generateStrategyDraft(jobId: string): Promise<StrategyDraf
       .update(reportArtifacts)
       .set({ status: 'done', contentMarkdown, updatedAt: new Date() })
       .where(eq(reportArtifacts.id, artifactId))
+
+    // Fire-and-forget: посылаем magic-link клиенту, ошибки не пробрасываем.
+    await notifyArtifactReady(artifactId)
 
     return {
       reportArtifactId: artifactId,

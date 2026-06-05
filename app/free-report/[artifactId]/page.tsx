@@ -51,7 +51,7 @@ export default async function FreeReportPage({
         <Link href="/" className="text-base font-bold tracking-tight">
           AI-Стратег
         </Link>
-        <Link href="/intake?tier=paid" className="lp-btn-ghost">
+        <Link href="/lead/paid" className="lp-btn-ghost">
           Полный отчёт →
         </Link>
       </nav>
@@ -253,7 +253,7 @@ function Paywall() {
           ))}
         </ul>
 
-        <Link href="/intake?tier=paid" className="lp-btn-primary">
+        <Link href="/lead/paid" className="lp-btn-primary">
           Получить полный отчёт
           <span aria-hidden>→</span>
         </Link>

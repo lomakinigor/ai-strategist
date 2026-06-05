@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { getDb } from '@/db'
 import { companies, intakeSubmissions, researchJobs } from '@/db/schema'
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export async function createResearchJob(formData: FormData) {
   const name = ((formData.get('company_name') as string | null) ?? '').trim()
   const industry = ((formData.get('industry') as string | null) ?? '').trim()
@@ -12,6 +14,7 @@ export async function createResearchJob(formData: FormData) {
   const goals = ((formData.get('research_goal') as string | null) ?? '').trim() || null
   const contextNotes = ((formData.get('context_notes') as string | null) ?? '').trim() || null
   const competitors = ((formData.get('competitors') as string | null) ?? '').trim() || null
+  const email = ((formData.get('email') as string | null) ?? '').trim().toLowerCase() || null
 
   // Collect channel links (direct URLs)
   const channels = (formData.getAll('channel_link') as string[]).filter(Boolean)
@@ -43,6 +46,9 @@ export async function createResearchJob(formData: FormData) {
   if (!name || !industry) {
     throw new Error('Название компании и отрасль обязательны')
   }
+  if (email && !EMAIL_REGEX.test(email)) {
+    throw new Error('Email указан в неверном формате')
+  }
 
   const db = getDb()
 
@@ -58,6 +64,7 @@ export async function createResearchJob(formData: FormData) {
       directions,
       adChannels,
       competitors: competitors || null,
+      clientEmail: email,
       region: 'RU',
       status: 'active',
     })

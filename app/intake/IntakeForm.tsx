@@ -24,9 +24,13 @@ function Spinner() {
   )
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function IntakeForm() {
   const [companyName, setCompanyName] = useState('')
   const [industry, setIndustry] = useState('')
+  // Email клиента — обязателен, чтобы прислать ссылку на готовый отчёт.
+  const [email, setEmail] = useState('')
   const [description, setDescription] = useState('')
   const [website, setWebsite] = useState('')
   const [goals, setGoals] = useState('')
@@ -164,6 +168,13 @@ export default function IntakeForm() {
       return
     }
 
+    // Email обязателен — на него мы пришлём ссылку на готовый отчёт.
+    const emailTrimmed = email.trim()
+    if (!EMAIL_REGEX.test(emailTrimmed)) {
+      setSubmitError('Укажите корректный email — на него придёт ссылка на готовый отчёт.')
+      return
+    }
+
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set('is_chain', isChain ? '1' : '0')
@@ -199,11 +210,13 @@ export default function IntakeForm() {
   // Чекбокс требуется когда есть минимум данных (Название+Отрасль) ИЛИ был AI-разбор —
   // ровно когда блок подтверждения виден.
   const confirmationRequired = aiParseRan || Boolean(companyName.trim() && industry.trim())
+  const emailValid = EMAIL_REGEX.test(email.trim())
   const canSubmit =
     !isSubmitting &&
     directionsGateOk &&
     (!confirmationRequired || parseConfirmed) &&
-    dataConsent
+    dataConsent &&
+    emailValid
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 bg-white p-6 rounded-lg border border-gray-200">
@@ -267,6 +280,26 @@ export default function IntakeForm() {
           placeholder="ООО «Ромашка»"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      {/* ── Email ── */}
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          Email <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@company.ru"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          На этот адрес придёт ссылка на готовый отчёт.
+        </p>
       </div>
 
       {/* ── Chain / network ── */}

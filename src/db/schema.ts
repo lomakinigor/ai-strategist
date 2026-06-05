@@ -63,6 +63,10 @@ export const artifactStatusEnum = pgEnum('artifact_status', [
 // Используется для маршрутизации UI (/free-report vs /report) и аналитики воронки.
 export const reportTierEnum = pgEnum('report_tier', ['free', 'paid', 'retainer'])
 
+// Тип лида с лендинга: paid (запрос счёта 9 999 ₽) / retainer (заявка на
+// собеседование для сопровождения от 100 000 ₽/мес).
+export const leadTypeEnum = pgEnum('lead_type', ['paid', 'retainer'])
+
 // ─── Tables ──────────────────────────────────────────────────────────────────
 
 // Placeholder for future auth — not used in single-user MVP
@@ -92,6 +96,9 @@ export const companies = pgTable(
     adChannels: text('ad_channels').array(),
     competitors: text('competitors'),
     goals: text('goals'),
+    // Email клиента из intake-формы — для авто-отправки magic-link, когда
+    // артефакт готов. Nullable: исторические компании без email.
+    clientEmail: text('client_email'),
     region: text('region').default('RU').notNull(),
     status: text('status').default('active').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -234,6 +241,27 @@ export const reportArtifacts = pgTable(
   (table) => [
     index('report_artifacts_company_id_idx').on(table.companyId),
     index('report_artifacts_tier_idx').on(table.tier),
+  ],
+)
+
+// Лиды с лендинга для платных тарифов (Сопровождение / 9 999 ₽). Free-тариф
+// сразу идёт в /intake — таблица leads используется только для тарифов,
+// требующих ручного контакта с оператором.
+export const leads = pgTable(
+  'leads',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    leadType: leadTypeEnum('lead_type').notNull(),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    phone: text('phone'),
+    company: text('company'),
+    message: text('message'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('leads_lead_type_idx').on(table.leadType),
+    index('leads_email_idx').on(table.email),
   ],
 )
 

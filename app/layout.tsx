@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ArchiveHotkey } from './ArchiveHotkey'
+import YandexMetrica from './YandexMetrica'
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -61,6 +62,7 @@ export default function RootLayout({
   return (
     <html lang="ru" className={inter.variable}>
       <body>
+        <YandexMetrica />
         <ArchiveHotkey />
         {children}
       </body>
