@@ -58,6 +58,11 @@ export const artifactStatusEnum = pgEnum('artifact_status', [
   'error',
 ])
 
+// Тарифная классификация артефакта: free (1-страничный пробник),
+// paid (полный отчёт 9 999 ₽), retainer (часть пакета сопровождения 100k+/мес).
+// Используется для маршрутизации UI (/free-report vs /report) и аналитики воронки.
+export const reportTierEnum = pgEnum('report_tier', ['free', 'paid', 'retainer'])
+
 // ─── Tables ──────────────────────────────────────────────────────────────────
 
 // Placeholder for future auth — not used in single-user MVP
@@ -214,6 +219,10 @@ export const reportArtifacts = pgTable(
       .notNull(),
     researchJobId: uuid('research_job_id').references(() => researchJobs.id),
     status: artifactStatusEnum('status').default('pending').notNull(),
+    // Тариф: free → 1-страничный пробник (2 конкурента, 2 точки, тизер УТП);
+    // paid → полный отчёт 9 999 ₽ (4–6 конкурентов, все точки, 3 УТП, план);
+    // retainer → часть пакета сопровождения. По умолчанию 'paid' для исторических артефактов.
+    tier: reportTierEnum('tier').default('paid').notNull(),
     contentJson: jsonb('content_json'),
     contentMarkdown: text('content_markdown'),
     // Кеш краткого отчёта (BRIEF_REPORT, 6 блоков) — генерируется по запросу,
@@ -222,7 +231,10 @@ export const reportArtifacts = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [index('report_artifacts_company_id_idx').on(table.companyId)],
+  (table) => [
+    index('report_artifacts_company_id_idx').on(table.companyId),
+    index('report_artifacts_tier_idx').on(table.tier),
+  ],
 )
 
 // Embeddings for RAG pipeline
