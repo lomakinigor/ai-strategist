@@ -219,7 +219,7 @@ export default function IntakeForm() {
     emailValid
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 bg-white p-6 rounded-lg border border-gray-200">
+    <form onSubmit={handleSubmit} className="space-y-5">
 
       {/* ── Context notes (AI parse) ── */}
       <div>
@@ -233,14 +233,14 @@ export default function IntakeForm() {
           value={contextNotes}
           onChange={(e) => setContextNotes(e.target.value)}
           placeholder="Вставьте любую информацию: описание продуктов, данные о клиентах, конкурентах, метрики, КП, отзывы — система сама разберёт и заполнит поля ниже."
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
         <div className="mt-2 flex items-center gap-3 flex-wrap">
           <button
             type="button"
             onClick={handleParse}
             disabled={isParsing || !contextNotes.trim()}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 active:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md bg-[#eff6ff] text-[#1e3a8a] border border-[#dbeafe] hover:bg-[#dbeafe] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
           >
             {isParsing ? <Spinner /> : null}
             {isParsing ? 'Разбираю…' : 'Разобрать с помощью AI →'}
@@ -253,9 +253,9 @@ export default function IntakeForm() {
 
         {/* Видимый индикатор обработки (правило 3) */}
         {isParsing && (
-          <div className="mt-3 flex items-center gap-3 rounded-md bg-blue-50 border border-blue-200 px-4 py-3">
+          <div className="mt-3 flex items-center gap-3 rounded-md bg-[#eff6ff] border border-[#dbeafe] px-4 py-3">
             <Spinner />
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-[#1e3a8a]">
               Обрабатываем информацию — это занимает 10–30 секунд. Пожалуйста, подождите…
             </p>
           </div>
@@ -278,7 +278,7 @@ export default function IntakeForm() {
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
           placeholder="ООО «Ромашка»"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
       </div>
 
@@ -295,7 +295,7 @@ export default function IntakeForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@company.ru"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
         <p className="text-xs text-gray-500 mt-1">
           На этот адрес придёт ссылка на готовый отчёт.
@@ -309,7 +309,7 @@ export default function IntakeForm() {
             type="checkbox"
             checked={isChain}
             onChange={(e) => setIsChain(e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
           />
           У компании несколько точек или филиалов (сеть или франшиза)
         </label>
@@ -326,7 +326,7 @@ export default function IntakeForm() {
                   name="chain_scope_ui"
                   checked={chainScope === 'location'}
                   onChange={() => setChainScope('location')}
-                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
                 />
                 Одну конкретную точку
               </label>
@@ -336,7 +336,7 @@ export default function IntakeForm() {
                   name="chain_scope_ui"
                   checked={chainScope === 'network'}
                   onChange={() => setChainScope('network')}
-                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
                 />
                 Всю сеть целиком
               </label>
@@ -347,7 +347,7 @@ export default function IntakeForm() {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Город и/или адрес точки"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
               />
             )}
           </div>
@@ -367,7 +367,7 @@ export default function IntakeForm() {
           value={industry}
           onChange={(e) => setIndustry(e.target.value)}
           placeholder="например: B2B SaaS, e-commerce, строительство"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
       </div>
 
@@ -390,7 +390,7 @@ export default function IntakeForm() {
                 placeholder={
                   i === 0 ? 'например: производство промышленного оборудования' : 'ещё одно направление'
                 }
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
               />
               {directions.length > 1 && (
                 <button
@@ -424,7 +424,7 @@ export default function IntakeForm() {
                 name="dir_rel_ui"
                 checked={directionsIndependent === true}
                 onChange={() => setDirectionsIndependent(true)}
-                className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
               />
               Разные направления — разные клиенты / рынки (анализировать раздельно)
             </label>
@@ -434,7 +434,7 @@ export default function IntakeForm() {
                 name="dir_rel_ui"
                 checked={directionsIndependent === false}
                 onChange={() => setDirectionsIndependent(false)}
-                className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
               />
               Одно связанное предложение для одного клиента
             </label>
@@ -454,7 +454,7 @@ export default function IntakeForm() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Чем занимается компания, какой продукт или услугу предлагает"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
       </div>
 
@@ -470,7 +470,7 @@ export default function IntakeForm() {
           value={website}
           onChange={(e) => setWebsite(e.target.value)}
           placeholder="https://example.ru"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
       </div>
 
@@ -498,7 +498,7 @@ export default function IntakeForm() {
                 onChange={(e) =>
                   setAdChannels((prev) => (e.target.checked ? [...prev, c] : prev.filter((x) => x !== c)))
                 }
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
               />
               {c}
             </label>
@@ -510,7 +510,7 @@ export default function IntakeForm() {
           disabled={adChannelsUnknown}
           onChange={(e) => setAdChannelOther(e.target.value)}
           placeholder="Другое (через запятую)"
-          className="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-40"
+          className="mt-2 w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] disabled:opacity-40"
         />
         <label className="mt-2 flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none">
           <input
@@ -523,7 +523,7 @@ export default function IntakeForm() {
                 setAdChannelOther('')
               }
             }}
-            className="rounded border-gray-300 cursor-pointer"
+            className="rounded border-[#e5e5e5] cursor-pointer"
           />
           пока не знаю / не уверен, какими каналами пользуемся
         </label>
@@ -541,7 +541,7 @@ export default function IntakeForm() {
           value={competitors}
           onChange={(e) => setCompetitors(e.target.value)}
           placeholder="Компания А, Компания Б, бренд В"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
         <p className="mt-1 text-xs text-gray-400">Через запятую. Желательно указать ссылку на сайт рядом с названием: «Компания А (company-a.ru), Компания Б».</p>
       </div>
@@ -558,7 +558,7 @@ export default function IntakeForm() {
           value={goals}
           onChange={(e) => setGoals(e.target.value)}
           placeholder="Что хотите понять или получить от исследования"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
       </div>
 
@@ -571,12 +571,12 @@ export default function IntakeForm() {
               ? 'bg-green-50 border-green-200'
               : aiParseRan
                 ? 'bg-amber-50 border-amber-200'
-                : 'bg-blue-50 border-blue-200'
+                : 'bg-[#eff6ff] border-[#dbeafe]'
           }`}
         >
           <p
             className={`text-sm mb-2 ${
-              parseConfirmed ? 'text-green-800' : aiParseRan ? 'text-amber-900' : 'text-blue-900'
+              parseConfirmed ? 'text-green-800' : aiParseRan ? 'text-amber-900' : 'text-[#1e3a8a]'
             }`}
           >
             {aiParseRan ? (
@@ -602,7 +602,7 @@ export default function IntakeForm() {
                 setParseConfirmed(e.target.checked)
                 if (e.target.checked) setSubmitError(null)
               }}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer"
+              className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer"
             />
             <span
               className={
@@ -610,7 +610,7 @@ export default function IntakeForm() {
                   ? 'text-green-900'
                   : aiParseRan
                     ? 'text-amber-900 font-medium'
-                    : 'text-blue-900 font-medium'
+                    : 'text-[#1e3a8a] font-medium'
               }
             >
               {aiParseRan
@@ -623,7 +623,7 @@ export default function IntakeForm() {
 
       {/* 152-ФЗ: согласие на обработку перс. данных и принятие оферты.
           Чекбокс НЕ предзаполнен — требование закона. */}
-      <div className="rounded-md border border-gray-200 bg-gray-50 px-4 py-3">
+      <div className="rounded-md border border-[#e5e5e5] bg-[#fafafa] px-4 py-3">
         <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
           <input
             type="checkbox"
@@ -632,7 +632,7 @@ export default function IntakeForm() {
               setDataConsent(e.target.checked)
               if (e.target.checked) setSubmitError(null)
             }}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 cursor-pointer shrink-0"
+            className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer shrink-0"
           />
           <span className="text-gray-700 leading-snug">
             Я согласен на обработку моих персональных данных в соответствии с{' '}
@@ -640,7 +640,7 @@ export default function IntakeForm() {
               href="/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline hover:text-blue-800"
+              className="text-[#1e3a8a] underline hover:text-[#172554]"
             >
               Политикой обработки персональных данных
             </a>{' '}
@@ -649,7 +649,7 @@ export default function IntakeForm() {
               href="/offer"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline hover:text-blue-800"
+              className="text-[#1e3a8a] underline hover:text-[#172554]"
             >
               публичной оферты
             </a>
@@ -662,10 +662,11 @@ export default function IntakeForm() {
         type="submit"
         disabled={!canSubmit}
         title={!canSubmit ? 'Поставьте галочку «Да» и согласие 152-ФЗ — это финальный шаг перед запуском' : undefined}
-        className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
+        className="lp-btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? <Spinner /> : null}
         {isSubmitting ? 'Запускаю исследование…' : 'Запустить исследование'}
+        {!isSubmitting && <span aria-hidden>→</span>}
       </button>
       {submitError && (
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mt-2">

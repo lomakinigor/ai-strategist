@@ -25,7 +25,7 @@ export default function OfferPage() {
         <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
           Договор на оказание услуг AI-Стратег
         </h1>
-        <p className="text-sm text-[#a3a3a3] mb-12">
+        <p className="text-sm text-[#6b7280] mb-12">
           Действует с {EFFECTIVE_DATE}.
         </p>
 
@@ -263,7 +263,7 @@ export default function OfferPage() {
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#a3a3a3]">
+        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#6b7280]">
           <p>© {new Date().getFullYear()} AI-Стратег</p>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">

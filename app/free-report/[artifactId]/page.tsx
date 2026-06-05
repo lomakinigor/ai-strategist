@@ -84,7 +84,7 @@ export default async function FreeReportPage({
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="border-t border-[#e5e5e5]">
         <div className="max-w-4xl mx-auto px-6 py-10 text-center">
-          <p className="text-xs text-[#a3a3a3]">
+          <p className="text-xs text-[#6b7280]">
             © {new Date().getFullYear()} AI-Стратег. Стратегический анализ для
             российских компаний.
           </p>
@@ -129,7 +129,7 @@ function FreeBrief({ brief }: { brief: BriefReportBlock }) {
               </article>
             ))}
           </div>
-          <p className="text-xs text-[#a3a3a3] mt-6 leading-[1.6]">
+          <p className="text-xs text-[#6b7280] mt-6 leading-[1.6]">
             В полном отчёте — 4–6 конкурентов с разбором по 6 параметрам каждый:
             оффер, аудитория, болевые точки, доказательства, креативы,
             посадочная.
@@ -171,7 +171,7 @@ function FreeBrief({ brief }: { brief: BriefReportBlock }) {
                 </article>
               ))}
             </div>
-            <p className="text-xs text-[#a3a3a3] mt-6 leading-[1.6]">
+            <p className="text-xs text-[#6b7280] mt-6 leading-[1.6]">
               В полном отчёте — все 3–5 слабых точек с источниками, оценкой
               надёжности и привязкой к плану действий 30/60/90 дней.
             </p>
@@ -257,7 +257,7 @@ function Paywall() {
           Получить полный отчёт
           <span aria-hidden>→</span>
         </Link>
-        <p className="text-sm text-[#a3a3a3] mt-5">
+        <p className="text-sm text-[#6b7280] mt-5">
           9 999 ₽. Отчёт за 24 часа на ваш email.
         </p>
       </div>

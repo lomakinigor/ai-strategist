@@ -69,7 +69,7 @@ export default function LeadPage({ params }: { params: { type: string } }) {
       </section>
 
       <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#a3a3a3]">
+        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#6b7280]">
           <p>© {new Date().getFullYear()} AI-Стратег</p>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">

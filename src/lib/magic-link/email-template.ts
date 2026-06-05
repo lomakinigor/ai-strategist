@@ -77,7 +77,7 @@ export function renderFreeReportReadyEmail(
     <p style="font-size: 13px; line-height: 1.6; color: #6b7280; margin: 0 0 8px;">
       Если кнопка не работает — скопируйте ссылку в браузер:
     </p>
-    <p style="font-size: 12px; line-height: 1.5; color: #9ca3af; margin: 0; word-break: break-all;">
+    <p style="font-size: 12px; line-height: 1.5; color: #6b7280; margin: 0; word-break: break-all;">
       ${magicLinkUrl}
     </p>
 
@@ -89,7 +89,7 @@ export function renderFreeReportReadyEmail(
 
     ${upsell}
 
-    <p style="font-size: 12px; line-height: 1.5; color: #9ca3af; margin: 40px 0 0; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+    <p style="font-size: 12px; line-height: 1.5; color: #6b7280; margin: 40px 0 0; padding-top: 24px; border-top: 1px solid #e5e7eb;">
       AI-Стратег — стратегический анализ для российских компаний. Это письмо отправлено автоматически после вашего запроса на разборе.
     </p>
   </div>

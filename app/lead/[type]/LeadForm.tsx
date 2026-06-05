@@ -152,7 +152,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
 
       {/* Turnstile placeholder — рендерится только когда задан site-key */}
       {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
-        <div className="text-xs text-[#a3a3a3]">
+        <div className="text-xs text-[#6b7280]">
           Антибот-защита Cloudflare Turnstile (в разработке).
         </div>
       )}

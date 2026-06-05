@@ -40,7 +40,7 @@ export default function Home() {
             Получить бесплатный разбор
             <span aria-hidden>→</span>
           </Link>
-          <p className="text-sm text-[#a3a3a3] mt-5">
+          <p className="text-sm text-[#6b7280] mt-5">
             Анкета 5 минут. Без оплаты, без звонков менеджера.
           </p>
         </div>
@@ -89,7 +89,7 @@ export default function Home() {
               <article key={i} className="lp-card p-8 bg-white">
                 <div className="flex items-baseline gap-4 mb-5">
                   <span className="lp-step-num">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="text-xs font-semibold text-[#a3a3a3] uppercase tracking-[0.14em]">
+                  <span className="text-xs font-semibold text-[#6b7280] uppercase tracking-[0.14em]">
                     {s.duration}
                   </span>
                 </div>
@@ -133,7 +133,7 @@ export default function Home() {
 
                 <div className="mb-7 pb-7 border-b border-[#e5e5e5]">
                   <p className="text-3xl font-bold tracking-[-0.02em]">{t.price}</p>
-                  <p className="text-xs text-[#a3a3a3] mt-1.5">{t.priceHint}</p>
+                  <p className="text-xs text-[#6b7280] mt-1.5">{t.priceHint}</p>
                 </div>
 
                 <ul className="space-y-3 mb-8 flex-1">
@@ -157,7 +157,7 @@ export default function Home() {
                 </Link>
 
                 {t.note && (
-                  <p className="text-xs text-[#a3a3a3] mt-4 leading-[1.55]">{t.note}</p>
+                  <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">{t.note}</p>
                 )}
               </article>
             ))}
@@ -246,7 +246,7 @@ export default function Home() {
             Запустить разбор
             <span aria-hidden>→</span>
           </Link>
-          <p className="text-sm text-[#a3a3a3] mt-5">
+          <p className="text-sm text-[#6b7280] mt-5">
             Анкета 5 минут. Без оплаты, без звонков.
           </p>
         </div>
@@ -255,11 +255,11 @@ export default function Home() {
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <footer className="border-t border-[#e5e5e5]">
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-[#a3a3a3] text-center sm:text-left">
+          <p className="text-xs text-[#6b7280] text-center sm:text-left">
             © {new Date().getFullYear()} AI-Стратег. Стратегический анализ для
             российских компаний.
           </p>
-          <div className="flex gap-5 text-xs text-[#a3a3a3]">
+          <div className="flex gap-5 text-xs text-[#6b7280]">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">
               Политика обработки данных
             </Link>
