@@ -258,7 +258,8 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="lp-card bg-[#fafafa] overflow-hidden">
+          {/* Desktop: 3-колоночная таблица */}
+          <div className="hidden md:block lp-card bg-[#fafafa] overflow-hidden">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-[#e5e5e5]">
@@ -281,6 +282,33 @@ export default function Home() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile: каждая строка — карточка с двумя сравниваемыми значениями */}
+          <div className="md:hidden space-y-3">
+            {COMPARISON.map((row, i) => (
+              <div key={i} className="lp-card p-5">
+                <p className="text-xs font-bold text-[#0a0a0a] uppercase tracking-[0.1em] mb-4">
+                  {row.label}
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-[11px] text-[#6b7280] uppercase tracking-[0.1em] mb-1 font-semibold">
+                      Маркетолог-консультант
+                    </p>
+                    <p className="text-sm text-[#525252] leading-[1.55]">{row.them}</p>
+                  </div>
+                  <div className="pt-3 border-t border-[#e5e5e5]">
+                    <p className="text-[11px] text-[#1e3a8a] uppercase tracking-[0.1em] mb-1 font-bold">
+                      AI-Стратег
+                    </p>
+                    <p className="text-sm text-[#0a0a0a] font-medium leading-[1.55]">
+                      {row.us}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
