@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createResearchJob } from './actions'
 import { normalizeAdChannel } from './normalize'
+import { ymGoal } from '../YandexMetrica'
 
 // localStorage save-draft: версионированный ключ, чтобы при изменении схемы
 // можно было инвалидировать старые черновики. UX-аудит 2.10 «Память контекста».
@@ -360,6 +361,9 @@ export default function IntakeForm() {
       // redirect() в Next.js server-actions кидает специальный NEXT_REDIRECT —
       // он должен пробрасываться, иначе навигация не произойдёт.
       if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
+        // Анкета успешно ушла на сервер — фиксируем цель ДО навигации.
+        // ymGoal внутри использует navigator.sendBeacon, переживает unload.
+        ymGoal('intake_submitted')
         throw err
       }
       const message =

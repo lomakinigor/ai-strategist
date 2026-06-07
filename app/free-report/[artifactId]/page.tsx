@@ -13,6 +13,7 @@ import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
 import { reportArtifacts, companies } from '@/db/schema'
 import type { BriefReportBlock } from '@/lib/strategy/brief'
+import FreeReportGoal from './FreeReportGoal'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,6 +47,7 @@ export default async function FreeReportPage({
 
   return (
     <main className="min-h-screen bg-white text-[#0a0a0a]">
+      <FreeReportGoal />
       {/* ── Минимальная навигация ────────────────────────────────────────── */}
       <nav className="max-w-4xl mx-auto px-6 pt-8 flex items-center justify-between">
         <Link href="/" className="text-base font-bold tracking-tight">
