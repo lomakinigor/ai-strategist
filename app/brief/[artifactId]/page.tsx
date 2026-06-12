@@ -8,6 +8,39 @@ import { BriefClient } from './BriefClient'
 import { PrintButton } from './PrintButton'
 import { BriefFooter } from './BriefFooter'
 
+// L3-pitch для paid view — кратко, чтобы не отвлекать от собственно отчёта.
+// Полная версия с тремя сервисами идёт на /free-report, тут — короткий мостик.
+function BriefExecutionPitch() {
+  return (
+    <section className="mt-16 mb-2 rounded-2xl border border-[#fbbf24]/30 bg-[#fbbf24]/5 p-7 sm:p-8">
+      <p className="text-[11px] tracking-[0.16em] uppercase text-[#fbbf24] font-bold mb-3">
+        Кроме разбора мы делаем
+      </p>
+      <h3 className="text-xl sm:text-2xl font-bold text-[#e8e8f0] mb-5 leading-snug">
+        Если в команде некому исполнять — закрываем три ключевых блока сами
+      </h3>
+      <ul className="space-y-2.5 text-sm text-[#a8a8c0] leading-[1.6]">
+        <li>
+          <span className="text-[#fbbf24] font-bold mr-2">→</span>
+          <span><strong className="text-[#e8e8f0]">Правильный сайт</strong> под стратегию отчёта (УТП на первом экране, формы захвата, посадочные под каналы)</span>
+        </li>
+        <li>
+          <span className="text-[#fbbf24] font-bold mr-2">→</span>
+          <span><strong className="text-[#e8e8f0]">AI-боты в рекламные каналы</strong> (сайт + ВКонтакте + MAX + Telegram) — квалификация лидов 24/7, снижение CPL</span>
+        </li>
+        <li>
+          <span className="text-[#fbbf24] font-bold mr-2">→</span>
+          <span><strong className="text-[#e8e8f0]">Автопостинг по соцсетям</strong> — AI-генерация контента + публикация по 4–5 каналам без найма SMM-щика</span>
+        </li>
+      </ul>
+      <p className="text-xs text-[#8888a0] mt-5 leading-[1.6]">
+        Сметы и сроки обсуждаем после отчёта — когда понятно, что именно вам нужно из плана.
+        Свяжитесь с нами для разговора без обязательств.
+      </p>
+    </section>
+  )
+}
+
 export const metadata = {
   title: 'Краткий отчёт — AI-Стратег',
 }
@@ -110,6 +143,9 @@ export default async function BriefPage({ params }: { params: { artifactId: stri
           initialBrief={initialBrief}
           lighthouse={lighthouse}
         />
+
+        {/* ── L3-pitch: исполнение (сайт + боты + автопостинг) ───── */}
+        <BriefExecutionPitch />
 
         <BriefFooter />
       </div>

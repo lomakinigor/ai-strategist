@@ -14,6 +14,7 @@ import { getDb } from '@/db'
 import { reportArtifacts, companies } from '@/db/schema'
 import type { BriefReportBlock } from '@/lib/strategy/brief'
 import FreeReportGoal from './FreeReportGoal'
+import { PrintButton } from './PrintButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,13 +50,16 @@ export default async function FreeReportPage({
     <main className="min-h-screen bg-white text-[#0a0a0a]">
       <FreeReportGoal />
       {/* ── Минимальная навигация ────────────────────────────────────────── */}
-      <nav className="max-w-4xl mx-auto px-6 pt-8 flex items-center justify-between">
+      <nav className="max-w-4xl mx-auto px-6 pt-8 flex items-center justify-between gap-3 flex-wrap">
         <Link href="/" className="text-base font-bold tracking-tight">
           AI-Стратег
         </Link>
-        <Link href="/lead/paid" className="lp-btn-ghost">
-          Полный отчёт →
-        </Link>
+        <div className="flex items-center gap-3 no-print">
+          <PrintButton />
+          <Link href="/intake?tier=paid" className="lp-btn-ghost">
+            Полный отчёт →
+          </Link>
+        </div>
       </nav>
 
       {/* ── Заголовок ────────────────────────────────────────────────────── */}
@@ -80,8 +84,14 @@ export default async function FreeReportPage({
         <BriefNotReady artifactId={params.artifactId} />
       )}
 
+      {/* ── Cliffhanger «что мы нашли, но не включили» (L1→L2) ───────────── */}
+      <Cliffhanger brief={brief} />
+
       {/* ── Paywall на 9 999 ₽ ───────────────────────────────────────────── */}
       <Paywall />
+
+      {/* ── L3-pitch: исполнение (сайт + боты в каналы + автопостинг) ───── */}
+      <ExecutionPitch />
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="border-t border-[#e5e5e5]">
@@ -237,13 +247,83 @@ function BriefNotReady({ artifactId }: { artifactId: string }) {
 // Paywall: что не входит в пробник + CTA на полный отчёт 9 999 ₽
 // ────────────────────────────────────────────────────────────────────────────
 
+function Cliffhanger({ brief }: { brief: BriefReportBlock | null }) {
+  // Cliffhanger в духе KB product-system-3-tier.md:
+  // «Ваш главный конкурент [имя] получает X… но показывать здесь не можем — это в расширенном.»
+  // Используем настоящего конкурента из brief, если есть — даёт максимум персонализации.
+  const topCompetitor = brief?.competitor_landscape.competitors?.[0]
+  const totalCompetitors = brief?.competitor_landscape.competitors?.length ?? 0
+  const hiddenCompetitors = Math.max(0, totalCompetitors - 2)
+
+  return (
+    <section className="border-t border-[#e5e5e5]">
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Что мы нашли, но не включили</p>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-[-0.02em] leading-[1.15] mb-8">
+          В&nbsp;этом пробнике закрыто самое важное
+        </h2>
+
+        <ul className="space-y-4 text-[15px] text-[#0a0a0a] leading-[1.6]">
+          {topCompetitor && (
+            <li className="flex gap-3">
+              <span className="text-[#b45309] font-bold shrink-0 mt-0.5">×</span>
+              <span>
+                <strong className="text-[#0a0a0a]">{topCompetitor.name}</strong> — мы разобрали его
+                по&nbsp;6&nbsp;уровням (оффер, аудитория, болевые точки, доказательства, креативы,
+                посадочная). В&nbsp;пробнике видна только одна строка «{topCompetitor.focus}» —
+                остальные 5 уровней закрыты.
+              </span>
+            </li>
+          )}
+          {hiddenCompetitors > 0 && (
+            <li className="flex gap-3">
+              <span className="text-[#b45309] font-bold shrink-0 mt-0.5">×</span>
+              <span>
+                Ещё <strong>{hiddenCompetitors} конкурент{hiddenCompetitors === 1 ? '' : 'а'}</strong>{' '}
+                разобран{hiddenCompetitors === 1 ? '' : 'ы'} в&nbsp;полном отчёте — сравнительная
+                таблица «вы&nbsp;vs&nbsp;каждый из&nbsp;них» по&nbsp;ключевым параметрам.
+              </span>
+            </li>
+          )}
+          <li className="flex gap-3">
+            <span className="text-[#b45309] font-bold shrink-0 mt-0.5">×</span>
+            <span>
+              <strong>Маркетинговый микс под вашу нишу</strong> с&nbsp;ранжированной таблицей каналов:
+              CPL-ориентир по&nbsp;каждому, бюджет/месяц, что тестировать. Закрыто.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="text-[#b45309] font-bold shrink-0 mt-0.5">×</span>
+            <span>
+              <strong>Все 3–5 слабых точек</strong> с&nbsp;источниками и&nbsp;привязкой к&nbsp;плану
+              30/60/90&nbsp;дней. В&nbsp;пробнике видны только 2&nbsp;из&nbsp;них.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="text-[#b45309] font-bold shrink-0 mt-0.5">×</span>
+            <span>
+              <strong>3 готовых варианта УТП</strong> под&nbsp;разные сегменты вашей аудитории
+              с&nbsp;обоснованием каждого. В&nbsp;пробнике — только 1&nbsp;тизер.
+            </span>
+          </li>
+        </ul>
+
+        <p className="text-sm text-[#525252] mt-8 leading-[1.65]">
+          Это конкретные данные — не&nbsp;пустые обещания. Мы&nbsp;их&nbsp;нашли в&nbsp;ходе исследования
+          и&nbsp;собрали в&nbsp;полный отчёт. Чтобы открыть — ниже.
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function Paywall() {
   return (
     <section className="border-t border-[#e5e5e5] bg-[#fafafa]">
       <div className="max-w-3xl mx-auto px-6 py-20 text-center">
-        <p className="lp-eyebrow mb-4">Что не входит в пробник</p>
+        <p className="lp-eyebrow mb-4">Полный отчёт</p>
         <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-10">
-          Полный отчёт за 9 999 ₽
+          За 9 999 ₽ откроется всё
         </h2>
 
         <ul className="text-left max-w-md mx-auto space-y-3 mb-10 text-[15px] text-[#0a0a0a]">
@@ -255,12 +335,48 @@ function Paywall() {
           ))}
         </ul>
 
-        <Link href="/lead/paid" className="lp-btn-primary">
-          Получить полный отчёт
+        <Link href="/intake?tier=paid" className="lp-btn-primary">
+          Открыть полный отчёт
           <span aria-hidden>→</span>
         </Link>
         <p className="text-sm text-[#6b7280] mt-5">
-          9 999 ₽. Отчёт за 24 часа на ваш email.
+          9 999 ₽ через СБП. Отчёт откроется в&nbsp;браузере сразу после подтверждения оплаты.
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function ExecutionPitch() {
+  return (
+    <section className="border-t border-[#e5e5e5] bg-[#0a0a0a] text-white">
+      <div className="max-w-3xl mx-auto px-6 py-20">
+        <p className="text-xs font-semibold text-[#fbbf24] uppercase tracking-[0.16em] mb-4">
+          Кроме отчёта мы делаем
+        </p>
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.15] mb-8">
+          Не&nbsp;только показать, но и&nbsp;сделать
+        </h2>
+        <p className="text-lg text-white/80 leading-[1.65] mb-10 max-w-2xl">
+          Отчёт показывает что менять. Если у&nbsp;вас нет команды, которая это внедрит — мы&nbsp;делаем
+          ключевые куски руками. Дешевле, чем нанимать штатный отдел.
+        </p>
+
+        <ul className="space-y-5 mb-10">
+          {EXECUTION_SERVICES.map((s, i) => (
+            <li key={i} className="flex gap-4 items-start">
+              <span className="text-[#fbbf24] font-bold text-lg shrink-0">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <p className="text-base font-bold mb-1">{s.title}</p>
+                <p className="text-sm text-white/70 leading-[1.55]">{s.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <p className="text-sm text-white/60 leading-[1.65]">
+          Конкретные сметы — в&nbsp;диалоге после полного отчёта, когда поймём, что именно вам нужно
+          внедрить из&nbsp;плана.
         </p>
       </div>
     </section>
@@ -268,10 +384,29 @@ function Paywall() {
 }
 
 const PAYWALL_FEATURES = [
-  'Все 4–6 конкурентов с разбором по 6 параметрам',
+  'Все 4–6 конкурентов в полном разборе (6 уровней каждый)',
+  'Сравнительная таблица «вы vs все конкуренты» по ключевым параметрам',
   'Все слабые точки (3–5) с источниками и оценкой надёжности',
   '3 готовых варианта УТП под разные сегменты',
   'Маркетинговый микс под вашу нишу — таблица каналов с CPL и бюджетом',
   'AI-автоматизация — конкретные рычаги с эффектом и сроком',
   'План действий на 30 / 60 / 90 дней с метриками и ответственными',
+] as const
+
+const EXECUTION_SERVICES = [
+  {
+    title: 'Правильный сайт под отчёт',
+    body:
+      'Лендинг или одностраничник, который отвечает на бренд-стратегию из отчёта — первый экран с УТП, посадочная под канал, формы захвата лидов. Под ключ.',
+  },
+  {
+    title: 'AI-боты в рекламные каналы',
+    body:
+      'Чат-бот квалификации лидов на сайт, во ВКонтакте, MAX, Telegram. Принимает обращения 24/7, классифицирует по сегментам, передаёт менеджеру горячие — снижает CPL и нагрузку команды.',
+  },
+  {
+    title: 'Автоматизация постинга',
+    body:
+      'AI-генерация контент-плана + автопостинг по каналам (ВКонтакте, Telegram, MAX, Дзен). 5–10 постов в неделю на канал × 4–5 каналов вместо найма SMM-щика за 60–120K ₽/месяц.',
+  },
 ] as const

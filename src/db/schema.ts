@@ -136,6 +136,13 @@ export const researchJobs = pgTable(
     audienceStatus: researchStatusEnum('audience_status').default('pending'),
     channelsStatus: researchStatusEnum('channels_status').default('pending'),
     competitorsStatus: researchStatusEnum('competitors_status').default('pending').notNull(),
+    // Тариф intake: free → research стартует сразу. paid → research ждёт оплаты (paid=true)
+    // и ручного approve администратором через secret-ссылку.
+    tier: reportTierEnum('tier').default('free').notNull(),
+    // Подтверждена ли оплата администратором. Для free всегда true (оплата не требуется).
+    paid: boolean('paid').default(true).notNull(),
+    // Когда админ нажал Approve. NULL для free и для paid в ожидании.
+    paidAt: timestamp('paid_at', { withTimezone: true }),
     // Структурные снимки Lighthouse сайта клиента (PageSpeed): { clientUrl, pagespeed: [...] }
     metricsJson: jsonb('metrics_json'),
     // Гейт «Подтверди и поправь»: подтверждённые клиентом 5 блоков (направления,

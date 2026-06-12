@@ -14,7 +14,6 @@ interface DraftV1 {
   step: 1 | 2 | 3
   companyName: string
   industry: string
-  email: string
   description: string
   website: string
   goals: string
@@ -28,6 +27,10 @@ interface DraftV1 {
   isChain: boolean
   chainScope: 'network' | 'location'
   city: string
+}
+
+interface IntakeFormProps {
+  tier: 'free' | 'paid'
 }
 
 const AD_CHANNEL_OPTIONS = [
@@ -50,13 +53,9 @@ function Spinner() {
   )
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-export default function IntakeForm() {
+export default function IntakeForm({ tier }: IntakeFormProps) {
   const [companyName, setCompanyName] = useState('')
   const [industry, setIndustry] = useState('')
-  // Email клиента — обязателен, чтобы прислать ссылку на готовый отчёт.
-  const [email, setEmail] = useState('')
   const [description, setDescription] = useState('')
   const [website, setWebsite] = useState('')
   const [goals, setGoals] = useState('')
@@ -101,7 +100,6 @@ export default function IntakeForm() {
       const hasContent = Boolean(
         draft.companyName ||
           draft.industry ||
-          draft.email ||
           draft.contextNotes ||
           draft.description ||
           draft.competitors,
@@ -109,7 +107,6 @@ export default function IntakeForm() {
       if (!hasContent) return
       setCompanyName(draft.companyName ?? '')
       setIndustry(draft.industry ?? '')
-      setEmail(draft.email ?? '')
       setDescription(draft.description ?? '')
       setWebsite(draft.website ?? '')
       setGoals(draft.goals ?? '')
@@ -136,7 +133,7 @@ export default function IntakeForm() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     const hasContent = Boolean(
-      companyName || industry || email || contextNotes || description || competitors,
+      companyName || industry || contextNotes || description || competitors,
     )
     if (!hasContent) return
     try {
@@ -145,7 +142,6 @@ export default function IntakeForm() {
         step: currentStep,
         companyName,
         industry,
-        email,
         description,
         website,
         goals,
@@ -167,7 +163,6 @@ export default function IntakeForm() {
   }, [
     companyName,
     industry,
-    email,
     description,
     website,
     goals,
@@ -302,23 +297,16 @@ export default function IntakeForm() {
       return
     }
 
-    // Email обязателен — на него мы пришлём ссылку на готовый отчёт.
-    const emailTrimmed = email.trim()
-    if (!EMAIL_REGEX.test(emailTrimmed)) {
-      setSubmitError('Укажите корректный email — на него придёт ссылка на готовый отчёт.')
-      return
-    }
-
     setIsSubmitting(true)
 
     // ВАЖНО: собираем FormData ИЗ STATE, а не из e.currentTarget. На wizard
     // в момент submit в DOM есть только поля шага 3 (1 и 2 размонтированы
     // условным рендером), поэтому FormData(e.currentTarget) был бы пуст по
-    // company_name/industry/email — и серверная валидация ронялась бы тихо.
+    // company_name/industry — и серверная валидация ронялась бы тихо.
     const formData = new FormData()
     formData.set('company_name', companyName.trim())
     formData.set('industry', industry.trim())
-    formData.set('email', emailTrimmed)
+    formData.set('tier', tier)
     if (description.trim()) formData.set('description', description.trim())
     if (website.trim()) formData.set('website', website.trim())
     if (goals.trim()) formData.set('research_goal', goals.trim())
@@ -381,16 +369,14 @@ export default function IntakeForm() {
   // Чекбокс требуется когда есть минимум данных (Название+Отрасль) ИЛИ был AI-разбор —
   // ровно когда блок подтверждения виден.
   const confirmationRequired = aiParseRan || Boolean(companyName.trim() && industry.trim())
-  const emailValid = EMAIL_REGEX.test(email.trim())
   const canSubmit =
     !isSubmitting &&
     directionsGateOk &&
     (!confirmationRequired || parseConfirmed) &&
-    dataConsent &&
-    emailValid
+    dataConsent
 
   // Валидация перехода между шагами (мягкая — кнопка disabled пока не выполнено).
-  const canAdvanceFromStep1 = Boolean(companyName.trim() && industry.trim()) && emailValid
+  const canAdvanceFromStep1 = Boolean(companyName.trim() && industry.trim())
   const canAdvanceFromStep2 = directionsGateOk
 
   function goNext() {
@@ -517,26 +503,6 @@ export default function IntakeForm() {
           placeholder="ООО «Ромашка»"
           className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
-      </div>
-
-      {/* ── Email ── */}
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-          Email <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.ru"
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          На этот адрес придёт ссылка на готовый отчёт.
-        </p>
       </div>
 
       {/* ── Chain / network ── */}

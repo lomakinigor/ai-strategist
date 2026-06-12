@@ -4,8 +4,6 @@ import { redirect } from 'next/navigation'
 import { getDb } from '@/db'
 import { companies, intakeSubmissions, researchJobs } from '@/db/schema'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 export async function createResearchJob(formData: FormData) {
   const name = ((formData.get('company_name') as string | null) ?? '').trim()
   const industry = ((formData.get('industry') as string | null) ?? '').trim()
@@ -14,7 +12,11 @@ export async function createResearchJob(formData: FormData) {
   const goals = ((formData.get('research_goal') as string | null) ?? '').trim() || null
   const contextNotes = ((formData.get('context_notes') as string | null) ?? '').trim() || null
   const competitors = ((formData.get('competitors') as string | null) ?? '').trim() || null
-  const email = ((formData.get('email') as string | null) ?? '').trim().toLowerCase() || null
+
+  // tier из формы: 'free' (по умолчанию) | 'paid' (QR-оплата) — определяет
+  // куда редиректить после создания job (на /pay или /research) и нужен ли approve.
+  const tierRaw = (formData.get('tier') as string | null) ?? 'free'
+  const tier: 'free' | 'paid' = tierRaw === 'paid' ? 'paid' : 'free'
 
   // Collect channel links (direct URLs)
   const channels = (formData.getAll('channel_link') as string[]).filter(Boolean)
@@ -46,9 +48,6 @@ export async function createResearchJob(formData: FormData) {
   if (!name || !industry) {
     throw new Error('Название компании и отрасль обязательны')
   }
-  if (email && !EMAIL_REGEX.test(email)) {
-    throw new Error('Email указан в неверном формате')
-  }
 
   const db = getDb()
 
@@ -64,7 +63,8 @@ export async function createResearchJob(formData: FormData) {
       directions,
       adChannels,
       competitors: competitors || null,
-      clientEmail: email,
+      // Email больше не собираем — отчёт показывается на странице, не через email.
+      clientEmail: null,
       region: 'RU',
       status: 'active',
     })
@@ -87,14 +87,26 @@ export async function createResearchJob(formData: FormData) {
       is_chain: isChain,
       chain_scope: chainScope,
       city,
+      tier,
     },
     fallbackQuestionsNeeded: false,
   })
 
+  // paid=true сразу для free (оплата не нужна), false для paid (ждём approve).
   const [job] = await db
     .insert(researchJobs)
-    .values({ companyId: company.id, status: 'pending' })
+    .values({
+      companyId: company.id,
+      status: 'pending',
+      tier,
+      paid: tier === 'free',
+    })
     .returning()
 
+  // free → сразу на страницу прогресса research;
+  // paid → на страницу оплаты QR, где будет ждать ручного approve администратором.
+  if (tier === 'paid') {
+    redirect(`/pay/${job.id}`)
+  }
   redirect(`/research/${job.id}`)
 }

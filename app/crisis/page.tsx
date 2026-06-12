@@ -593,7 +593,7 @@ const TARIFFS = [
       'Анализ текущего состояния маркетинга и бизнес-процессов для понимания зон роста',
     ],
     cta: 'Заказать',
-    href: '/lead/paid',
+    href: '/intake?tier=paid',
     goal: 'paywall_click',
     featured: true,
     note: null,

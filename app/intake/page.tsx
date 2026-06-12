@@ -6,7 +6,16 @@ export const metadata = {
   title: 'Новое исследование — AI-Стратег',
 }
 
-export default function IntakePage() {
+export default function IntakePage({
+  searchParams,
+}: {
+  searchParams?: { tier?: string }
+}) {
+  // tier из URL: ?tier=paid → платный полный отчёт (через QR-оплату).
+  // Любое другое значение / отсутствие → free (бесплатный пробник).
+  const tier: 'free' | 'paid' = searchParams?.tier === 'paid' ? 'paid' : 'free'
+  const isPaid = tier === 'paid'
+
   return (
     <main className="min-h-screen bg-white text-[#0a0a0a]">
       <OpenIntakeGoal />
@@ -20,7 +29,9 @@ export default function IntakePage() {
       </nav>
 
       <section className="max-w-2xl mx-auto px-6 pt-14 pb-24">
-        <p className="lp-eyebrow mb-4">Бесплатный пробник</p>
+        <p className="lp-eyebrow mb-4">
+          {isPaid ? 'Полный отчёт — 9 999 ₽' : 'Бесплатный пробник'}
+        </p>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
           Расскажите о своём бизнесе
         </h1>
@@ -30,12 +41,12 @@ export default function IntakePage() {
           остальное.
         </p>
 
-        <IntakeForm />
+        <IntakeForm tier={tier} />
 
         <p className="text-xs text-[#6b7280] mt-6 leading-[1.6]">
-          После отправки запустим параллельное исследование по 4 направлениям:
-          бизнес, рынок, аудитория, конкуренты. Ссылка на готовый отчёт придёт на
-          указанный email в течение 24 часов.
+          {isPaid
+            ? 'После отправки откроется страница оплаты с QR-кодом. Когда мы получим оплату — запустим параллельное исследование по 4 направлениям. Отчёт откроется в браузере на этой же странице — никуда не уйдёт.'
+            : 'После отправки запустим параллельное исследование по 4 направлениям: бизнес, рынок, аудитория, конкуренты. Краткий отчёт откроется в браузере, как только будет готов — никуда не уйдёт.'}
         </p>
       </section>
 

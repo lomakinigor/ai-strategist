@@ -602,7 +602,7 @@ const TARIFFS = [
       'План действий на 30 / 60 / 90 дней',
     ],
     cta: 'Заказать',
-    href: '/lead/paid',
+    href: '/intake?tier=paid',
     goal: 'paywall_click',
     featured: true,
     note: null,
