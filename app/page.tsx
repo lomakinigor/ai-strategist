@@ -650,9 +650,9 @@ const WHO_BENEFITS = [
 
 const FOUNDERS = [
   {
-    name: 'Игорь',
+    name: 'Александр Вайсберг',
     role: 'Маркетолог · Сооснователь',
-    photo: '/founder-igor.jpg',
+    photo: '/founder-aleksandr.jpg',
     facts: [
       '13 лет в маркетинге — стратегия, контекст, перформанс',
       'Управлял рекламными бюджетами до 10 млн ₽/месяц',
