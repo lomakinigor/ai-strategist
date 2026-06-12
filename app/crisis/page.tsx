@@ -197,35 +197,41 @@ export default function CrisisHome() {
         </div>
       </section>
 
-      {/* ── Об основателе ──────────────────────────────────────────────────── */}
+      {/* ── Об основателях ─────────────────────────────────────────────────── */}
       <section className="border-t border-[#e5e5e5]">
-        <div className="max-w-5xl mx-auto px-6 py-24">
+        <div className="max-w-6xl mx-auto px-6 py-24">
           <div className="mb-12 max-w-2xl">
-            <p className="lp-eyebrow mb-4">Кто за этим стоит</p>
+            <p className="lp-eyebrow mb-4">Команда AI-Стратег</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
-              Опыт, который мы упаковали в AI
+              Опыт двух основателей — упакованный в AI
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-[auto_1fr] gap-10 items-start">
-            <div className="w-40 h-40 rounded-full bg-[#fafafa] border-2 border-[#e5e5e5] flex items-center justify-center shrink-0 mx-auto md:mx-0">
-              <span className="text-6xl font-bold text-[#1e3a8a]">И</span>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-bold mb-1 tracking-[-0.015em]">Игорь, основатель AI-Стратег</h3>
-              <p className="text-sm text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-6">
-                Маркетолог · Предприниматель
-              </p>
-              <ul className="space-y-3">
-                {ABOUT_FACTS.map((fact, i) => (
-                  <li key={i} className="flex gap-3 text-[15px] text-[#525252] leading-[1.55]">
-                    <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
-                    <span>{fact}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="grid gap-8 md:grid-cols-2">
+            {FOUNDERS.map((f, i) => (
+              <article key={i} className="lp-card overflow-hidden flex flex-col">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={f.photo}
+                  alt={f.name}
+                  className="w-full aspect-[3/4] object-cover bg-[#fafafa]"
+                />
+                <div className="p-7 flex-1 flex flex-col">
+                  <h3 className="text-xl font-bold mb-1 tracking-[-0.015em]">{f.name}</h3>
+                  <p className="text-sm text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-5">
+                    {f.role}
+                  </p>
+                  <ul className="space-y-3">
+                    {f.facts.map((fact, j) => (
+                      <li key={j} className="flex gap-3 text-[15px] text-[#525252] leading-[1.55]">
+                        <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+                        <span>{fact}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -454,12 +460,28 @@ const WHO_BENEFITS = [
   },
 ] as const
 
-// ─── Об основателе ───────────────────────────────────────────────────────────
-const ABOUT_FACTS = [
-  '13 лет в маркетинге — стратегия, контекст, перформанс',
-  'Управлял рекламными бюджетами до 10 млн ₽/месяц',
-  'Привлекал 2+ млн ₽ выручки с нулевым рекламным бюджетом',
-  'Основатель сети кулинарных квест-шоу в 4 городах России',
+// ─── Об основателях ──────────────────────────────────────────────────────────
+const FOUNDERS = [
+  {
+    name: 'Игорь',
+    role: 'Маркетолог · Сооснователь',
+    photo: '/founder-igor.jpg',
+    facts: [
+      '13 лет в маркетинге — стратегия, контекст, перформанс',
+      'Управлял рекламными бюджетами до 10 млн ₽/месяц',
+      'Привлекал 2+ млн ₽ выручки с нулевым рекламным бюджетом',
+      'Основатель сети кулинарных квест-шоу в 4 городах России',
+    ],
+  },
+  {
+    name: 'Игорь Ломакин',
+    role: 'Предприниматель · Сооснователь',
+    photo: '/founder-lomakin.jpg',
+    facts: [
+      '30 лет предпринимательского стажа',
+      'Основатель компании GOLDAYS',
+    ],
+  },
 ] as const
 
 // ─── Сравнение «С AI-Стратегом vs без» ───────────────────────────────────────
