@@ -136,42 +136,8 @@ export default function CrisisHome() {
         </div>
       </section>
 
-      {/* ── ROI блок ──────────────────────────────────────────────────────── */}
-      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
-        <div className="max-w-5xl mx-auto px-6 py-20">
-          <div className="mb-12 max-w-2xl">
-            <p className="lp-eyebrow mb-4">Окупаемость</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
-              9 999 ₽ окупаются с одного клиента
-            </h2>
-            <p className="text-base text-[#525252] leading-[1.65]">
-              Отчёт — это не расход, а решение из 2–3 действий, которые
-              перенаправят существующий бюджет туда, где он реально приносит
-              заявки.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {ROI_EXAMPLES.map((ex, i) => (
-              <div key={i} className="lp-card bg-white p-7">
-                <p className="text-xs font-semibold text-[#1e3a8a] uppercase tracking-[0.12em] mb-4">
-                  {ex.niche}
-                </p>
-                <p className="text-3xl font-bold tracking-[-0.025em] text-[#0a0a0a] mb-1">
-                  {ex.metric}
-                </p>
-                <p className="text-xs text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-4">
-                  {ex.metricLabel}
-                </p>
-                <p className="text-[14px] text-[#525252] leading-[1.6]">{ex.payback}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Тарифы ────────────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
         <div className="max-w-6xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Тарифы</p>
@@ -184,7 +150,7 @@ export default function CrisisHome() {
             {TARIFFS.map((t, i) => (
               <article
                 key={i}
-                className={`lp-card p-8 flex flex-col ${
+                className={`lp-card bg-white p-8 flex flex-col ${
                   t.featured ? 'border-2 border-[#1e3a8a]' : ''
                 }`}
               >
@@ -226,6 +192,153 @@ export default function CrisisHome() {
                   <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">{t.note}</p>
                 )}
               </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Об основателе ──────────────────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <div className="mb-12 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Кто за этим стоит</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
+              Опыт, который мы упаковали в AI
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-[auto_1fr] gap-10 items-start">
+            <div className="w-40 h-40 rounded-full bg-[#fafafa] border-2 border-[#e5e5e5] flex items-center justify-center shrink-0 mx-auto md:mx-0">
+              <span className="text-6xl font-bold text-[#1e3a8a]">И</span>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold mb-1 tracking-[-0.015em]">Игорь, основатель AI-Стратег</h3>
+              <p className="text-sm text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-6">
+                Маркетолог · Предприниматель
+              </p>
+              <ul className="space-y-3">
+                {ABOUT_FACTS.map((fact, i) => (
+                  <li key={i} className="flex gap-3 text-[15px] text-[#525252] leading-[1.55]">
+                    <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+                    <span>{fact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Главное обещание приложения ────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5] bg-[#0a0a0a] text-white">
+        <div className="max-w-4xl mx-auto px-6 py-28 text-center">
+          <p className="text-xs font-semibold text-[#fbbf24] uppercase tracking-[0.16em] mb-6">
+            Зачем мы создали AI-Стратег
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.025em] leading-[1.15] mb-8">
+            Увеличить вашу выручку <span className="text-[#fbbf24]">в&nbsp;1,5&nbsp;раза</span> при снижении затрат <span className="text-[#fbbf24]">в&nbsp;2&nbsp;раза</span>
+          </h2>
+          <p className="text-lg sm:text-xl text-white/75 leading-[1.6] max-w-2xl mx-auto">
+            За счёт анализа вашего маркетинга и бизнес-процессов. AI-Стратег делает за 24 часа то, на что у директора по маркетингу уходят недели.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Окупаемость (после Об основателе) ─────────────────────────────── */}
+      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-20">
+          <div className="mb-12 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Окупаемость</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
+              9 999 ₽ окупаются с одного клиента
+            </h2>
+            <p className="text-base text-[#525252] leading-[1.65]">
+              Отчёт — это не расход, а решение из 2–3 действий, которые
+              перенаправят существующий бюджет туда, где он реально приносит
+              заявки.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {ROI_EXAMPLES.map((ex, i) => (
+              <div key={i} className="lp-card bg-white p-7">
+                <p className="text-xs font-semibold text-[#1e3a8a] uppercase tracking-[0.12em] mb-4">
+                  {ex.niche}
+                </p>
+                <p className="text-3xl font-bold tracking-[-0.025em] text-[#0a0a0a] mb-1">
+                  {ex.metric}
+                </p>
+                <p className="text-xs text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-4">
+                  {ex.metricLabel}
+                </p>
+                <p className="text-[14px] text-[#525252] leading-[1.6]">{ex.payback}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Сравнение ─────────────────────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <div className="mb-14 max-w-3xl">
+            <p className="lp-eyebrow mb-4">Сравнение</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
+              С AI-Стратегом и без него
+            </h2>
+          </div>
+
+          {/* Desktop: 3-колоночная таблица */}
+          <div className="hidden md:block lp-card bg-[#fafafa] overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#e5e5e5]">
+                  <th className="lp-cmp-th"></th>
+                  <th className="lp-cmp-th">Без AI-Стратега</th>
+                  <th className="lp-cmp-th text-[#1e3a8a]">С AI-Стратегом</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row, i) => (
+                  <tr key={i} className="border-t border-[#e5e5e5]">
+                    <td className="lp-cmp-td font-semibold text-[#0a0a0a] w-1/3">
+                      {row.label}
+                    </td>
+                    <td className="lp-cmp-td text-[#525252] w-1/3">{row.them}</td>
+                    <td className="lp-cmp-td text-[#0a0a0a] w-1/3 font-medium">
+                      {row.us}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: карточки */}
+          <div className="md:hidden space-y-3">
+            {COMPARISON.map((row, i) => (
+              <div key={i} className="lp-card p-5">
+                <p className="text-xs font-bold text-[#0a0a0a] uppercase tracking-[0.1em] mb-4">
+                  {row.label}
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-[11px] text-[#6b7280] uppercase tracking-[0.1em] mb-1 font-semibold">
+                      Без AI-Стратега
+                    </p>
+                    <p className="text-sm text-[#525252] leading-[1.55]">{row.them}</p>
+                  </div>
+                  <div className="pt-3 border-t border-[#e5e5e5]">
+                    <p className="text-[11px] text-[#1e3a8a] uppercase tracking-[0.1em] mb-1 font-bold">
+                      С AI-Стратегом
+                    </p>
+                    <p className="text-sm text-[#0a0a0a] font-medium leading-[1.55]">
+                      {row.us}
+                    </p>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -338,6 +451,48 @@ const WHO_BENEFITS = [
       'Оптимизация бюджета без потери количества и качества заявок',
       'Оптимизация бизнес-процессов в отделе маркетинга — меньше рутины, больше результата',
     ],
+  },
+] as const
+
+// ─── Об основателе ───────────────────────────────────────────────────────────
+const ABOUT_FACTS = [
+  '13 лет в маркетинге — стратегия, контекст, перформанс',
+  'Управлял рекламными бюджетами до 10 млн ₽/месяц',
+  'Привлекал 2+ млн ₽ выручки с нулевым рекламным бюджетом',
+  'Основатель сети кулинарных квест-шоу в 4 городах России',
+] as const
+
+// ─── Сравнение «С AI-Стратегом vs без» ───────────────────────────────────────
+const COMPARISON = [
+  {
+    label: 'Срок до решения',
+    them: 'Недели на интервью, согласования, поиск маркетолога',
+    us: '24 часа на готовый отчёт с действиями',
+  },
+  {
+    label: 'Ваше время',
+    them: 'Интервью 2–3 часа + правки',
+    us: 'Анкета 5 минут',
+  },
+  {
+    label: 'Цена',
+    them: 'Маркетолог-консультант от 60 000 ₽, штатный CMO от 150 000 ₽/мес',
+    us: '9 999 ₽ за разовый разбор (или бесплатный пробник)',
+  },
+  {
+    label: 'Анализ конкурентов',
+    them: '2–3 конкурента субъективно',
+    us: '4–6 конкурентов с источниками и датами',
+  },
+  {
+    label: 'Решения по каналам',
+    them: 'Общие рекомендации «развивайте Telegram»',
+    us: 'Ранжированный микс: куда вкладывать, а где экономить',
+  },
+  {
+    label: 'Зависит от человека',
+    them: 'Да, от одного эксперта',
+    us: 'Нет, методика повторяема и не теряется при уходе сотрудника',
   },
 ] as const
 

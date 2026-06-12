@@ -111,37 +111,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── ROI блок (когда отчёт окупается) ──────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
-        <div className="max-w-5xl mx-auto px-6 py-20">
-          <div className="mb-12 max-w-2xl">
-            <p className="lp-eyebrow mb-4">Окупаемость</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
-              9 999 ₽ окупаются с одного клиента
+      {/* ── Тарифы ────────────────────────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5] bg-[#fafafa]">
+        <div className="max-w-6xl mx-auto px-6 py-24">
+          <div className="mb-14 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Тарифы</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
+              Выберите формат работы
             </h2>
-            <p className="text-base text-[#525252] leading-[1.65]">
-              Отчёт — это не расход на «посмотреть», а инструмент для одного
-              конкретного действия: переписать первый экран сайта так, чтобы
-              целевой клиент узнавал себя.
-            </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {ROI_EXAMPLES.map((ex, i) => (
-              <div key={i} className="lp-card p-7">
-                <p className="text-xs font-semibold text-[#1e3a8a] uppercase tracking-[0.12em] mb-4">
-                  {ex.niche}
-                </p>
-                <p className="text-3xl font-bold tracking-[-0.025em] text-[#0a0a0a] mb-1">
-                  {ex.metric}
-                </p>
-                <p className="text-xs text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-4">
-                  {ex.metricLabel}
-                </p>
-                <p className="text-[14px] text-[#525252] leading-[1.6]">
-                  {ex.payback}
-                </p>
-              </div>
+            {TARIFFS.map((t, i) => (
+              <article
+                key={i}
+                className={`lp-card p-8 flex flex-col ${
+                  t.featured ? 'border-2 border-[#1e3a8a]' : ''
+                }`}
+              >
+                {t.badge && (
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#1e3a8a] mb-4">
+                    {t.badge}
+                  </p>
+                )}
+                <h3 className="text-2xl font-bold tracking-[-0.015em] mb-2">{t.name}</h3>
+                <p className="text-sm text-[#525252] mb-7 leading-relaxed">{t.subtitle}</p>
+
+                <div className="mb-7 pb-7 border-b border-[#e5e5e5]">
+                  <p className="text-3xl font-bold tracking-[-0.02em]">{t.price}</p>
+                  <p className="text-xs text-[#6b7280] mt-1.5">{t.priceHint}</p>
+                </div>
+
+                <ul className="space-y-3 mb-8 flex-1">
+                  {t.features.map((f, j) => (
+                    <li
+                      key={j}
+                      className="flex gap-3 text-sm text-[#525252] leading-[1.55]"
+                    >
+                      <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <CTALink
+                  href={t.href}
+                  goal={t.goal}
+                  className={t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'}
+                >
+                  {t.cta}
+                  <span aria-hidden>→</span>
+                </CTALink>
+
+                {t.note && (
+                  <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">{t.note}</p>
+                )}
+              </article>
             ))}
           </div>
         </div>
@@ -225,62 +250,85 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Тарифы ────────────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5] bg-[#fafafa]">
-        <div className="max-w-6xl mx-auto px-6 py-24">
-          <div className="mb-14 max-w-2xl">
-            <p className="lp-eyebrow mb-4">Тарифы</p>
+      {/* ── Об основателе ──────────────────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <div className="mb-12 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Кто за этим стоит</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1]">
-              Выберите формат работы
+              Опыт, который мы упаковали в AI
             </h2>
           </div>
 
+          <div className="grid md:grid-cols-[auto_1fr] gap-10 items-start">
+            <div className="w-40 h-40 rounded-full bg-[#fafafa] border-2 border-[#e5e5e5] flex items-center justify-center shrink-0 mx-auto md:mx-0">
+              <span className="text-6xl font-bold text-[#1e3a8a]">И</span>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold mb-1 tracking-[-0.015em]">Игорь, основатель AI-Стратег</h3>
+              <p className="text-sm text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-6">
+                Маркетолог · Предприниматель
+              </p>
+              <ul className="space-y-3">
+                {ABOUT_FACTS.map((fact, i) => (
+                  <li key={i} className="flex gap-3 text-[15px] text-[#525252] leading-[1.55]">
+                    <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+                    <span>{fact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Главное обещание приложения ────────────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5] bg-[#0a0a0a] text-white">
+        <div className="max-w-4xl mx-auto px-6 py-28 text-center">
+          <p className="text-xs font-semibold text-[#fbbf24] uppercase tracking-[0.16em] mb-6">
+            Зачем мы создали AI-Стратег
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.025em] leading-[1.15] mb-8">
+            Увеличить вашу выручку <span className="text-[#fbbf24]">в&nbsp;1,5&nbsp;раза</span> при снижении затрат <span className="text-[#fbbf24]">в&nbsp;2&nbsp;раза</span>
+          </h2>
+          <p className="text-lg sm:text-xl text-white/75 leading-[1.6] max-w-2xl mx-auto">
+            За счёт анализа вашего маркетинга и бизнес-процессов. AI-Стратег делает за 24 часа то, на что у директора по маркетингу уходят недели.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Окупаемость (после Об основателе) ─────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-5xl mx-auto px-6 py-20">
+          <div className="mb-12 max-w-2xl">
+            <p className="lp-eyebrow mb-4">Окупаемость</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
+              9 999 ₽ окупаются с одного клиента
+            </h2>
+            <p className="text-base text-[#525252] leading-[1.65]">
+              Отчёт — это не расход на «посмотреть», а инструмент для одного
+              конкретного действия: переписать первый экран сайта так, чтобы
+              целевой клиент узнавал себя.
+            </p>
+          </div>
+
           <div className="grid gap-6 md:grid-cols-3">
-            {TARIFFS.map((t, i) => (
-              <article
-                key={i}
-                className={`lp-card p-8 flex flex-col ${
-                  t.featured ? 'border-2 border-[#1e3a8a]' : ''
-                }`}
-              >
-                {t.badge && (
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#1e3a8a] mb-4">
-                    {t.badge}
-                  </p>
-                )}
-                <h3 className="text-2xl font-bold tracking-[-0.015em] mb-2">{t.name}</h3>
-                <p className="text-sm text-[#525252] mb-7 leading-relaxed">{t.subtitle}</p>
-
-                <div className="mb-7 pb-7 border-b border-[#e5e5e5]">
-                  <p className="text-3xl font-bold tracking-[-0.02em]">{t.price}</p>
-                  <p className="text-xs text-[#6b7280] mt-1.5">{t.priceHint}</p>
-                </div>
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {t.features.map((f, j) => (
-                    <li
-                      key={j}
-                      className="flex gap-3 text-sm text-[#525252] leading-[1.55]"
-                    >
-                      <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <CTALink
-                  href={t.href}
-                  goal={t.goal}
-                  className={t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'}
-                >
-                  {t.cta}
-                  <span aria-hidden>→</span>
-                </CTALink>
-
-                {t.note && (
-                  <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">{t.note}</p>
-                )}
-              </article>
+            {ROI_EXAMPLES.map((ex, i) => (
+              <div key={i} className="lp-card p-7">
+                <p className="text-xs font-semibold text-[#1e3a8a] uppercase tracking-[0.12em] mb-4">
+                  {ex.niche}
+                </p>
+                <p className="text-3xl font-bold tracking-[-0.025em] text-[#0a0a0a] mb-1">
+                  {ex.metric}
+                </p>
+                <p className="text-xs text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-4">
+                  {ex.metricLabel}
+                </p>
+                <p className="text-[14px] text-[#525252] leading-[1.6]">
+                  {ex.payback}
+                </p>
+              </div>
             ))}
           </div>
         </div>
@@ -592,6 +640,13 @@ const WHO_BENEFITS = [
       'Оптимизация бизнес-процессов в отделе маркетинга — меньше рутины, больше результата',
     ],
   },
+] as const
+
+const ABOUT_FACTS = [
+  '13 лет в маркетинге — стратегия, контекст, перформанс',
+  'Управлял рекламными бюджетами до 10 млн ₽/месяц',
+  'Привлекал 2+ млн ₽ выручки с нулевым рекламным бюджетом',
+  'Основатель сети кулинарных квест-шоу в 4 городах России',
 ] as const
 
 const COMPARISON = [
