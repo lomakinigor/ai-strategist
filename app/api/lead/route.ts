@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/db'
 import { leads } from '@/db/schema'
 import { sendEmail } from '@/lib/magic-link/sender'
+import { notifyLead } from '@/lib/notify/telegram'
 
 interface LeadBody {
   type?: 'paid' | 'retainer'
@@ -74,12 +75,30 @@ ${message ?? '—'}
 ID заявки: ${inserted.id}
 Время: ${inserted.createdAt.toISOString()}`
 
-  await sendEmail({
-    to: OPERATOR_EMAIL,
-    subject,
-    html: `<pre style="font-family:monospace;font-size:13px;line-height:1.6">${escapeHtml(text)}</pre>`,
-    text,
-  })
+  // Параллельно: email оператору + Telegram в админ-группу. Telegram — основной
+  // канал (бот @AIStrategPayBot уже используется для оплат), email — резервный
+  // на случай если ENV для бота не задан. Оба swallow ошибки — не валим заявку.
+  await Promise.all([
+    sendEmail({
+      to: OPERATOR_EMAIL,
+      subject,
+      html: `<pre style="font-family:monospace;font-size:13px;line-height:1.6">${escapeHtml(text)}</pre>`,
+      text,
+    }).catch((err) => {
+      console.error('[api/lead] email send failed:', err instanceof Error ? err.message : err)
+    }),
+    notifyLead({
+      leadId: inserted.id,
+      type,
+      name,
+      email,
+      phone,
+      company,
+      message,
+    }).catch((err) => {
+      console.error('[api/lead] telegram notify failed:', err instanceof Error ? err.message : err)
+    }),
+  ])
 
   return NextResponse.json({ ok: true, leadId: inserted.id })
 }

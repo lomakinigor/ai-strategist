@@ -101,6 +101,40 @@ export async function notifyPaymentRequest(args: {
   })
 }
 
+// Уведомление о новой заявке с лендинга (тариф «9 999 ₽» или «Сопровождение»).
+// Шлёт в ту же группу что и оплаты — оператор/админ видит все лиды в одном месте.
+export async function notifyLead(args: {
+  leadId: string
+  type: 'paid' | 'retainer'
+  name: string
+  email: string
+  phone: string | null
+  company: string | null
+  message: string | null
+}): Promise<boolean> {
+  const tariffLabel = args.type === 'paid'
+    ? '🟦 Разовый отчёт 9 999 ₽'
+    : '🟨 Сопровождение от 100 000 ₽/мес'
+
+  const lines: string[] = [
+    `<b>📩 Новая заявка</b>`,
+    `<b>${tariffLabel}</b>`,
+    '',
+    `<b>Имя:</b> ${escapeHtml(args.name)}`,
+    `<b>Email:</b> ${escapeHtml(args.email)}`,
+  ]
+  if (args.phone) lines.push(`<b>Телефон:</b> ${escapeHtml(args.phone)}`)
+  if (args.company) lines.push(`<b>Компания:</b> ${escapeHtml(args.company)}`)
+  if (args.message) lines.push(`<b>Сообщение:</b> ${escapeHtml(truncate(args.message, 500))}`)
+  lines.push('')
+  lines.push(`<b>leadId:</b> <code>${args.leadId}</code>`)
+
+  return sendTelegramMessage({
+    text: lines.join('\n'),
+    parseMode: 'HTML',
+  })
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }

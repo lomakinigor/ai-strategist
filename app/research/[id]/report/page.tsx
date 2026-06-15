@@ -5,7 +5,6 @@ import { reportArtifacts, researchJobs, companies } from '@/db/schema'
 import { parseSections } from '@/lib/strategy/generator'
 import { CopyButton } from './CopyButton'
 import { SynthesizeButton, RegenerateSectionButton } from './TwoStageActions'
-import { BriefReportPanel } from './BriefReportPanel'
 import type { PartialStrategyContent } from '@/lib/types'
 
 // Server actions in this segment may run for the full Vercel Hobby budget.
@@ -502,11 +501,6 @@ export default async function ReportPage({
           </div>
         )}
 
-        {/* ── Brief report panel ──────────────────────────────────── */}
-        {isDone && !isMock && sections.length > 0 && (
-          <BriefReportPanel artifactId={currentArtifactId} />
-        )}
-
         {/* ── Raw markdown fallback ───────────────────────────────── */}
         {sections.length === 0 && isDone && artifact.contentMarkdown && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -515,25 +509,6 @@ export default async function ReportPage({
             </pre>
           </div>
         )}
-
-        {/* ── Navigation ──────────────────────────────────────────── */}
-        <div className="mt-8 flex gap-4 flex-wrap">
-          <a
-            href={`/research/${jobId}/validation`}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            ← Валидация фактов
-          </a>
-          <a href={`/research/${jobId}`} className="text-sm text-gray-500 hover:underline">
-            ← Исследование
-          </a>
-          <a href="/archive" className="text-sm text-gray-400 hover:underline">
-            Архив отчётов
-          </a>
-          <a href="/intake" className="text-sm text-gray-400 hover:underline ml-auto">
-            Новое исследование
-          </a>
-        </div>
       </div>
     </main>
   )
