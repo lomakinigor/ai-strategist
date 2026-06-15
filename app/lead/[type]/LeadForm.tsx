@@ -27,6 +27,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
     status !== 'submitting' &&
     name.trim().length >= 2 &&
     EMAIL_REGEX.test(email.trim()) &&
+    (type !== 'retainer' || company.trim().length >= 2) &&
     consent
 
   async function handleSubmit(e: React.FormEvent) {
@@ -96,6 +97,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
       />
       <Field
         label="Компания"
+        required={type === 'retainer'}
         type="text"
         value={company}
         onChange={setCompany}
