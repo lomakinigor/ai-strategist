@@ -115,20 +115,21 @@ export default async function PayPage({ params }: { params: { jobId: string } })
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-[#6b7280]">Телефон:</dt>
-                  <dd className="font-mono">+7 (XXX) XXX-XX-XX</dd>
+                  <dd className="font-mono">+7 918 520-13-72</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-[#6b7280]">Банк:</dt>
-                  <dd>(укажите банк-получатель)</dd>
+                  <dd>Т-Банк</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-[#6b7280]">Получатель:</dt>
-                  <dd>(укажите ФИО)</dd>
+                  <dt className="text-[#6b7280]">Сумма:</dt>
+                  <dd className="font-mono">9 999 ₽</dd>
                 </div>
               </dl>
               <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">
-                В комментарии к платежу укажите название компании и&nbsp;jobId:&nbsp;
+                В комментарии к платежу укажите номер заявки:&nbsp;
                 <code className="font-mono text-[11px] text-[#0a0a0a]">{row.jobId.slice(0, 8)}</code>
+                . Имя получателя увидите в приложении банка после сканирования QR.
               </p>
             </div>
 
