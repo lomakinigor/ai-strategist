@@ -203,7 +203,20 @@ export class OpenAIResearchProvider implements ResearchProvider {
       throw new Error(`OpenAI API error: ${response.status} ${response.statusText} — ${err}`)
     }
 
-    const json = (await response.json()) as OpenAIResponse
+    // Защита от пустого/невалидного body: response.json() кидает «Unexpected end of
+    // JSON input» при пустом теле — это валило весь research-job до per-stream catch
+    // в orchestrator. Сначала читаем как текст, потом разбираем явно.
+    const rawBody = await response.text()
+    if (!rawBody.trim()) {
+      throw new Error(`OpenAI API: empty body for ${request.researchType}`)
+    }
+    let json: OpenAIResponse
+    try {
+      json = JSON.parse(rawBody) as OpenAIResponse
+    } catch (e) {
+      const preview = rawBody.slice(0, 200)
+      throw new Error(`OpenAI API: invalid JSON for ${request.researchType} — ${String(e)} — preview: ${preview}`)
+    }
 
     const messageItem = json.output.find((o) => o.type === 'message') as OutputMessage | undefined
     const textContent = messageItem?.content?.find((c) => c.type === 'output_text')

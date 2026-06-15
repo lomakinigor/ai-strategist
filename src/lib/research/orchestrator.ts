@@ -82,7 +82,13 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
   const siteUrls = [query.website].filter(Boolean) as string[]
 
   const siteMarketingStream = query.website
-    ? provider.research({ query, researchType: 'site_marketing', modelId }).then((r) => r.points)
+    ? provider
+        .research({ query, researchType: 'site_marketing', modelId })
+        .then((r) => r.points)
+        .catch((err) => {
+          console.warn(`[orchestrator] site_marketing failed:`, err instanceof Error ? err.message : err)
+          return [] as RawDataPoint[]
+        })
     : Promise.resolve([] as RawDataPoint[])
 
   // Обход сайта клиента: каскад sitemap → ключевые страницы → грунтованные факты (RS:4).
@@ -107,9 +113,23 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
       ).then((arr) => arr.flat())
     : Promise.resolve([])
 
+  // Per-stream isolation: один упавший stream (например, OpenAI вернул пустой body
+  // → Unexpected end of JSON input) не должен валить весь research-job. По аналогии
+  // с competitorFanoutStream — каждый stream имеет свой .catch и деградирует тихо.
   const [streamResults, external, siteMarketingPoints, siteCrawl, competitorFanoutPoints] = await Promise.all([
     Promise.all(
-      STREAM_TYPES.map((type) => provider.research({ query, researchType: type, modelId })),
+      STREAM_TYPES.map((type) =>
+        provider
+          .research({ query, researchType: type, modelId })
+          .then((r) => r.points)
+          .catch((err) => {
+            console.warn(
+              `[orchestrator] stream ${type} failed:`,
+              err instanceof Error ? err.message : err,
+            )
+            return [] as RawDataPoint[]
+          }),
+      ),
     ),
     collectExternalMetrics(siteUrls),
     siteMarketingStream,
@@ -117,7 +137,7 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
     competitorFanoutStream,
   ])
 
-  const providerPoints = streamResults.flatMap((r) => r.points)
+  const providerPoints = streamResults.flat()
   const allPoints = [
     ...providerPoints,
     ...external.points,
