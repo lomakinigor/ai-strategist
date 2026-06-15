@@ -45,22 +45,17 @@ export default async function ResearchProgressPage({ params }: { params: { id: s
     redirect(`/pay/${job.jobId}`)
   }
 
-  // Если уже всё готово (юзер обновил страницу/вернулся по URL) — сразу редирект на отчёт
+  // Если уже всё готово (юзер обновил страницу/вернулся по URL) — сразу редирект на отчёт.
+  // Оба tier'а едут на /free-report (там единая «карточка позиции» в tier-aware виде).
   if (job.status === 'done') {
     const artifactRows = await db
-      .select({ id: reportArtifacts.id, status: reportArtifacts.status, briefJson: reportArtifacts.briefJson })
+      .select({ id: reportArtifacts.id, status: reportArtifacts.status })
       .from(reportArtifacts)
       .where(eq(reportArtifacts.researchJobId, job.jobId))
       .limit(1)
     const artifact = artifactRows[0]
     if (artifact && artifact.status === 'done') {
-      const tier = job.tier
-      if (tier === 'free' && artifact.briefJson) {
-        redirect(`/free-report/${artifact.id}`)
-      }
-      if (tier === 'paid') {
-        redirect(`/brief/${artifact.id}`)
-      }
+      redirect(`/free-report/${artifact.id}`)
     }
   }
 

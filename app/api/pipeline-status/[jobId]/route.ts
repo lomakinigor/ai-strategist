@@ -154,19 +154,14 @@ export async function GET(_req: Request, { params }: { params: { jobId: string }
     return NextResponse.json(body)
   }
 
-  // Артефакт done. Раньше для free мы ждали briefJson на этом шаге, но это
-  // приводило к бесконечному поллингу когда brief-стадия упала молча. Теперь
-  // редиректим сразу: /free-report сам отрисует Cliffhanger + Paywall, а
-  // BriefAutoGenerate в нём при необходимости дотриггерит brief в фоне.
-  // Аналогично /brief для paid — BriefClient умеет авто-генерировать.
-  const tier = artifact.tier ?? job.tier
-  const redirectTo = tier === 'free' ? `/free-report/${artifact.id}` : `/brief/${artifact.id}`
-
+  // Артефакт done. Оба tier'а теперь идут на /free-report — там единая «Карточка
+  // позиции» в белом дизайне, tier-aware: free показывает Cliffhanger + Paywall,
+  // paid показывает CTA «Открыть полный отчёт» на /research/[id]/report.
   const body: StatusResponse = {
     stage: 'done',
     jobStatus: job.status,
     streams,
-    redirectTo,
+    redirectTo: `/free-report/${artifact.id}`,
     errorMessage: null,
   }
   return NextResponse.json(body)

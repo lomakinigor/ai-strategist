@@ -34,6 +34,8 @@ export default async function FreeReportPage({
     .select({
       brief: reportArtifacts.briefJson,
       status: reportArtifacts.status,
+      tier: reportArtifacts.tier,
+      researchJobId: reportArtifacts.researchJobId,
       companyName: companies.name,
       industry: companies.industry,
     })
@@ -46,6 +48,7 @@ export default async function FreeReportPage({
   if (!row) notFound()
 
   const brief = row.brief as BriefReportBlock | null
+  const isPaid = row.tier === 'paid'
 
   return (
     <main className="min-h-screen bg-white text-[#0a0a0a]">
@@ -57,15 +60,25 @@ export default async function FreeReportPage({
         </Link>
         <div className="flex items-center gap-3 no-print">
           <PrintButton />
-          <Link href={`/api/upgrade-to-paid?artifactId=${params.artifactId}`} className="lp-btn-ghost">
-            Полный отчёт →
-          </Link>
+          {isPaid ? (
+            row.researchJobId && (
+              <Link href={`/research/${row.researchJobId}/report`} className="lp-btn-primary">
+                Открыть полный отчёт →
+              </Link>
+            )
+          ) : (
+            <Link href={`/api/upgrade-to-paid?artifactId=${params.artifactId}`} className="lp-btn-ghost">
+              Полный отчёт →
+            </Link>
+          )}
         </div>
       </nav>
 
       {/* ── Заголовок ────────────────────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 pt-14 pb-10">
-        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Бесплатный пробник</p>
+        <p className="lp-eyebrow lp-eyebrow-warm mb-4">
+          {isPaid ? 'Краткая карточка позиции' : 'Бесплатный пробник'}
+        </p>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
           Карточка позиции — {row.companyName ?? 'ваша компания'}
         </h1>
@@ -85,14 +98,19 @@ export default async function FreeReportPage({
         <BriefAutoGenerate artifactId={params.artifactId} />
       )}
 
-      {/* ── Cliffhanger «что мы нашли, но не включили» (L1→L2) ───────────── */}
-      <Cliffhanger brief={brief} />
-
-      {/* ── Paywall на 9 999 ₽ ───────────────────────────────────────────── */}
-      <Paywall artifactId={params.artifactId} />
-
-      {/* ── L3-pitch: исполнение (сайт + боты в каналы + автопостинг) ───── */}
-      <ExecutionPitch />
+      {/* Для free — Cliffhanger + Paywall + ExecutionPitch (продажа upgrade).
+          Для paid — отдельный CTA-блок на полный отчёт без paywall. */}
+      {isPaid ? (
+        row.researchJobId && (
+          <PaidUpgradeCta researchJobId={row.researchJobId} />
+        )
+      ) : (
+        <>
+          <Cliffhanger brief={brief} />
+          <Paywall artifactId={params.artifactId} />
+          <ExecutionPitch />
+        </>
+      )}
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="border-t border-[#e5e5e5]">
@@ -299,6 +317,31 @@ function Cliffhanger({ brief }: { brief: BriefReportBlock | null }) {
           Это конкретные данные — не&nbsp;пустые обещания. Мы&nbsp;их&nbsp;нашли в&nbsp;ходе исследования
           и&nbsp;собрали в&nbsp;полный отчёт. Чтобы открыть — ниже.
         </p>
+      </div>
+    </section>
+  )
+}
+
+// CTA для paid-клиента: оплата уже подтверждена, надо просто открыть полный отчёт.
+// Без paywall, без cliffhanger — это его «продано» состояние.
+function PaidUpgradeCta({ researchJobId }: { researchJobId: string }) {
+  return (
+    <section className="border-t border-[#e5e5e5] bg-[#f0fdf4]">
+      <div className="max-w-3xl mx-auto px-6 py-16 text-center">
+        <p className="lp-eyebrow mb-4" style={{ color: '#15803d' }}>
+          Оплата подтверждена
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-[-0.02em] leading-[1.15] mb-4">
+          Полный отчёт готов — откройте, чтобы посмотреть
+        </h2>
+        <p className="text-base text-[#525252] max-w-xl mx-auto leading-[1.6] mb-8">
+          Все 4–6 конкурентов с разбором по 6 параметрам, маркетинговый микс,
+          AI-автоматизация, план 30/60/90 дней и сравнение с мировой нишей.
+        </p>
+        <Link href={`/research/${researchJobId}/report`} className="lp-btn-primary">
+          Открыть полный отчёт
+          <span aria-hidden>→</span>
+        </Link>
       </div>
     </section>
   )
