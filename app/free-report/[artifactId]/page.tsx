@@ -56,7 +56,7 @@ export default async function FreeReportPage({
         </Link>
         <div className="flex items-center gap-3 no-print">
           <PrintButton />
-          <Link href="/intake?tier=paid" className="lp-btn-ghost">
+          <Link href={`/api/upgrade-to-paid?artifactId=${params.artifactId}`} className="lp-btn-ghost">
             Полный отчёт →
           </Link>
         </div>
@@ -88,7 +88,7 @@ export default async function FreeReportPage({
       <Cliffhanger brief={brief} />
 
       {/* ── Paywall на 9 999 ₽ ───────────────────────────────────────────── */}
-      <Paywall />
+      <Paywall artifactId={params.artifactId} />
 
       {/* ── L3-pitch: исполнение (сайт + боты в каналы + автопостинг) ───── */}
       <ExecutionPitch />
@@ -306,6 +306,15 @@ function Cliffhanger({ brief }: { brief: BriefReportBlock | null }) {
               с&nbsp;обоснованием каждого. В&nbsp;пробнике — только 1&nbsp;тизер.
             </span>
           </li>
+          <li className="flex gap-3">
+            <span className="text-[#b45309] font-bold shrink-0 mt-0.5">×</span>
+            <span>
+              <strong>Сравнение вашей ниши в&nbsp;РФ с&nbsp;мировой</strong> — как эта же ниша устроена
+              за&nbsp;рубежом (2–3 ведущие страны: США / Европа / APAC), какие тренды дойдут до&nbsp;РФ
+              через&nbsp;12–24&nbsp;месяца, что копировать из&nbsp;Global, а&nbsp;что не&nbsp;повторять.
+              В&nbsp;пробнике — закрыто.
+            </span>
+          </li>
         </ul>
 
         <p className="text-sm text-[#525252] mt-8 leading-[1.65]">
@@ -317,7 +326,7 @@ function Cliffhanger({ brief }: { brief: BriefReportBlock | null }) {
   )
 }
 
-function Paywall() {
+function Paywall({ artifactId }: { artifactId: string }) {
   return (
     <section className="border-t border-[#e5e5e5] bg-[#fafafa]">
       <div className="max-w-3xl mx-auto px-6 py-20 text-center">
@@ -335,12 +344,13 @@ function Paywall() {
           ))}
         </ul>
 
-        <Link href="/intake?tier=paid" className="lp-btn-primary">
+        <Link href={`/api/upgrade-to-paid?artifactId=${artifactId}`} className="lp-btn-primary">
           Открыть полный отчёт
           <span aria-hidden>→</span>
         </Link>
         <p className="text-sm text-[#6b7280] mt-5">
           9 999 ₽ через СБП. Отчёт откроется в&nbsp;браузере сразу после подтверждения оплаты.
+          Анкету заполнять заново не&nbsp;нужно — данные о&nbsp;вашей компании уже сохранены.
         </p>
       </div>
     </section>
@@ -389,6 +399,7 @@ const PAYWALL_FEATURES = [
   'Все слабые точки (3–5) с источниками и оценкой надёжности',
   '3 готовых варианта УТП под разные сегменты',
   'Маркетинговый микс под вашу нишу — таблица каналов с CPL и бюджетом',
+  'Сравнение ниши РФ с мировой — какие тренды дойдут через 12–24 месяца',
   'AI-автоматизация — конкретные рычаги с эффектом и сроком',
   'План действий на 30 / 60 / 90 дней с метриками и ответственными',
 ] as const
