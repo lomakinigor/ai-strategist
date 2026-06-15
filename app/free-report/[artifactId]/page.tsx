@@ -34,7 +34,6 @@ export default async function FreeReportPage({
     .select({
       brief: reportArtifacts.briefJson,
       status: reportArtifacts.status,
-      researchJobId: reportArtifacts.researchJobId,
       companyName: companies.name,
       industry: companies.industry,
     })
@@ -82,18 +81,8 @@ export default async function FreeReportPage({
       {/* ── Контент или плейсхолдер ──────────────────────────────────────── */}
       {brief ? (
         <FreeBrief brief={brief} />
-      ) : row.researchJobId ? (
-        <BriefAutoGenerate researchJobId={row.researchJobId} />
       ) : (
-        <section className="max-w-3xl mx-auto px-6 py-20 text-center">
-          <p className="lp-eyebrow lp-eyebrow-warm mb-4">Ошибка</p>
-          <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">
-            Артефакт без связи с исследованием
-          </h2>
-          <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6]">
-            Мы получили нотификацию и свяжемся в течение часа.
-          </p>
-        </section>
+        <BriefAutoGenerate artifactId={params.artifactId} />
       )}
 
       {/* ── Cliffhanger «что мы нашли, но не включили» (L1→L2) ───────────── */}
