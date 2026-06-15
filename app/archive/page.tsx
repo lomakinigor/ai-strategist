@@ -1,13 +1,32 @@
 import { desc, eq, notInArray } from 'drizzle-orm'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { getDb } from '@/db'
 import { reportArtifacts, companies } from '@/db/schema'
 import { ArchiveList } from './ArchiveList'
 
 export const metadata = {
   title: 'Архив отчётов — AI-Стратег',
+  robots: { index: false, follow: false },
+}
+
+function checkAuth(): boolean {
+  const expected = process.env.ADMIN_ARCHIVE_PASSWORD
+  if (!expected) return false
+  const cookieVal = cookies().get('archive_auth')?.value
+  if (!cookieVal || cookieVal.length !== expected.length) return false
+  let diff = 0
+  for (let i = 0; i < cookieVal.length; i++) {
+    diff |= cookieVal.charCodeAt(i) ^ expected.charCodeAt(i)
+  }
+  return diff === 0
 }
 
 export default async function ArchivePage() {
+  if (!checkAuth()) {
+    redirect('/archive/login')
+  }
+
   const db = getDb()
 
   // All artifacts (except pending/generating) ordered newest-first for display,
