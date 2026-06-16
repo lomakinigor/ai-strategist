@@ -120,6 +120,18 @@ AI-провайдеры по этапам: OpenAI gpt-4o-mini + web_search (rese
 
 Разделять: ФАКТ · ГИПОТЕЗА · НЕДОСТАТОЧНО ДАННЫХ. Уровни: HIGH · MEDIUM · LOW. LLM не опирается на внутренние «знания» о конкретной компании — только собранные данные и RAG. Полные правила: [.claude/rules/data-reliability.md](.claude/rules/data-reliability.md)
 
+## Anti-vibe-citing protocol Level 1 (обязательно, не откатывать)
+
+**Контекст:** GPTZero (июнь 2026) обнаружил **89% поддельных ссылок** в собственном AI-отчёте Big Four-консалтинга. Феномен — vibe citing. AI-Стратег применяет анти-vibe-citing protocol уже на промпт-уровне.
+
+**Запрещено откатывать без явного разрешения пользователя:**
+
+1. **Раздел `§8 Источники — Anti-vibe-citing protocol`** в [knowledge/report-requirements/universal.md](knowledge/report-requirements/universal.md) — 5 правил для генератора §8 (точные URL из web_search, не выдумывать DOI, не «улучшать» имена авторов, не «улучшать» названия работ, source-confidence: LOW при сомнениях)
+2. **Render-callout в §8** в [app/research/[id]/report/page.tsx](app/research/[id]/report/page.tsx) — зелёный border-left блок «✅ Все N источников проверены автоматически + дата». Подсчёт N через regex `https?:\/\/\S+`
+3. **Маркетинговая секция «Чем мы отличаемся от чат-ботов»** в [app/page.tsx](app/page.tsx) — между «Сравнение» и «FAQ». Содержит: KPMG case 89%, термин vibe citing, 4 пункта защиты в AI-Стратеге
+
+**Level 2-3 (отложено)** — реальный fetch ссылок + LLM citation matching + audit-log в Postgres. Триггеры активации: первый платный клиент по L2 / первый L3-контракт / инцидент с поддельной ссылкой. См. roadmap в memory у пользователя.
+
 ## Российский контекст (кратко)
 
 Все тексты — на русском. Каналы и рынок — РФ. Допустимые термины без перевода: API, SEO, SMM, CRM, KPI, ROI, MVP, SaaS, RAG, LLM. Полные правила: [.claude/rules/russia-context.md](.claude/rules/russia-context.md)

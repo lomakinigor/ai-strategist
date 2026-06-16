@@ -14,6 +14,13 @@ interface LeadBody {
   company?: string
   message?: string
   turnstile_token?: string
+  utm?: {
+    utm_source?: string
+    utm_medium?: string
+    utm_campaign?: string
+    utm_term?: string
+    utm_content?: string
+  }
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -52,6 +59,7 @@ export async function POST(req: NextRequest) {
   const phone = body.phone?.trim() || null
   const company = body.company?.trim() || null
   const message = body.message?.trim() || null
+  const utm = body.utm && Object.keys(body.utm).length > 0 ? body.utm : null
 
   const db = getDb()
   const [inserted] = await db
@@ -95,6 +103,7 @@ ID заявки: ${inserted.id}
       phone,
       company,
       message,
+      utm,
     }).catch((err) => {
       console.error('[api/lead] telegram notify failed:', err instanceof Error ? err.message : err)
     }),

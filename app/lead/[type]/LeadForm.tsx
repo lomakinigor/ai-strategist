@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ymGoal } from '../../YandexMetrica'
+import { readUtm } from '@/lib/utm'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -36,6 +37,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
     setStatus('submitting')
 
     try {
+      const utm = readUtm()
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,6 +48,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
           phone: phone.trim() || undefined,
           company: company.trim() || undefined,
           message: message.trim() || undefined,
+          utm: Object.keys(utm).length > 0 ? utm : undefined,
         }),
       })
       if (!res.ok) {

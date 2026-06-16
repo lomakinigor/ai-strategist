@@ -111,6 +111,13 @@ export async function notifyLead(args: {
   phone: string | null
   company: string | null
   message: string | null
+  utm: {
+    utm_source?: string
+    utm_medium?: string
+    utm_campaign?: string
+    utm_term?: string
+    utm_content?: string
+  } | null
 }): Promise<boolean> {
   const tariffLabel = args.type === 'paid'
     ? '🟦 Разовый отчёт 9 999 ₽'
@@ -126,6 +133,21 @@ export async function notifyLead(args: {
   if (args.phone) lines.push(`<b>Телефон:</b> ${escapeHtml(args.phone)}`)
   if (args.company) lines.push(`<b>Компания:</b> ${escapeHtml(args.company)}`)
   if (args.message) lines.push(`<b>Сообщение:</b> ${escapeHtml(truncate(args.message, 500))}`)
+
+  // Источник трафика — критично для разных групп рассылки в TG/MAX.
+  if (args.utm) {
+    const utmParts: string[] = []
+    if (args.utm.utm_source) utmParts.push(`source=${escapeHtml(args.utm.utm_source)}`)
+    if (args.utm.utm_medium) utmParts.push(`medium=${escapeHtml(args.utm.utm_medium)}`)
+    if (args.utm.utm_campaign) utmParts.push(`campaign=${escapeHtml(args.utm.utm_campaign)}`)
+    if (args.utm.utm_term) utmParts.push(`term=${escapeHtml(args.utm.utm_term)}`)
+    if (args.utm.utm_content) utmParts.push(`content=${escapeHtml(args.utm.utm_content)}`)
+    if (utmParts.length > 0) {
+      lines.push('')
+      lines.push(`<b>🎯 Источник:</b> ${utmParts.join(' · ')}`)
+    }
+  }
+
   lines.push('')
   lines.push(`<b>leadId:</b> <code>${args.leadId}</code>`)
 

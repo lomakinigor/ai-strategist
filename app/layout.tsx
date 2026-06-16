@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ArchiveHotkey } from './ArchiveHotkey'
 import YandexMetrica from './YandexMetrica'
+import UtmCapture from './UtmCapture'
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -63,6 +64,7 @@ export default function RootLayout({
     <html lang="ru" className={inter.variable}>
       <body>
         <YandexMetrica />
+        <UtmCapture />
         <ArchiveHotkey />
         {children}
       </body>

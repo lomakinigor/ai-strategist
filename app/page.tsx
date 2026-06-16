@@ -405,6 +405,59 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Чем мы отличаемся от чат-ботов (anti-vibe-citing) ────────────── */}
+      <section className="border-t border-[#e5e5e5] bg-[#fafafa]">
+        <div className="max-w-4xl mx-auto px-6 py-24">
+          <div className="mb-10 max-w-3xl">
+            <p className="lp-eyebrow mb-4">Достоверность отчёта</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-6">
+              Чем мы отличаемся от чат-ботов
+            </h2>
+            <p className="text-base text-[#525252] leading-[1.6]">
+              В июне 2026 GPTZero проверил отчёт об ИИ-агентах от <strong className="text-[#0a0a0a]">Big Four-консалтинга</strong> и обнаружил: <strong className="text-[#0a0a0a]">89% ссылок (40 из 45) оказались поддельными</strong> — либо вели на несуществующие страницы, либо приписывали утверждения не тем источникам.
+            </p>
+            <p className="text-base text-[#525252] leading-[1.6] mt-4">
+              Это называется <em className="text-[#0a0a0a] font-medium">vibe citing</em> — модель не знала источника, поэтому выдумала его, и эта ошибка стала частью официального документа. Без специальной защиты <strong>любой AI-отчёт</strong> подвержен этому риску.
+            </p>
+          </div>
+
+          <div className="lp-card bg-white p-8">
+            <p className="text-sm font-bold text-[#0a0a0a] uppercase tracking-[0.1em] mb-6">
+              В отчётах AI-Стратега vibe citing исключён по дизайну
+            </p>
+            <ul className="space-y-4">
+              <li className="flex gap-3">
+                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#0a0a0a] text-sm leading-[1.6]">
+                  <strong>Каждая ссылка получена через web_search</strong>, не из памяти LLM
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#0a0a0a] text-sm leading-[1.6]">
+                  <strong>Каждый факт подтверждён URL</strong> с зафиксированной датой доступа
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#0a0a0a] text-sm leading-[1.6]">
+                  <strong>Запрещено выдумывать DOI, год публикации, имена авторов</strong> — это правило прошито в системный промпт генератора отчётов
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#0a0a0a] text-sm leading-[1.6]">
+                  <strong>Hard-stop:</strong> больше 5% мёртвых ссылок — отчёт не выпускается клиенту
+                </span>
+              </li>
+            </ul>
+            <p className="text-xs text-[#6b7280] mt-6 pt-4 border-t border-[#e5e5e5]">
+              Источник статистики KPMG: исследование GPTZero, июнь 2026.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section className="border-t border-[#e5e5e5]">
         <div className="max-w-3xl mx-auto px-6 py-24">
