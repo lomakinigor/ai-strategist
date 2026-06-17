@@ -45,8 +45,33 @@ interface Props {
   industry: string
 }
 
+const CACHE_KEY = (artifactId: string) => `brief_v2_${artifactId}`
+
+function readCache(artifactId: string): BriefV2 | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY(artifactId))
+    if (!raw) return null
+    return JSON.parse(raw) as BriefV2
+  } catch {
+    return null
+  }
+}
+
+function writeCache(artifactId: string, brief: BriefV2): void {
+  if (typeof window === 'undefined') return
+  try {
+    sessionStorage.setItem(CACHE_KEY(artifactId), JSON.stringify(brief))
+  } catch {
+    // sessionStorage может быть переполнен — ничего страшного, просто без кеша
+  }
+}
+
 export function BriefV2View({ artifactId, companyName, industry }: Props) {
-  const [brief, setBrief] = useState<BriefV2 | null>(null)
+  // Инициализация из sessionStorage — если бриф уже генерировался в этой
+  // сессии, показываем мгновенно. Это спасает от повторных LLM-вызовов
+  // при back-навигации со страниц /pay и /lead.
+  const [brief, setBrief] = useState<BriefV2 | null>(() => readCache(artifactId))
   const [error, setError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState(0)
 
@@ -55,6 +80,9 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
   }, [])
 
   useEffect(() => {
+    // Кеш уже подхвачен в useState initializer — пропускаем fetch
+    if (brief) return
+
     const start = Date.now()
     const timer = setInterval(() => setElapsed(Math.round((Date.now() - start) / 1000)), 1000)
     let cancelled = false
@@ -72,6 +100,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
           return
         }
         setBrief(data.brief)
+        writeCache(artifactId, data.brief)
       } catch (e) {
         if (cancelled) return
         setError(e instanceof Error ? e.message : 'Сетевая ошибка')
@@ -85,7 +114,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
       cancelled = true
       clearInterval(timer)
     }
-  }, [artifactId])
+  }, [artifactId, brief])
 
   if (error) {
     return (
@@ -278,10 +307,10 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
             </p>
           </article>
         </div>
-        <a href="mailto:hello@ai-strategist.ru" className="lp-btn-primary no-print">
+        <Link href="/lead/retainer" className="lp-btn-primary no-print">
           Обсудить ваш проект
           <span aria-hidden>→</span>
-        </a>
+        </Link>
       </section>
 
       <div className="border-t border-[#e5e5e5]" />
