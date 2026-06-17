@@ -22,14 +22,16 @@ import {
 } from './niche-automations'
 import { generateBriefV2, type BriefV2 } from './brief-v2'
 
-// 4 параллельных LLM-вызова, каждый отвечает за подсегмент структуры.
-// Sonnet 4.6 выдаёт ~5K output за ~30-45 сек. 4 параллельных = wall time
-// ≈ 50 сек, плюс brief pre-step ~30-60 сек = total ~90-110 сек.
-// Выбор разбиения: распределяем по сложности, чтобы ни один вызов не обрезался.
-export const FULL_V2_TOKENS_1A = 5500 // Часть 0 + part_a.a1 (Industry) + a2 (Customer)
-export const FULL_V2_TOKENS_1B = 6500 // part_a.a3 (Digital) + a4 (Competitor profiles — самое толстое) + a5 (SWOT) + a6 (Blue Ocean)
-export const FULL_V2_TOKENS_2A = 5500 // part_b + part_c (Global + Comparison)
-export const FULL_V2_TOKENS_2B = 5500 // part_d + part_e + part_g (Strategy + AI + Sources)
+// 5 параллельных LLM-вызовов. Прошлый split на 4 не справился: 1b с
+// a3+a4+a5+a6 обрывался после Competitor Profiles (a4 — самое тяжёлое:
+// 5 профилей × 9 строковых полей + скоринг + strengths/weaknesses + forecast).
+// Выделили a4 в отдельный вызов; max_tokens подняты до 7-9K (Claude Sonnet 4.6
+// поддерживает до 64K output). Wall time ≈ max(5 parallel) ≈ 60-90 сек.
+export const FULL_V2_TOKENS_1 = 8000 // Часть 0 + a1 (Industry) + a2 (Customer) — 3 средних блока
+export const FULL_V2_TOKENS_2 = 7000 // a3 (Digital) + a5 (SWOT-TOWS) + a6 (Blue Ocean) — 3 средних блока без a4
+export const FULL_V2_TOKENS_3 = 9000 // a4 (Competitor Profiles ОДИН — top-5 × 9 полей + scoring + sw3+wk3 + forecast)
+export const FULL_V2_TOKENS_4 = 7000 // part_b + part_c (Global + Comparison)
+export const FULL_V2_TOKENS_5 = 9000 // part_d + part_e + part_g (Strategy + AI + Sources)
 
 // ─── Типы (зеркало 9 Частей структуры краткого v2) ────────────────────────────
 
@@ -316,39 +318,49 @@ RS-МАРКИРОВКА для Part G:
 
 Возвращай ТОЛЬКО валидный JSON без markdown-обёртки.`
 
-// ─── 4 параллельных промпта ──────────────────────────────────────────────────
-// Каждый отвечает за свой кусок FullV2. Парсер мерджит все 4 в единую структуру.
-// Разбиение по сложности, чтобы ни один вызов не упёрся в max_tokens.
+// ─── 5 параллельных промптов ─────────────────────────────────────────────────
+// Каждый отвечает за свой кусок FullV2. Парсер мерджит все 5 в единую структуру.
+// Разбиение по сложности: a4 (Competitor Profiles) — отдельный вызов как самый
+// тяжёлый кусок (5 профилей × 9 полей + scoring + strengths/weaknesses).
+// Остальные — группы по 2-3 средних блока.
 
-// 1A: Executive Summary + Industry Snapshot + Customer Insights
-export function buildFullV2Part1aPrompt(args: PromptArgs): string {
+const STRICT_FILL_RULE = `
+КРИТИЧНО: ОБЯЗАН заполнить ВСЕ перечисленные ключи реальным контентом (не пустыми массивами и не пустыми строками).
+Если фактов мало — дополни рассуждениями на основе индустрии/ниши и пометь в part_g.g2_unverified (это для другого вызова, тут просто заполни).
+Минимум элементов в массивах — соблюдать указанные ниже диапазоны.`
+
+// 1: Executive Summary + Industry + Customer (3 средних блока)
+export function buildFullV2Part1Prompt(args: PromptArgs): string {
   return baseContextBlock(args) + `
 
 # Что ты должен вернуть
 Только part_0 + part_a.a1 + part_a.a2.
+${STRICT_FILL_RULE}
 
 ## Структура JSON
 {
   "part_0": {
-    "intake_quote": "точная цитата",
+    "intake_quote": "точная цитата из intake",
     "ru_position": "1 параграф позиция клиента в РФ",
     "rf_vs_global": "1 параграф где РФ относительно Global",
-    "top_3_actions": ["3 приоритетных действия"],
+    "top_3_actions": ["3 приоритетных действия — подробно, не лозунги"],
     "key_risks": ["3-5 ключевых рисков"]
   },
   "part_a": {
     "a1": {
-      "market_size_rub": "...", "cagr": "...", "lifecycle_stage": "...",
-      "porter_forces": [5 элементов: { name, score 1-5, rationale }],
-      "pestel": [6 осей: { axis, factors[] }],
-      "top_regulatory_risks": ["..."]
+      "market_size_rub": "размер рынка ₽ (диапазон если нет точного)",
+      "cagr": "темп роста %",
+      "lifecycle_stage": "рост/зрелость/упадок",
+      "porter_forces": [ровно 5: { name, score 1-5, rationale }],
+      "pestel": [ровно 6 осей: { axis: Political|Economic|Social|Technological|Environmental|Legal, factors[2-4] }],
+      "top_regulatory_risks": [3-7 строк]
     },
     "a2": {
-      "jtbd_top": [{ job, priority: high|medium|low }],
-      "pains_top": [5-10 строк],
-      "gains_top": [5-10 строк],
-      "voice_of_customer": [5-10 цитат],
-      "segmentation": [3-5]
+      "jtbd_top": [4-6 элементов: { job, priority: high|medium|low }],
+      "pains_top": [5-10 строк — конкретные боли клиентов],
+      "gains_top": [5-10 строк — желаемые выгоды],
+      "voice_of_customer": [5-8 цитат из публичных отзывов],
+      "segmentation": [3-5 поведенческих сегментов]
     }
   }
 }
@@ -356,35 +368,47 @@ export function buildFullV2Part1aPrompt(args: PromptArgs): string {
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
 }
 
-// 1B: Digital Footprint + Competitor Profiles + SWOT-TOWS + Blue Ocean
-export function buildFullV2Part1bPrompt(args: PromptArgs): string {
+// 2: Digital + SWOT-TOWS + Blue Ocean (3 средних блока, БЕЗ a4)
+export function buildFullV2Part2Prompt(args: PromptArgs): string {
   return baseContextBlock(args) + `
 
 # Что ты должен вернуть
-Только part_a.a3 + a4 + a5 + a6.
+Только part_a.a3 + a5 + a6.
+${STRICT_FILL_RULE}
 
 ## Структура JSON
 {
   "part_a": {
     "a3": {
       "client_lighthouse": { url, performance, seo, notes },
-      "competitors_lighthouse": [{ url, performance, seo, notes }],
-      "content_coverage": "...",
-      "serp_observation": "...",
-      "data_limitation_note": "нет доступа к GSC/Я.Метрике"
-    },
-    "a4": {
-      "profiles": [3-5 элементов, каждый: { name, positioning, segments, pricing, channels, content_strategy, tech_stack, team_finance, reviews_tonality, recent_moves, scoring: {offer,audience,proof,creative,landing 0-10}, strengths[3], weaknesses[3], forecast_6m }],
-      "summary_matrix_note": "сводная заметка"
+      "competitors_lighthouse": [3-5 элементов: { url, performance, seo, notes }],
+      "content_coverage": "оценка покрытия топ-50 запросов ниши (1-2 абзаца)",
+      "serp_observation": "кто где в открытом SERP-наблюдении (1-2 абзаца)",
+      "data_limitation_note": "нет доступа к GSC/Я.Метрике/CMS клиента"
     },
     "a5": {
-      "swot": { strengths[], weaknesses[], opportunities[], threats[] },
-      "tows": { so[], st[], wo[], wt[] }
+      "swot": {
+        "strengths": [3-5 сил],
+        "weaknesses": [3-5 слабостей],
+        "opportunities": [3-5 возможностей],
+        "threats": [3-5 угроз]
+      },
+      "tows": {
+        "so": [2-4 действия: силы × возможности — конкретно, с приоритетом и сроком],
+        "st": [2-4 действия: силы × угрозы],
+        "wo": [2-4 действия: слабости × возможности],
+        "wt": [2-4 действия: слабости × угрозы]
+      }
     },
     "a6": {
-      "client_value_curve": "...",
-      "competitors_value_curves": "...",
-      "four_actions": { eliminate[], reduce[], raise[], create[] }
+      "client_value_curve": "описание кривой ценности клиента (1-2 абзаца)",
+      "competitors_value_curves": "сравнение с top-5 кривыми (1-2 абзаца)",
+      "four_actions": {
+        "eliminate": [2-4 что убрать],
+        "reduce": [2-4 что снизить],
+        "raise": [2-4 что усилить],
+        "create": [2-4 что создать нового]
+      }
     }
   }
 }
@@ -392,18 +416,63 @@ export function buildFullV2Part1bPrompt(args: PromptArgs): string {
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
 }
 
-// 2A: Global + Comparison
-export function buildFullV2Part2aPrompt(args: PromptArgs): string {
+// 3: Competitor Profiles ОДИН (a4 — самый тяжёлый блок)
+export function buildFullV2Part3Prompt(args: PromptArgs): string {
+  return baseContextBlock(args) + `
+
+# Что ты должен вернуть
+Только part_a.a4 — Competitor Profiles top-5 (или сколько реально найдено).
+${STRICT_FILL_RULE}
+
+## Структура JSON
+{
+  "part_a": {
+    "a4": {
+      "profiles": [
+        3-5 элементов, каждый ПОЛНЫЙ:
+        {
+          "name": "имя конкурента",
+          "positioning": "value-prop одной фразой",
+          "segments": "целевые сегменты",
+          "pricing": "модель ценообразования",
+          "channels": "каналы привлечения",
+          "content_strategy": "оценка через Jina Reader / TGStat",
+          "tech_stack": "Wappalyzer-наблюдение",
+          "team_finance": "Rusprofile открытое",
+          "reviews_tonality": "тональность отзывов Я.Карт/2ГИС",
+          "recent_moves": "последние 3-6 мес",
+          "scoring": { "offer": 0-10, "audience": 0-10, "proof": 0-10, "creative": 0-10, "landing": 0-10 },
+          "strengths": [ровно 3 силы],
+          "weaknesses": [ровно 3 слабости],
+          "forecast_6m": "что сделают в 6 мес"
+        }
+      ],
+      "summary_matrix_note": "сводная заметка по всей матрице конкурентов (1-2 абзаца)"
+    }
+  }
+}
+
+ТОЛЬКО эти ключи. Возвращай валидный JSON.`
+}
+
+// 4: Global + Comparison
+export function buildFullV2Part4Prompt(args: PromptArgs): string {
   return baseContextBlock(args) + `
 
 # Что ты должен вернуть
 Только part_b + part_c.
+${STRICT_FILL_RULE}
 
 ## Структура JSON
 {
   "part_b": {
-    "b1_global_snapshot": { leading_countries[], market_size_usd, top_players[], consolidation_level },
-    "b2_trends": [5-10 элементов: { trend, rf_arrival: already_here|in_12m|not_coming, note }],
+    "b1_global_snapshot": {
+      "leading_countries": [4-6 ведущих стран с краткими пояснениями],
+      "market_size_usd": "размер рынка USD (диапазон)",
+      "top_players": [4-8 игроков],
+      "consolidation_level": "степень консолидации"
+    },
+    "b2_trends": [5-8 элементов: { trend, rf_arrival: already_here|in_12m|not_coming, note }],
     "b3_top_global_players": [3-5: { name, why_different_from_rf }]
   },
   "part_c": {
@@ -416,8 +485,8 @@ export function buildFullV2Part2aPrompt(args: PromptArgs): string {
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
 }
 
-// 2B: Strategy + AI + Sources
-export function buildFullV2Part2bPrompt(args: PromptArgs & { nicheAutomationsPreview: NicheAutomationPattern[] }): string {
+// 5: Strategy + AI + Sources
+export function buildFullV2Part5Prompt(args: PromptArgs & { nicheAutomationsPreview: NicheAutomationPattern[] }): string {
   const nicheHint = args.nicheAutomationsPreview
     .map((p) => `- "${p.title}" — ${p.description}`)
     .join('\n')
@@ -429,31 +498,50 @@ ${nicheHint}
 
 # Что ты должен вернуть
 Только part_d + part_e + part_g.
+${STRICT_FILL_RULE}
 
 ## Структура JSON
 {
   "part_d": {
     "d1_roadmap": {
-      "h1": [3-5: { action, why, metric, timeline }],
-      "h2": [3-5: { action, why, metric, timeline }],
-      "h3": [2-3: { action, why, metric, timeline }]
+      "h1": [3-5: { action, why, metric, timeline: "0-6 мес" }],
+      "h2": [3-5: { action, why, metric, timeline: "6-18 мес" }],
+      "h3": [2-3: { action, why, metric, timeline: "18-36 мес" }]
     },
     "d2_kpis": [5-8: { name, target_6m }],
     "d3_hypotheses": [3-7: { statement, test_method, success_signal, budget_range }]
   },
   "part_e": {
-    "e1_business_process": { title, detailed_roadmap[3-5 шагов], roi_estimate, emotional_argument, implementation_l2 },
-    "e2_marketing": { title, detailed_roadmap[3-5 шагов], roi_estimate, emotional_argument, implementation_l2 },
-    "e3_niche_specific": { title, detailed_roadmap[3-5 шагов], roi_estimate, emotional_argument, implementation_l2 }
+    "e1_business_process": {
+      "title": "Автоматизация бизнес-процессов",
+      "detailed_roadmap": [3-5 конкретных этапов внедрения],
+      "roi_estimate": "ROI оценка в ₽ и % времени",
+      "emotional_argument": "развёрнутый аргумент про издержки бездействия",
+      "implementation_l2": "что делаем под ключ"
+    },
+    "e2_marketing": {
+      "title": "Автоматизация маркетинга (ВСЕГДА присутствует)",
+      "detailed_roadmap": [3-5 этапов],
+      "roi_estimate": "...",
+      "emotional_argument": "...",
+      "implementation_l2": "..."
+    },
+    "e3_niche_specific": {
+      "title": "Нишевая автоматизация (из подсказки выше)",
+      "detailed_roadmap": [3-5 этапов],
+      "roi_estimate": "...",
+      "emotional_argument": "...",
+      "implementation_l2": "..."
+    }
   },
   "part_g": {
     "g1_sources": [5-15: { description, rs: green|yellow|orange|red, url? }],
-    "g2_unverified": ["что не удалось подтвердить cross-source"],
-    "g3_open_questions": ["3-5 вопросов на 3 мес"]
+    "g2_unverified": [3-5 что не удалось подтвердить cross-source],
+    "g3_open_questions": [3-5 вопросов на 3 мес]
   }
 }
 
-ТОЛЬКО эти ключи. part_e.e2_marketing ВСЕГДА присутствует. Возвращай валидный JSON.`
+ТОЛЬКО эти ключи. part_e.e1/e2/e3 — ВСЕ ТРИ ОБЯЗАТЕЛЬНЫ И ЗАПОЛНЕНЫ. Возвращай валидный JSON.`
 }
 
 interface PromptArgs {
@@ -1318,31 +1406,38 @@ export async function generateFullV2(args: {
     factsByType: inputs.factsByType,
   }
 
-  // 4 параллельных LLM-вызова. Каждый отвечает за свой кусок структуры.
+  // 5 параллельных LLM-вызовов. Каждый отвечает за свой кусок структуры.
+  // a4 (Competitor Profiles) — отдельный вызов (самый тяжёлый: 5×9 полей).
   // Если какой-то упал — рендерим то что есть (normalizeFullV2 заполнит дефолтами).
-  const [res1a, res1b, res2a, res2b] = await Promise.allSettled([
+  const [res1, res2, res3, res4, res5] = await Promise.allSettled([
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
-      buildFullV2Part1aPrompt(sharedArgs),
-      FULL_V2_TOKENS_1A,
+      buildFullV2Part1Prompt(sharedArgs),
+      FULL_V2_TOKENS_1,
       AI_CONFIG.strategy.synthesisModel,
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
-      buildFullV2Part1bPrompt(sharedArgs),
-      FULL_V2_TOKENS_1B,
+      buildFullV2Part2Prompt(sharedArgs),
+      FULL_V2_TOKENS_2,
       AI_CONFIG.strategy.synthesisModel,
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
-      buildFullV2Part2aPrompt(sharedArgs),
-      FULL_V2_TOKENS_2A,
+      buildFullV2Part3Prompt(sharedArgs),
+      FULL_V2_TOKENS_3,
       AI_CONFIG.strategy.synthesisModel,
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
-      buildFullV2Part2bPrompt({ ...sharedArgs, nicheAutomationsPreview }),
-      FULL_V2_TOKENS_2B,
+      buildFullV2Part4Prompt(sharedArgs),
+      FULL_V2_TOKENS_4,
+      AI_CONFIG.strategy.synthesisModel,
+    ),
+    callOpenRouterForJSON(
+      SYSTEM_PROMPT,
+      buildFullV2Part5Prompt({ ...sharedArgs, nicheAutomationsPreview }),
+      FULL_V2_TOKENS_5,
       AI_CONFIG.strategy.synthesisModel,
     ),
   ])
@@ -1359,10 +1454,11 @@ export async function generateFullV2(args: {
   }
 
   const allResults = [
-    { label: '1a (Part 0 + A1/A2)', settled: res1a },
-    { label: '1b (Part A3-A6)', settled: res1b },
-    { label: '2a (Part B + C)', settled: res2a },
-    { label: '2b (Part D + E + G)', settled: res2b },
+    { label: '1 (Part 0 + A1/A2)', settled: res1 },
+    { label: '2 (Part A3+A5+A6)', settled: res2 },
+    { label: '3 (Part A4 Competitors)', settled: res3 },
+    { label: '4 (Part B + C)', settled: res4 },
+    { label: '5 (Part D + E + G)', settled: res5 },
   ] as const
 
   for (const { label, settled } of allResults) {
@@ -1371,29 +1467,31 @@ export async function generateFullV2(args: {
     }
   }
 
-  const parsed1a = tryParseLabeled('1a', res1a.status === 'fulfilled' ? res1a.value : null)
-  const parsed1b = tryParseLabeled('1b', res1b.status === 'fulfilled' ? res1b.value : null)
-  const parsed2a = tryParseLabeled('2a', res2a.status === 'fulfilled' ? res2a.value : null)
-  const parsed2b = tryParseLabeled('2b', res2b.status === 'fulfilled' ? res2b.value : null)
+  const parsed1 = tryParseLabeled('1', res1.status === 'fulfilled' ? res1.value : null)
+  const parsed2 = tryParseLabeled('2', res2.status === 'fulfilled' ? res2.value : null)
+  const parsed3 = tryParseLabeled('3', res3.status === 'fulfilled' ? res3.value : null)
+  const parsed4 = tryParseLabeled('4', res4.status === 'fulfilled' ? res4.value : null)
+  const parsed5 = tryParseLabeled('5', res5.status === 'fulfilled' ? res5.value : null)
 
-  // Deep merge нужен для part_a, потому что 1a и 1b обе отдают по part_a (разные подразделы).
-  // Простой spread потерял бы один из них. Делаем поверх-вторично-вложенным мерджем.
+  // Простой spread для part_0/b/c/d/e/g (по одному источнику каждый).
+  // part_a — отдельно: мерджим вложенные ключи a1/a2 (из 1), a3/a5/a6 (из 2), a4 (из 3).
   const merged: Record<string, unknown> = {
-    ...parsed1a,
-    ...parsed1b,
-    ...parsed2a,
-    ...parsed2b,
+    ...parsed1,
+    ...parsed2,
+    ...parsed3,
+    ...parsed4,
+    ...parsed5,
   }
-  // part_a: мерджим вложенные ключи a1/a2 (из 1a) с a3/a4/a5/a6 (из 1b)
-  const pa1a = asObject((parsed1a as Record<string, unknown>).part_a)
-  const pa1b = asObject((parsed1b as Record<string, unknown>).part_a)
-  if (Object.keys(pa1a).length > 0 || Object.keys(pa1b).length > 0) {
-    merged.part_a = { ...pa1a, ...pa1b }
+  const pa1 = asObject((parsed1 as Record<string, unknown>).part_a)
+  const pa2 = asObject((parsed2 as Record<string, unknown>).part_a)
+  const pa3 = asObject((parsed3 as Record<string, unknown>).part_a)
+  if (Object.keys(pa1).length > 0 || Object.keys(pa2).length > 0 || Object.keys(pa3).length > 0) {
+    merged.part_a = { ...pa1, ...pa2, ...pa3 }
   }
 
   if (Object.keys(merged).length === 0) {
     throw new Error(
-      `Все 4 LLM-вызова не дали валидного JSON. Статусы: ${allResults
+      `Все 5 LLM-вызовов не дали валидного JSON. Статусы: ${allResults
         .map(({ label, settled }) => `${label}=${settled.status}`)
         .join(', ')}`,
     )
