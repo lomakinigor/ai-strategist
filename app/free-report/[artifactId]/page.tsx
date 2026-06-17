@@ -16,6 +16,8 @@ import type { BriefReportBlock } from '@/lib/strategy/brief'
 import FreeReportGoal from './FreeReportGoal'
 import { PrintButton } from './PrintButton'
 import { BriefAutoGenerate } from './BriefAutoGenerate'
+import { BriefV2View } from './BriefV2View'
+import { ReportVersionLog } from './ReportVersionLog'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,9 +28,12 @@ export const metadata = {
 
 export default async function FreeReportPage({
   params,
+  searchParams,
 }: {
   params: { artifactId: string }
+  searchParams?: { version?: string }
 }) {
+  const version: 'v1' | 'v2' = searchParams?.version === 'v2' ? 'v2' : 'v1'
   const db = getDb()
   const rows = await db
     .select({
@@ -50,9 +55,34 @@ export default async function FreeReportPage({
   const brief = row.brief as BriefReportBlock | null
   const isPaid = row.tier === 'paid'
 
+  // v2 — тестовая ветка, рендерится только если ?version=v2. По умолчанию
+  // (без query-параметра) работает старый production-вариант v1 без изменений.
+  if (version === 'v2') {
+    return (
+      <main className="min-h-screen bg-white text-[#0a0a0a]">
+        <FreeReportGoal />
+        <ReportVersionLog version="v2" />
+        <nav className="max-w-4xl mx-auto px-6 pt-8 flex items-center justify-between gap-3 flex-wrap no-print">
+          <Link href="/" className="text-base font-bold tracking-tight">
+            AI-Стратег
+          </Link>
+          <Link href={`/free-report/${params.artifactId}`} className="lp-btn-ghost text-xs">
+            ← вернуться к v1
+          </Link>
+        </nav>
+        <BriefV2View
+          artifactId={params.artifactId}
+          companyName={row.companyName ?? 'ваша компания'}
+          industry={row.industry ?? ''}
+        />
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-white text-[#0a0a0a]">
       <FreeReportGoal />
+      <ReportVersionLog version="v1" />
       {/* ── Минимальная навигация ────────────────────────────────────────── */}
       <nav className="max-w-4xl mx-auto px-6 pt-8 flex items-center justify-between gap-3 flex-wrap">
         <Link href="/" className="text-base font-bold tracking-tight">
