@@ -246,9 +246,11 @@ async function collectInputs(researchJobId: string, companyId: string): Promise<
       (r) => !(r.payload as Record<string, unknown>)?._upgrade_from_artifact,
     ) ?? intakeRows[0]
   const payload = (original?.payload ?? {}) as Record<string, unknown>
+  // Intake form пишет цель под ключом research_goal (см. app/intake/actions.ts:80).
+  // НЕ берём description как fallback — это длинное описание компании, не запрос.
   const intakeQuote =
+    (payload.research_goal as string | undefined) ||
     (payload.goals as string | undefined) ||
-    (payload.description as string | undefined) ||
     (payload.request as string | undefined) ||
     'Главный запрос не указан в intake'
 
