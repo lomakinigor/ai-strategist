@@ -934,9 +934,11 @@ export function parseFullV2(raw: string): FullV2 {
   return normalizeFullV2(data)
 }
 
-// Нормализатор: гарантирует, что все обязательные поля FullV2 существуют
-// (даже если LLM вернул половину). Подставляет пустые объекты / массивы /
-// строки, чтобы клиентский рендер не падал на undefined.field.
+// Нормализатор: гарантирует что все обязательные поля FullV2 существуют
+// И являются ОЖИДАЕМОГО ТИПА (даже если LLM соврал и вернул объект где
+// ждали строку, или массив объектов где ждали массив строк). Это страхует
+// React-рендер от падений на «нельзя отрендерить объект как child».
+
 function asObject(v: unknown): Record<string, unknown> {
   return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {}
 }
@@ -944,7 +946,50 @@ function asArray<T>(v: unknown): T[] {
   return Array.isArray(v) ? (v as T[]) : []
 }
 function asStr(v: unknown): string {
-  return typeof v === 'string' ? v : ''
+  if (typeof v === 'string') return v
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v)
+  // объект/массив/null/undefined → пустая строка, НЕ JSON.stringify
+  // (иначе в UI поплывут [object Object] и фрагменты JSON)
+  return ''
+}
+function asStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return []
+  return v
+    .map((item) => {
+      if (typeof item === 'string') return item
+      if (typeof item === 'number' || typeof item === 'boolean') return String(item)
+      // если LLM прислал объект-строку — пробуем достать text/value/name/description
+      if (item && typeof item === 'object') {
+        const o = item as Record<string, unknown>
+        return (
+          asStr(o.text) ||
+          asStr(o.value) ||
+          asStr(o.name) ||
+          asStr(o.description) ||
+          asStr(o.label) ||
+          ''
+        )
+      }
+      return ''
+    })
+    .filter((s) => s.length > 0)
+}
+function asNum(v: unknown): number {
+  if (typeof v === 'number') return v
+  if (typeof v === 'string') {
+    const n = parseFloat(v)
+    return isNaN(n) ? 0 : n
+  }
+  return 0
+}
+function asPriority(v: unknown): 'high' | 'medium' | 'low' {
+  return v === 'high' || v === 'medium' || v === 'low' ? v : 'medium'
+}
+function asComplexity(v: unknown): 'low' | 'medium' | 'high' {
+  return v === 'low' || v === 'medium' || v === 'high' ? v : 'medium'
+}
+function asRsLevel(v: unknown): 'green' | 'yellow' | 'orange' | 'red' {
+  return v === 'green' || v === 'yellow' || v === 'orange' || v === 'red' ? v : 'yellow'
 }
 
 export function normalizeFullV2(raw: Record<string, unknown>): FullV2 {
@@ -971,7 +1016,7 @@ export function normalizeFullV2(raw: Record<string, unknown>): FullV2 {
     const o = asObject(input)
     return {
       title: asStr(o.title),
-      detailed_roadmap: asArray<string>(o.detailed_roadmap),
+      detailed_roadmap: asStringArray(o.detailed_roadmap),
       roi_estimate: asStr(o.roi_estimate),
       emotional_argument: asStr(o.emotional_argument),
       implementation_l2: asStr(o.implementation_l2),
@@ -988,29 +1033,159 @@ export function normalizeFullV2(raw: Record<string, unknown>): FullV2 {
     }
   }
 
+  const safePorterForce = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      name: asStr(o.name),
+      score: asNum(o.score),
+      rationale: asStr(o.rationale),
+    }
+  }
+
+  const safePestel = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      axis: asStr(o.axis),
+      factors: asStringArray(o.factors),
+    }
+  }
+
+  const safeJtbd = (input: unknown) => {
+    const o = asObject(input)
+    return { job: asStr(o.job), priority: asPriority(o.priority) }
+  }
+
+  const safeProfile = (input: unknown) => {
+    const o = asObject(input)
+    const scoring = asObject(o.scoring)
+    return {
+      name: asStr(o.name),
+      positioning: asStr(o.positioning),
+      segments: asStr(o.segments),
+      pricing: asStr(o.pricing),
+      channels: asStr(o.channels),
+      content_strategy: asStr(o.content_strategy),
+      tech_stack: asStr(o.tech_stack),
+      team_finance: asStr(o.team_finance),
+      reviews_tonality: asStr(o.reviews_tonality),
+      recent_moves: asStr(o.recent_moves),
+      scoring: {
+        offer: asNum(scoring.offer),
+        audience: asNum(scoring.audience),
+        proof: asNum(scoring.proof),
+        creative: asNum(scoring.creative),
+        landing: asNum(scoring.landing),
+      },
+      strengths: asStringArray(o.strengths),
+      weaknesses: asStringArray(o.weaknesses),
+      forecast_6m: asStr(o.forecast_6m),
+    }
+  }
+
+  const safeTrend = (input: unknown) => {
+    const o = asObject(input)
+    const arrival = o.rf_arrival
+    return {
+      trend: asStr(o.trend),
+      rf_arrival:
+        arrival === 'already_here' || arrival === 'in_12m' || arrival === 'not_coming'
+          ? arrival
+          : 'in_12m',
+      note: asStr(o.note),
+    }
+  }
+
+  const safeGlobalPlayer = (input: unknown) => {
+    const o = asObject(input)
+    return { name: asStr(o.name), why_different_from_rf: asStr(o.why_different_from_rf) }
+  }
+
+  const safeComparisonRow = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      parameter: asStr(o.parameter),
+      rf: asStr(o.rf),
+      global: asStr(o.global),
+      delta: asStr(o.delta),
+      implication: asStr(o.implication),
+    }
+  }
+
+  const safeGap = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      gap: asStr(o.gap),
+      client_scenario: asStr(o.client_scenario),
+      complexity: asComplexity(o.complexity),
+    }
+  }
+
+  const safeLesson = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      attempt: asStr(o.attempt),
+      why_failed: asStr(o.why_failed),
+      lesson: asStr(o.lesson),
+    }
+  }
+
+  const safeRoadmap = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      action: asStr(o.action),
+      why: asStr(o.why),
+      metric: asStr(o.metric),
+      timeline: asStr(o.timeline),
+    }
+  }
+
+  const safeKpi = (input: unknown) => {
+    const o = asObject(input)
+    return { name: asStr(o.name), target_6m: asStr(o.target_6m) }
+  }
+
+  const safeHypothesis = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      statement: asStr(o.statement),
+      test_method: asStr(o.test_method),
+      success_signal: asStr(o.success_signal),
+      budget_range: asStr(o.budget_range),
+    }
+  }
+
+  const safeSource = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      description: asStr(o.description),
+      rs: asRsLevel(o.rs),
+      url: asStr(o.url) || undefined,
+    }
+  }
+
   return {
     part_0: {
       intake_quote: asStr(p0.intake_quote),
       ru_position: asStr(p0.ru_position),
       rf_vs_global: asStr(p0.rf_vs_global),
-      top_3_actions: asArray<string>(p0.top_3_actions),
-      key_risks: asArray<string>(p0.key_risks),
+      top_3_actions: asStringArray(p0.top_3_actions),
+      key_risks: asStringArray(p0.key_risks),
     },
     part_a: {
       a1: {
         market_size_rub: asStr(pa1.market_size_rub),
         cagr: asStr(pa1.cagr),
         lifecycle_stage: asStr(pa1.lifecycle_stage),
-        porter_forces: asArray(pa1.porter_forces),
-        pestel: asArray(pa1.pestel),
-        top_regulatory_risks: asArray<string>(pa1.top_regulatory_risks),
+        porter_forces: asArray(pa1.porter_forces).map(safePorterForce),
+        pestel: asArray(pa1.pestel).map(safePestel),
+        top_regulatory_risks: asStringArray(pa1.top_regulatory_risks),
       },
       a2: {
-        jtbd_top: asArray(pa2.jtbd_top),
-        pains_top: asArray<string>(pa2.pains_top),
-        gains_top: asArray<string>(pa2.gains_top),
-        voice_of_customer: asArray<string>(pa2.voice_of_customer),
-        segmentation: asArray<string>(pa2.segmentation),
+        jtbd_top: asArray(pa2.jtbd_top).map(safeJtbd),
+        pains_top: asStringArray(pa2.pains_top),
+        gains_top: asStringArray(pa2.gains_top),
+        voice_of_customer: asStringArray(pa2.voice_of_customer),
+        segmentation: asStringArray(pa2.segmentation),
       },
       a3: {
         client_lighthouse: safeLighthouse(pa3.client_lighthouse),
@@ -1020,57 +1195,57 @@ export function normalizeFullV2(raw: Record<string, unknown>): FullV2 {
         data_limitation_note: asStr(pa3.data_limitation_note),
       },
       a4: {
-        profiles: asArray(pa4.profiles),
+        profiles: asArray(pa4.profiles).map(safeProfile),
         summary_matrix_note: asStr(pa4.summary_matrix_note),
       },
       a5: {
         swot: {
-          strengths: asArray<string>(pa5swot.strengths),
-          weaknesses: asArray<string>(pa5swot.weaknesses),
-          opportunities: asArray<string>(pa5swot.opportunities),
-          threats: asArray<string>(pa5swot.threats),
+          strengths: asStringArray(pa5swot.strengths),
+          weaknesses: asStringArray(pa5swot.weaknesses),
+          opportunities: asStringArray(pa5swot.opportunities),
+          threats: asStringArray(pa5swot.threats),
         },
         tows: {
-          so: asArray<string>(pa5tows.so),
-          st: asArray<string>(pa5tows.st),
-          wo: asArray<string>(pa5tows.wo),
-          wt: asArray<string>(pa5tows.wt),
+          so: asStringArray(pa5tows.so),
+          st: asStringArray(pa5tows.st),
+          wo: asStringArray(pa5tows.wo),
+          wt: asStringArray(pa5tows.wt),
         },
       },
       a6: {
         client_value_curve: asStr(pa6.client_value_curve),
         competitors_value_curves: asStr(pa6.competitors_value_curves),
         four_actions: {
-          eliminate: asArray<string>(pa6four.eliminate),
-          reduce: asArray<string>(pa6four.reduce),
-          raise: asArray<string>(pa6four.raise),
-          create: asArray<string>(pa6four.create),
+          eliminate: asStringArray(pa6four.eliminate),
+          reduce: asStringArray(pa6four.reduce),
+          raise: asStringArray(pa6four.raise),
+          create: asStringArray(pa6four.create),
         },
       },
     },
     part_b: {
       b1_global_snapshot: {
-        leading_countries: asArray<string>(pbSnap.leading_countries),
+        leading_countries: asStringArray(pbSnap.leading_countries),
         market_size_usd: asStr(pbSnap.market_size_usd),
-        top_players: asArray<string>(pbSnap.top_players),
+        top_players: asStringArray(pbSnap.top_players),
         consolidation_level: asStr(pbSnap.consolidation_level),
       },
-      b2_trends: asArray(pb.b2_trends),
-      b3_top_global_players: asArray(pb.b3_top_global_players),
+      b2_trends: asArray(pb.b2_trends).map(safeTrend),
+      b3_top_global_players: asArray(pb.b3_top_global_players).map(safeGlobalPlayer),
     },
     part_c: {
-      c1_comparison_table: asArray(pc.c1_comparison_table),
-      c2_opportunity_gaps: asArray(pc.c2_opportunity_gaps),
-      c3_what_not_to_repeat: asArray(pc.c3_what_not_to_repeat),
+      c1_comparison_table: asArray(pc.c1_comparison_table).map(safeComparisonRow),
+      c2_opportunity_gaps: asArray(pc.c2_opportunity_gaps).map(safeGap),
+      c3_what_not_to_repeat: asArray(pc.c3_what_not_to_repeat).map(safeLesson),
     },
     part_d: {
       d1_roadmap: {
-        h1: asArray(pdRm.h1),
-        h2: asArray(pdRm.h2),
-        h3: asArray(pdRm.h3),
+        h1: asArray(pdRm.h1).map(safeRoadmap),
+        h2: asArray(pdRm.h2).map(safeRoadmap),
+        h3: asArray(pdRm.h3).map(safeRoadmap),
       },
-      d2_kpis: asArray(pd.d2_kpis),
-      d3_hypotheses: asArray(pd.d3_hypotheses),
+      d2_kpis: asArray(pd.d2_kpis).map(safeKpi),
+      d3_hypotheses: asArray(pd.d3_hypotheses).map(safeHypothesis),
     },
     part_e: {
       e1_business_process: safeAuto(pe.e1_business_process),
@@ -1078,9 +1253,9 @@ export function normalizeFullV2(raw: Record<string, unknown>): FullV2 {
       e3_niche_specific: safeAuto(pe.e3_niche_specific),
     },
     part_g: {
-      g1_sources: asArray(pg.g1_sources),
-      g2_unverified: asArray<string>(pg.g2_unverified),
-      g3_open_questions: asArray<string>(pg.g3_open_questions),
+      g1_sources: asArray(pg.g1_sources).map(safeSource),
+      g2_unverified: asStringArray(pg.g2_unverified),
+      g3_open_questions: asStringArray(pg.g3_open_questions),
     },
   } as FullV2
 }
