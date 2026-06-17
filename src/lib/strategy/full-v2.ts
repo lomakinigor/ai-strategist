@@ -931,7 +931,158 @@ async function callOpenRouterForJSON(
 // Это позволяет UI рендериться даже на неполных JSON-ответах.
 export function parseFullV2(raw: string): FullV2 {
   const data = tolerantJsonParse(extractJSON(raw))
-  return data as unknown as FullV2 // doверяем форматтированию через response_format=json_object
+  return normalizeFullV2(data)
+}
+
+// Нормализатор: гарантирует, что все обязательные поля FullV2 существуют
+// (даже если LLM вернул половину). Подставляет пустые объекты / массивы /
+// строки, чтобы клиентский рендер не падал на undefined.field.
+function asObject(v: unknown): Record<string, unknown> {
+  return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {}
+}
+function asArray<T>(v: unknown): T[] {
+  return Array.isArray(v) ? (v as T[]) : []
+}
+function asStr(v: unknown): string {
+  return typeof v === 'string' ? v : ''
+}
+
+export function normalizeFullV2(raw: Record<string, unknown>): FullV2 {
+  const p0 = asObject(raw.part_0)
+  const pa = asObject(raw.part_a)
+  const pa1 = asObject(pa.a1)
+  const pa2 = asObject(pa.a2)
+  const pa3 = asObject(pa.a3)
+  const pa4 = asObject(pa.a4)
+  const pa5 = asObject(pa.a5)
+  const pa5swot = asObject(pa5.swot)
+  const pa5tows = asObject(pa5.tows)
+  const pa6 = asObject(pa.a6)
+  const pa6four = asObject(pa6.four_actions)
+  const pb = asObject(raw.part_b)
+  const pbSnap = asObject(pb.b1_global_snapshot)
+  const pc = asObject(raw.part_c)
+  const pd = asObject(raw.part_d)
+  const pdRm = asObject(pd.d1_roadmap)
+  const pe = asObject(raw.part_e)
+  const pg = asObject(raw.part_g)
+
+  const safeAuto = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      title: asStr(o.title),
+      detailed_roadmap: asArray<string>(o.detailed_roadmap),
+      roi_estimate: asStr(o.roi_estimate),
+      emotional_argument: asStr(o.emotional_argument),
+      implementation_l2: asStr(o.implementation_l2),
+    }
+  }
+
+  const safeLighthouse = (input: unknown) => {
+    const o = asObject(input)
+    return {
+      url: asStr(o.url),
+      performance: asStr(o.performance),
+      seo: asStr(o.seo),
+      notes: asStr(o.notes),
+    }
+  }
+
+  return {
+    part_0: {
+      intake_quote: asStr(p0.intake_quote),
+      ru_position: asStr(p0.ru_position),
+      rf_vs_global: asStr(p0.rf_vs_global),
+      top_3_actions: asArray<string>(p0.top_3_actions),
+      key_risks: asArray<string>(p0.key_risks),
+    },
+    part_a: {
+      a1: {
+        market_size_rub: asStr(pa1.market_size_rub),
+        cagr: asStr(pa1.cagr),
+        lifecycle_stage: asStr(pa1.lifecycle_stage),
+        porter_forces: asArray(pa1.porter_forces),
+        pestel: asArray(pa1.pestel),
+        top_regulatory_risks: asArray<string>(pa1.top_regulatory_risks),
+      },
+      a2: {
+        jtbd_top: asArray(pa2.jtbd_top),
+        pains_top: asArray<string>(pa2.pains_top),
+        gains_top: asArray<string>(pa2.gains_top),
+        voice_of_customer: asArray<string>(pa2.voice_of_customer),
+        segmentation: asArray<string>(pa2.segmentation),
+      },
+      a3: {
+        client_lighthouse: safeLighthouse(pa3.client_lighthouse),
+        competitors_lighthouse: asArray(pa3.competitors_lighthouse).map(safeLighthouse),
+        content_coverage: asStr(pa3.content_coverage),
+        serp_observation: asStr(pa3.serp_observation),
+        data_limitation_note: asStr(pa3.data_limitation_note),
+      },
+      a4: {
+        profiles: asArray(pa4.profiles),
+        summary_matrix_note: asStr(pa4.summary_matrix_note),
+      },
+      a5: {
+        swot: {
+          strengths: asArray<string>(pa5swot.strengths),
+          weaknesses: asArray<string>(pa5swot.weaknesses),
+          opportunities: asArray<string>(pa5swot.opportunities),
+          threats: asArray<string>(pa5swot.threats),
+        },
+        tows: {
+          so: asArray<string>(pa5tows.so),
+          st: asArray<string>(pa5tows.st),
+          wo: asArray<string>(pa5tows.wo),
+          wt: asArray<string>(pa5tows.wt),
+        },
+      },
+      a6: {
+        client_value_curve: asStr(pa6.client_value_curve),
+        competitors_value_curves: asStr(pa6.competitors_value_curves),
+        four_actions: {
+          eliminate: asArray<string>(pa6four.eliminate),
+          reduce: asArray<string>(pa6four.reduce),
+          raise: asArray<string>(pa6four.raise),
+          create: asArray<string>(pa6four.create),
+        },
+      },
+    },
+    part_b: {
+      b1_global_snapshot: {
+        leading_countries: asArray<string>(pbSnap.leading_countries),
+        market_size_usd: asStr(pbSnap.market_size_usd),
+        top_players: asArray<string>(pbSnap.top_players),
+        consolidation_level: asStr(pbSnap.consolidation_level),
+      },
+      b2_trends: asArray(pb.b2_trends),
+      b3_top_global_players: asArray(pb.b3_top_global_players),
+    },
+    part_c: {
+      c1_comparison_table: asArray(pc.c1_comparison_table),
+      c2_opportunity_gaps: asArray(pc.c2_opportunity_gaps),
+      c3_what_not_to_repeat: asArray(pc.c3_what_not_to_repeat),
+    },
+    part_d: {
+      d1_roadmap: {
+        h1: asArray(pdRm.h1),
+        h2: asArray(pdRm.h2),
+        h3: asArray(pdRm.h3),
+      },
+      d2_kpis: asArray(pd.d2_kpis),
+      d3_hypotheses: asArray(pd.d3_hypotheses),
+    },
+    part_e: {
+      e1_business_process: safeAuto(pe.e1_business_process),
+      e2_marketing: safeAuto(pe.e2_marketing),
+      e3_niche_specific: safeAuto(pe.e3_niche_specific),
+    },
+    part_g: {
+      g1_sources: asArray(pg.g1_sources),
+      g2_unverified: asArray<string>(pg.g2_unverified),
+      g3_open_questions: asArray<string>(pg.g3_open_questions),
+    },
+  } as FullV2
 }
 
 // ─── Главная функция ──────────────────────────────────────────────────────────
@@ -1012,7 +1163,9 @@ export async function generateFullV2(args: {
     )
   }
 
-  const parsed = merged as unknown as FullV2
+  // Нормализуем — гарантируем что все обязательные поля FullV2 существуют,
+  // даже если LLM вернул половину. Клиентский рендер не упадёт.
+  const parsed = normalizeFullV2(merged)
   const raw = JSON.stringify(parsed)
   return { raw, parsed, brief: briefResult.parsed }
 }

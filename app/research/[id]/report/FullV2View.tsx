@@ -300,24 +300,34 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         </nav>
 
         {/* PART 0 — Executive Summary */}
-        <Part title="Часть 0 — Executive Summary" badge="📋" id="part-0">
-          <p className="lp-eyebrow mb-3">Запрос клиента</p>
-          <blockquote className="border-l-4 border-[#1e3a8a] pl-6 py-2 mb-6">
-            <p className="text-lg font-medium leading-[1.5] italic">«{full.part_0.intake_quote}»</p>
-          </blockquote>
-          <SubSection title="Позиция в РФ">
-            <p className="text-base leading-[1.6]">{full.part_0.ru_position}</p>
-          </SubSection>
-          <SubSection title="Где РФ относительно Global">
-            <p className="text-base leading-[1.6]">{full.part_0.rf_vs_global}</p>
-          </SubSection>
-          <SubSection title="Top-3 действия">
-            <BulletList items={full.part_0.top_3_actions} />
-          </SubSection>
-          <SubSection title="Ключевые риски">
-            <BulletList items={full.part_0.key_risks} />
-          </SubSection>
-        </Part>
+        {full.part_0 && (
+          <Part title="Часть 0 — Executive Summary" badge="📋" id="part-0">
+            {full.part_0.intake_quote && (
+              <>
+                <p className="lp-eyebrow mb-3">Запрос клиента</p>
+                <blockquote className="border-l-4 border-[#1e3a8a] pl-6 py-2 mb-6">
+                  <p className="text-lg font-medium leading-[1.5] italic">«{full.part_0.intake_quote}»</p>
+                </blockquote>
+              </>
+            )}
+            {full.part_0.ru_position && (
+              <SubSection title="Позиция в РФ">
+                <p className="text-base leading-[1.6]">{full.part_0.ru_position}</p>
+              </SubSection>
+            )}
+            {full.part_0.rf_vs_global && (
+              <SubSection title="Где РФ относительно Global">
+                <p className="text-base leading-[1.6]">{full.part_0.rf_vs_global}</p>
+              </SubSection>
+            )}
+            <SubSection title="Top-3 действия">
+              <BulletList items={full.part_0.top_3_actions} />
+            </SubSection>
+            <SubSection title="Ключевые риски">
+              <BulletList items={full.part_0.key_risks} />
+            </SubSection>
+          </Part>
+        )}
 
         {/* PART A — РФ-анализ */}
         <Part title="Часть A — Анализ российского рынка" badge="🇷🇺" id="part-a">
