@@ -780,19 +780,109 @@ function extractJSON(raw: string): string {
   return raw
 }
 
+// Балансирует скобки и закрывает обрывы строк. Используется когда LLM-ответ
+// внезапно обрывается на середине из-за max_tokens или просто кривого вывода.
+function balanceBrackets(s: string): string {
+  let openCurly = 0
+  let openSquare = 0
+  let inString = false
+  let escaped = false
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]
+    if (escaped) {
+      escaped = false
+      continue
+    }
+    if (c === '\\') {
+      escaped = true
+      continue
+    }
+    if (c === '"') {
+      inString = !inString
+      continue
+    }
+    if (inString) continue
+    if (c === '{') openCurly++
+    else if (c === '}') openCurly--
+    else if (c === '[') openSquare++
+    else if (c === ']') openSquare--
+  }
+  let result = s
+  if (inString) result += '"' // незакрытая строка
+  while (openSquare > 0) {
+    result += ']'
+    openSquare--
+  }
+  while (openCurly > 0) {
+    result += '}'
+    openCurly--
+  }
+  return result
+}
+
 function tolerantJsonParse(jsonStr: string): Record<string, unknown> {
   try {
     return JSON.parse(jsonStr) as Record<string, unknown>
   } catch (firstErr) {
-    const repaired = jsonStr
+    // Шаг 1: trailing commas + unquoted keys + smart quotes
+    let repaired = jsonStr
+      .replace(/[“”]/g, '"') // умные двойные кавычки → обычные
+      .replace(/[‘’]/g, "'") // умные одинарные → обычные
       .replace(/,(\s*[}\]])/g, '$1')
       .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
     try {
       return JSON.parse(repaired) as Record<string, unknown>
     } catch {
-      throw firstErr
+      // Шаг 2: балансируем скобки на случай обрыва ответа
+      repaired = balanceBrackets(repaired)
+      try {
+        return JSON.parse(repaired) as Record<string, unknown>
+      } catch {
+        // Шаг 3: режем до последнего полного объекта верхнего уровня
+        const lastValidEnd = findLastCompleteObjectEnd(repaired)
+        if (lastValidEnd > 0) {
+          const truncated = balanceBrackets(repaired.slice(0, lastValidEnd + 1))
+          try {
+            return JSON.parse(truncated) as Record<string, unknown>
+          } catch {
+            // ignore — выбросим оригинальную ошибку ниже
+          }
+        }
+        throw firstErr
+      }
     }
   }
+}
+
+// Находит индекс закрывающей `}` верхнего уровня для последнего полного объекта.
+// Используется при обрыве ответа на середине — спасаем то, что успело прийти.
+function findLastCompleteObjectEnd(s: string): number {
+  let depth = 0
+  let lastTopLevelClose = -1
+  let inString = false
+  let escaped = false
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]
+    if (escaped) {
+      escaped = false
+      continue
+    }
+    if (c === '\\') {
+      escaped = true
+      continue
+    }
+    if (c === '"') {
+      inString = !inString
+      continue
+    }
+    if (inString) continue
+    if (c === '{') depth++
+    else if (c === '}') {
+      depth--
+      if (depth === 0) lastTopLevelClose = i
+    }
+  }
+  return lastTopLevelClose
 }
 
 async function callOpenRouterForJSON(
@@ -876,7 +966,9 @@ export async function generateFullV2(args: {
     factsByType: inputs.factsByType,
   }
 
-  const [raw1, raw2] = await Promise.all([
+  // Parallel: каждый вызов в Promise.allSettled — частичная неудача не валит
+  // оба. Если одна половина пришла битой, рендерим то что есть.
+  const [res1, res2] = await Promise.allSettled([
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part1Prompt(sharedArgs),
@@ -891,10 +983,36 @@ export async function generateFullV2(args: {
     ),
   ])
 
-  const data1 = tolerantJsonParse(extractJSON(raw1))
-  const data2 = tolerantJsonParse(extractJSON(raw2))
+  const tryParseLabeled = (
+    label: string,
+    raw: string | null,
+  ): Record<string, unknown> => {
+    if (!raw) return {}
+    try {
+      return tolerantJsonParse(extractJSON(raw))
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[full-v2] ${label} parse failed:`, msg.slice(0, 200))
+      return {}
+    }
+  }
 
-  const parsed = { ...data1, ...data2 } as unknown as FullV2
+  const raw1 = res1.status === 'fulfilled' ? res1.value : null
+  const raw2 = res2.status === 'fulfilled' ? res2.value : null
+  if (res1.status === 'rejected') console.error('[full-v2] part1 fetch failed:', res1.reason)
+  if (res2.status === 'rejected') console.error('[full-v2] part2 fetch failed:', res2.reason)
+
+  const data1 = tryParseLabeled('part1', raw1)
+  const data2 = tryParseLabeled('part2', raw2)
+
+  const merged = { ...data1, ...data2 }
+  if (Object.keys(merged).length === 0) {
+    throw new Error(
+      `Оба LLM-вызова не дали валидного JSON. part1=${res1.status}, part2=${res2.status}`,
+    )
+  }
+
+  const parsed = merged as unknown as FullV2
   const raw = JSON.stringify(parsed)
   return { raw, parsed, brief: briefResult.parsed }
 }
