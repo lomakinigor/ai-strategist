@@ -1,13 +1,13 @@
-// BRIEF v2 — НОВЫЙ независимый генератор краткого отчёта.
-// КЛЮЧЕВОЕ ОТЛИЧИЕ от brief.ts: НЕ берёт FULL_REPORT.contentMarkdown как вход.
-// Генерируется ПАРАЛЛЕЛЬНО с полным из ОДНИХ исходных данных (facts + intake),
-// поэтому может работать даже когда полного отчёта ещё нет.
+// BRIEF v2 (v3 итерация) — НОВЫЙ независимый генератор краткого отчёта,
+// построенный на L2-методологии (Porter 5F, PESTEL, JTBD, SWOT-TOWS,
+// Blue Ocean, McKinsey 3H). Параллельно со старым brief.ts.
 //
-// Структура вывода: 11 аналитических секций (Navigator Pattern) + блок
-// AI-автоматизации (5.1/5.2/5.3) + intake-цитата + executive preview.
+// Структура: 4 Navigator-карточки (Части A/B/C/D полного отчёта) + 3 блока
+// AI-автоматизации + intake-цитата + executive preview. Без конкретных чисел —
+// только обозначение тем и промис того, что раскрыто в полном.
 //
-// Принцип: только индикаторы объёма, никаких конкретных чисел — чтобы не
-// противоречить полному отчёту (он может их уточнить/опровергнуть).
+// Источники данных — строго бесплатные публичные (см. SYSTEM_PROMPT). Никаких
+// Ahrefs/Semrush/Similarweb/Контур.Фокус/GSC/Я.Метрики/CMS-доступов клиента.
 
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
@@ -23,15 +23,6 @@ export const BRIEF_V2_MAX_TOKENS = 8192
 
 // ─── Типы блоков ──────────────────────────────────────────────────────────────
 
-export interface SectionV2 {
-  id: string
-  title: string
-  theses: string[] // 1-2 предложения, без точных чисел, привязаны к бизнесу
-  in_full: string[] // 3-5 подтем «в полном отчёте по этой теме»
-  implementation_l2?: string | null // sub-плашка Level 2 (структурно отделена)
-  unavailable?: boolean | null // true → секция помечается «доступно при предоставлении данных»
-}
-
 export interface AutomationBlockV2 {
   emotional_thesis: string
   found_points: Array<{ title: string; description: string }>
@@ -42,41 +33,54 @@ export interface AutomationBlockV2 {
 export interface BriefV2 {
   intake_quote: string
   executive_preview: string[] // 3-4 тезиса
-  sections: SectionV2[] // 11 шт
+  // Navigator-карточки (4 шт) — только динамичные theses; статичные under-lists
+  // (A1-A6, B1-B3, C1-C3, D1-D3) хардкодим в компоненте, чтобы не тратить токены.
+  part_a_theses: string[] // 1-2 тезиса о РФ-анализе
+  part_b_theses: string[] // 1-2 о Global
+  part_c_theses: string[] // 1 о сравнении РФ vs Global
+  part_d_theses: string[] // 1-2 о стратегии
+  // Опциональные sub-плашки Level 2 для трёх частей (B — без L2)
+  implementation_l2_hints: {
+    part_a?: string | null
+    part_c?: string | null
+    part_d?: string | null
+  }
   ai_automation: {
-    business_process: AutomationBlockV2 // 5.1
-    marketing: AutomationBlockV2 // 5.2 ВСЕГДА
-    niche_specific: AutomationBlockV2 // 5.3
+    business_process: AutomationBlockV2 // 8.1
+    marketing: AutomationBlockV2 // 8.2 ВСЕГДА
+    niche_specific: AutomationBlockV2 // 8.3
   }
 }
 
-// ─── Зафиксированный порядок 11 секций ────────────────────────────────────────
-
-export const SECTION_ORDER_V2: Array<{ id: string; title: string }> = [
-  { id: 'site', title: 'Сайт клиента' },
-  { id: 'niche', title: 'Бизнес-ниша' },
-  { id: 'audience', title: 'Целевая аудитория' },
-  { id: 'ad_channels', title: 'Рекламные каналы клиента' },
-  { id: 'competitors', title: 'Конкуренты' },
-  { id: 'comparison_usp', title: 'Сравнение с конкурентами и USP' },
-  { id: 'foreign_experience', title: 'Зарубежный опыт за 2 года' },
-  { id: 'effective_channels', title: 'Эффективные каналы продвижения в нише сейчас' },
-  { id: 'swot', title: 'SWOT клиента' },
-  { id: 'test_ideas', title: 'Идеи для тестирования' },
-  { id: 'strategic_conclusions', title: 'Стратегические выводы по intake-запросу' },
-]
-
 // ─── Промпт ────────────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `Ты — старший бизнес-стратег. Твоя задача — создать КРАТКИЙ обзорный отчёт для клиента (v2).
+const SYSTEM_PROMPT = `Ты — старший бизнес-стратег. Создаёшь КРАТКИЙ обзорный отчёт по L2-методологии (Porter 5F + PESTEL + JTBD + SWOT-TOWS + Blue Ocean + McKinsey 3H).
 
 КРИТИЧНО:
-- Краткий отчёт ≠ выжимка полного. Это самостоятельный обзор по ТЕМАМ.
-- НЕ называй конкретных чисел (CPL, %, ₽, метрики). Полный отчёт даст их.
-- Каждая секция — ОБОЗНАЧЕНИЕ темы + промис того, что раскрыто в полном.
-- Тезисы должны быть привязаны к бизнесу клиента (упоминай его специфику).
-- Все стратегические выводы отталкивайся от запроса клиента из intake.
-- Возвращай ТОЛЬКО валидный JSON без markdown-обёртки.`
+- Краткий ≠ выжимка полного. Это самостоятельный обзор по 4 крупным Частям полного отчёта (A: РФ-анализ, B: Global-бенчмарк, C: сравнение РФ vs Global, D: стратегия).
+- НЕ называй конкретных чисел (CPL, %, ₽, метрики, размер рынка). Полный отчёт даст их.
+- Каждая карточка — ОБОЗНАЧЕНИЕ темы + 1-2 тезиса. Структурные подразделы (A1-A6 и т.п.) дописываются на фронтенде, не присылай их.
+- Тезисы привязаны к бизнесу клиента (упоминай специфику ниши/запроса).
+- Все стратегические выводы (executive_preview, part_d_theses) явно отталкивайся от запроса клиента из intake.
+
+ДОСТУПНЫЕ ИСТОЧНИКИ ДАННЫХ (только бесплатные публичные):
+- Wordstat API v2, Я.Тренды, Google Trends — спрос
+- Jina Reader (r.jina.ai) — парсинг лендингов
+- Open SERP через web search
+- TGStat public stats — Telegram
+- ВК публичные данные
+- Lighthouse / PageSpeed Insights — техка
+- Я.Карты / 2ГИС публичные отзывы
+- Rusprofile открытое, archive.org
+- LLM training data + web search для Global
+
+НЕДОСТУПНО (явно отметь как «нет данных» если попадётся):
+- Backlink-профили конкурентов (нет Ahrefs/Semrush)
+- Точный трафик (нет Similarweb)
+- Внутренняя статистика клиента (нет GSC/Я.Метрики)
+- Финансовая отчётность конкурентов (нет Контур.Фокус)
+
+Возвращай ТОЛЬКО валидный JSON без markdown-обёртки.`
 
 export function buildBriefV2Prompt(args: {
   companyName: string
@@ -100,57 +104,90 @@ export function buildBriefV2Prompt(args: {
 ${args.companyName}${args.website ? ` · ${args.website}` : ''}${args.industry ? ` · ${args.industry}` : ''}
 ${args.description ? `Описание: ${args.description}` : ''}
 
-# Запрос клиента из intake (ОБЯЗАН быть процитирован в intake_quote и быть основой strategic_conclusions)
+# Запрос клиента из intake (ОБЯЗАН быть процитирован дословно в intake_quote и быть основой part_d_theses + executive_preview)
 "${args.intakeQuote}"
 
-# Исходные ФАКТЫ research-стадии (по типам)
-${factsBlock || '(данных мало — формируй секции на уровне темы без конкретных утверждений)'}
+# Исходные ФАКТЫ research-стадии (по типам, только публичные источники)
+${factsBlock || '(данных мало — формируй тезисы на уровне темы без конкретных утверждений)'}
 
-# Подсказка по нишевым AI-автоматизациям (используй для блока 5.3 niche_specific)
+# Подсказка по нишевым AI-автоматизациям (используй для ai_automation.niche_specific)
 ${nicheHint}
+
+---
+
+## Структура полного отчёта (для понимания контекста — НЕ повторяй эти списки в выводе)
+
+🇷🇺 Часть A. РФ-анализ:
+  A1. Industry Snapshot (Porter 5F + PESTEL + размер/рост)
+  A2. Customer Insights (JTBD + сегменты)
+  A3. Digital Footprint Map (Lighthouse-скоринг)
+  A4. Competitor Profiles (top-5, 9-точечное)
+  A5. SWOT-TOWS
+  A6. Blue Ocean Value Curve
+
+🌍 Часть B. Global-бенчмарк за 2 года:
+  B1. Global Industry Snapshot (2-3 ведущие страны)
+  B2. Global Trends & Innovations
+  B3. Global Top Players
+
+📊 Часть C. Сравнение РФ vs Global:
+  C1. Comparison-таблица 8-10 параметров
+  C2. Opportunity Gaps (что копировать)
+  C3. Что не повторять
+
+📋 Часть D. Стратегия и Roadmap (6-12 мес):
+  D1. Roadmap по McKinsey 3H
+  D2. Метрики успеха
+  D3. 3-7 гипотез для тестирования
 
 ---
 
 ## Структура вывода JSON
 
 {
-  "intake_quote": "${args.intakeQuote.replace(/"/g, '\\"')}",
+  "intake_quote": "${args.intakeQuote.replace(/"/g, '\\"').replace(/\n/g, ' ')}",
   "executive_preview": [
     "3-4 тезиса от ИИ-стратега, явно отталкивающиеся от intake-запроса. Без чисел, с привязкой к бизнесу клиента."
   ],
-  "sections": [
-    {
-      "id": "site",
-      "title": "Сайт клиента",
-      "theses": ["1-2 коротких тезиса (без чисел), привязанных к бизнесу клиента"],
-      "in_full": ["3-5 подтем из полного отчёта"],
-      "implementation_l2": "Опциональная sub-плашка Level 2: одна фраза о том, что мы можем реализовать под ключ (или null если неприменимо)",
-      "unavailable": false
-    },
-    ... (остальные 10 секций в том же порядке: niche, audience, ad_channels, competitors, comparison_usp, foreign_experience, effective_channels, swot, test_ideas, strategic_conclusions)
+  "part_a_theses": [
+    "1-2 коротких тезиса о российском рынке и положении клиента в нём. Без чисел."
   ],
+  "part_b_theses": [
+    "1-2 тезиса о зарубежном опыте за 2 года, релевантных нише клиента. С пометкой 'применимость к РФ не гарантирована' где уместно."
+  ],
+  "part_c_theses": [
+    "1 тезис о том, что российский рынок может позаимствовать у Global. Без раскрытия конкретики."
+  ],
+  "part_d_theses": [
+    "1-2 тезиса о стратегии на 6-12 месяцев, отталкивающихся от intake-запроса."
+  ],
+  "implementation_l2_hints": {
+    "part_a": "Одна фраза о том, что мы реализуем под ключ из РФ-инсайтов (например: посадочная под главную аудиторию). Или null.",
+    "part_c": "Одна фраза о том, что мы реализуем из gap-возможностей. Или null.",
+    "part_d": "Одна фраза о том, что мы реализуем из roadmap. Или null."
+  },
   "ai_automation": {
     "business_process": {
-      "emotional_thesis": "Один эмоциональный абзац про риск отстать от конкурентов по издержкам",
+      "emotional_thesis": "Увеличивайте фронт работ не нанимая — возможно, сокращая персонал. Не сделаете сейчас — проиграете конкурентам по издержкам.",
       "found_points": [
-        { "title": "Точка автоматизации", "description": "1-2 предложения" }
+        { "title": "Точка автоматизации (название процесса)", "description": "1-2 предложения, без чисел" }
       ],
-      "in_full": "Что раскрыто в полном (одна фраза)",
+      "in_full": "Что раскрыто в полном отчёте — одна фраза",
       "implementation_l2": "Что мы реализуем под ключ — одна фраза"
     },
     "marketing": {
-      "emotional_thesis": "Тезис про то, что без AI-автоматизации маркетинга упускаются возможности контента и квалификации",
+      "emotional_thesis": "Тезис про автопостинг + нейроагентов в рекл.каналах. ВСЕГДА присутствует, даже если pain не нашёлся.",
       "found_points": [
         { "title": "Автопостинг по соцсетям компании", "description": "..." },
-        { "title": "Нейроагент в рекламных каналах для квалификации", "description": "..." }
+        { "title": "Нейроагент в рекламных каналах для квалификации лидов", "description": "..." }
       ],
       "in_full": "Что раскрыто в полном",
       "implementation_l2": "Что мы реализуем под ключ"
     },
     "niche_specific": {
-      "emotional_thesis": "Тезис о нишевых паттернах автоматизации, дающих преимущество",
+      "emotional_thesis": "Тезис про нишевые паттерны (используй nicheHint выше как ориентир)",
       "found_points": [
-        { "title": "...", "description": "..." }
+        { "title": "Нишевой паттерн 1", "description": "..." }
       ],
       "in_full": "Что раскрыто в полном",
       "implementation_l2": "Что мы реализуем под ключ"
@@ -159,13 +196,16 @@ ${nicheHint}
 }
 
 ## Правила
-- sections — ровно 11, в указанном порядке (id зафиксированы).
-- Если для ad_channels нет ФАКТОВ про рекламные каналы клиента → unavailable=true, theses=[], in_full="доступно при предоставлении данных".
-- executive_preview — ровно 3 или 4 элемента.
-- ai_automation.marketing присутствует ВСЕГДА, даже если pain не нашёлся в фактах.
-- ai_automation.niche_specific — используй переданный nicheHint как ориентир.
-- НЕ ИСПОЛЬЗУЙ КОНКРЕТНЫЕ ЧИСЛА в theses/found_points/emotional_thesis.
-- found_points в каждом блоке — 2-3 пункта.
+- intake_quote — точная цитата запроса из intake выше.
+- executive_preview — ровно 3 или 4 пункта.
+- part_a_theses / part_b_theses / part_d_theses — по 1-2 пункта.
+- part_c_theses — ровно 1 пункт.
+- НЕ ИСПОЛЬЗУЙ КОНКРЕТНЫЕ ЧИСЛА в тезисах/emotional_thesis/found_points.
+- ai_automation.marketing присутствует ВСЕГДА (это часть 8.2 структуры).
+- ai_automation.niche_specific — опирайся на nicheHint выше.
+- found_points в каждом блоке AI — 2-3 пункта.
+- implementation_l2_hints — короткие фразы или null, не списки.
+- Если Global-источников мало — пиши общие тренды (B-часть) с пометкой про неполноту данных.
 - Весь текст на русском.`
 }
 
@@ -194,14 +234,13 @@ async function collectInputs(researchJobId: string, companyId: string): Promise<
     .where(eq(companies.id, companyId))
     .limit(1)
 
-  // intake quote — берём последний intake этой компании, ищем поле «цели/запрос»
+  // intake quote — берём оригинальный intake (не upgrade-snapshot)
   const intakeRows = await db
     .select({ payload: intakeSubmissions.inputPayload, createdAt: intakeSubmissions.createdAt })
     .from(intakeSubmissions)
     .where(eq(intakeSubmissions.companyId, companyId))
     .limit(5)
 
-  // Берём первый intake (оригинальный, не upgrade-snapshot)
   const original =
     intakeRows.find(
       (r) => !(r.payload as Record<string, unknown>)?._upgrade_from_artifact,
@@ -213,12 +252,8 @@ async function collectInputs(researchJobId: string, companyId: string): Promise<
     (payload.request as string | undefined) ||
     'Главный запрос не указан в intake'
 
-  // Факты по типам
   const factRows = await db
-    .select({
-      content: facts.content,
-      researchType: facts.researchType,
-    })
+    .select({ content: facts.content, researchType: facts.researchType })
     .from(facts)
     .where(eq(facts.researchJobId, researchJobId))
     .limit(200)
@@ -251,15 +286,13 @@ function extractJSON(raw: string): string {
   return raw
 }
 
-// Tolerant JSON.parse: убирает trailing commas перед закрывающими скобками
-// (типовая ошибка LLM-вывода). Если стандартный parse падает — пробуем repair-fallback.
 function tolerantJsonParse(jsonStr: string): Record<string, unknown> {
   try {
     return JSON.parse(jsonStr) as Record<string, unknown>
   } catch (firstErr) {
     const repaired = jsonStr
-      .replace(/,(\s*[}\]])/g, '$1') // удалить trailing commas: ,] и ,}
-      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":') // обернуть unquoted keys
+      .replace(/,(\s*[}\]])/g, '$1')
+      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
     try {
       return JSON.parse(repaired) as Record<string, unknown>
     } catch {
@@ -268,8 +301,6 @@ function tolerantJsonParse(jsonStr: string): Record<string, unknown> {
   }
 }
 
-// Прямой вызов OpenRouter с response_format=json_object. Не используем callOpenRouter
-// из generator.ts, чтобы не трогать его сигнатуру (он шарится со старым brief.ts).
 async function callOpenRouterForJSON(
   systemPrompt: string,
   userPrompt: string,
@@ -346,33 +377,21 @@ function parseAutomationBlock(input: unknown): AutomationBlockV2 {
 
 export function parseBriefV2(raw: string): BriefV2 {
   const data = tolerantJsonParse(extractJSON(raw))
-
-  const sectionsRaw = Array.isArray(data.sections) ? data.sections : []
-  // Гарантируем порядок и полноту: проходим по SECTION_ORDER_V2 и подставляем
-  // соответствующий блок из ответа модели (или заглушку если модель пропустила).
-  const sections: SectionV2[] = SECTION_ORDER_V2.map((spec) => {
-    const found = sectionsRaw.find(
-      (s): s is Record<string, unknown> =>
-        typeof s === 'object' && s !== null && (s as Record<string, unknown>).id === spec.id,
-    )
-    const s = (found ?? {}) as Record<string, unknown>
-    const unavailable = s.unavailable === true
-    return {
-      id: spec.id,
-      title: asString(s.title) || spec.title,
-      theses: unavailable ? [] : asStringArray(s.theses, 3),
-      in_full: asStringArray(s.in_full, 6),
-      implementation_l2: asString(s.implementation_l2) || null,
-      unavailable,
-    }
-  })
-
   const aiAuto = (data.ai_automation ?? {}) as Record<string, unknown>
+  const l2hints = (data.implementation_l2_hints ?? {}) as Record<string, unknown>
 
   return {
     intake_quote: asString(data.intake_quote),
     executive_preview: asStringArray(data.executive_preview, 4),
-    sections,
+    part_a_theses: asStringArray(data.part_a_theses, 3),
+    part_b_theses: asStringArray(data.part_b_theses, 3),
+    part_c_theses: asStringArray(data.part_c_theses, 2),
+    part_d_theses: asStringArray(data.part_d_theses, 3),
+    implementation_l2_hints: {
+      part_a: asString(l2hints.part_a) || null,
+      part_c: asString(l2hints.part_c) || null,
+      part_d: asString(l2hints.part_d) || null,
+    },
     ai_automation: {
       business_process: parseAutomationBlock(aiAuto.business_process),
       marketing: parseAutomationBlock(aiAuto.marketing),

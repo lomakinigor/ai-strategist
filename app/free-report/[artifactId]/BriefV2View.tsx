@@ -1,25 +1,17 @@
 'use client'
 
-// BriefV2View — НОВЫЙ компонент краткого отчёта (тестовая версия).
-// Доступен через /free-report/[id]?version=v2. Старый отчёт продолжает
-// работать по дефолту без query-параметра.
+// BriefV2View (v3 итерация) — НОВЫЙ компонент краткого отчёта (тестовая версия).
+// Доступен через /free-report/[id]?version=v2. Старый отчёт продолжает работать
+// по дефолту без query-параметра.
 //
-// Дизайн: Navigator Pattern — заголовок темы + 1-2 тезиса + список «в полном»
-// + опциональная sub-плашка Level 2 «Реализация под ключ». Никаких blur/lock.
-// Использует существующие LP-классы (lp-card, lp-eyebrow, lp-btn-primary,
-// lp-btn-ghost) без кастомизации токенов.
+// Структура: 4 Navigator-карточки (Части A/B/C/D из полного) + 3 AI-подблока +
+// блок реализации + free/paid таблица + CTA Level 1 + footer Level 2 + disclaimer.
+//
+// Дизайн: existing LP-классы (lp-card, lp-eyebrow, lp-btn-primary, lp-btn-ghost),
+// без кастомизации shadcn/токенов. Никаких blur/lock-эффектов.
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-
-interface SectionV2 {
-  id: string
-  title: string
-  theses: string[]
-  in_full: string[]
-  implementation_l2?: string | null
-  unavailable?: boolean | null
-}
 
 interface AutomationBlockV2 {
   emotional_thesis: string
@@ -31,7 +23,15 @@ interface AutomationBlockV2 {
 interface BriefV2 {
   intake_quote: string
   executive_preview: string[]
-  sections: SectionV2[]
+  part_a_theses: string[]
+  part_b_theses: string[]
+  part_c_theses: string[]
+  part_d_theses: string[]
+  implementation_l2_hints: {
+    part_a?: string | null
+    part_c?: string | null
+    part_d?: string | null
+  }
   ai_automation: {
     business_process: AutomationBlockV2
     marketing: AutomationBlockV2
@@ -45,7 +45,9 @@ interface Props {
   industry: string
 }
 
-const CACHE_KEY = (artifactId: string) => `brief_v2_${artifactId}`
+// Кеш-ключ бампается с каждой итерацией структуры, чтобы инвалидировать
+// сохранённые в браузере данные старой формы.
+const CACHE_KEY = (artifactId: string) => `brief_v2_v3_${artifactId}`
 
 function readCache(artifactId: string): BriefV2 | null {
   if (typeof window === 'undefined') return null
@@ -63,14 +65,44 @@ function writeCache(artifactId: string, brief: BriefV2): void {
   try {
     sessionStorage.setItem(CACHE_KEY(artifactId), JSON.stringify(brief))
   } catch {
-    // sessionStorage может быть переполнен — ничего страшного, просто без кеша
+    // sessionStorage переполнен — без кеша, не катастрофа
   }
 }
 
+// ─── Static subtopic lists (структура полного отчёта) ─────────────────────────
+// Эти списки описывают что внутри каждой Части полного отчёта. Хардкодим
+// в компоненте — экономим LLM-токены, гарантируем консистентность UI.
+
+const PART_A_SUBTOPICS: Array<{ id: string; title: string; description: string }> = [
+  { id: 'A1', title: 'Industry Snapshot', description: 'Porter 5 Forces + PESTEL + размер и рост рынка' },
+  { id: 'A2', title: 'Customer Insights', description: 'JTBD-фреймворк, top-10 pains/gains, voice-of-customer' },
+  { id: 'A3', title: 'Digital Footprint Map', description: 'Тех-скоринг сайта клиента и top-5 конкурентов (Lighthouse)' },
+  { id: 'A4', title: 'Competitor Profiles', description: '9-точечное профилирование top-5 игроков рынка' },
+  { id: 'A5', title: 'SWOT-TOWS', description: '4 квадранта стратегий из пересечения сильных сторон и угроз' },
+  { id: 'A6', title: 'Blue Ocean Value Curve', description: 'Где можно дифференцироваться по 6+ параметрам' },
+]
+
+const PART_B_SUBTOPICS: Array<{ id: string; title: string; description: string }> = [
+  { id: 'B1', title: 'Global Industry Snapshot', description: '2–3 ведущие страны или региона по вашей нише' },
+  { id: 'B2', title: 'Global Trends & Innovations', description: 'Что появилось и набрало силу за последние 2 года' },
+  { id: 'B3', title: 'Global Top Players', description: 'Игроки, которых нет на российском рынке' },
+]
+
+const PART_C_SUBTOPICS: Array<{ id: string; title: string; description: string }> = [
+  { id: 'C1', title: 'Comparison-таблица', description: 'Сравнение РФ vs Global по 8–10 параметрам' },
+  { id: 'C2', title: 'Opportunity Gaps', description: '3–5 направлений: Global уже мейнстрим, РФ ещё нет' },
+  { id: 'C3', title: 'Что не повторять', description: '3–5 пунктов: какие Global-эксперименты провалились' },
+]
+
+const PART_D_SUBTOPICS: Array<{ id: string; title: string; description: string }> = [
+  { id: 'D1', title: 'Roadmap McKinsey 3H', description: 'H1 (core, 0–3 мес) · H2 (рост, 3–9 мес) · H3 (future, 9+ мес)' },
+  { id: 'D2', title: 'Метрики успеха', description: 'KPI на каждый горизонт + способ замера без платной аналитики' },
+  { id: 'D3', title: '3–7 гипотез для тестирования', description: 'С метриками и пороговыми значениями pass/fail' },
+]
+
+// ─── Главный компонент ────────────────────────────────────────────────────────
+
 export function BriefV2View({ artifactId, companyName, industry }: Props) {
-  // Инициализация из sessionStorage — если бриф уже генерировался в этой
-  // сессии, показываем мгновенно. Это спасает от повторных LLM-вызовов
-  // при back-навигации со страниц /pay и /lead.
   const [brief, setBrief] = useState<BriefV2 | null>(() => readCache(artifactId))
   const [error, setError] = useState<string | null>(null)
   const [elapsed, setElapsed] = useState(0)
@@ -80,7 +112,6 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
   }, [])
 
   useEffect(() => {
-    // Кеш уже подхвачен в useState initializer — пропускаем fetch
     if (brief) return
 
     const start = Date.now()
@@ -126,7 +157,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6] mb-2">
           {error}
         </p>
-        <p className="text-xs text-[#737373]">
+        <p className="text-xs text-[#737373] mt-4">
           Это тестовая версия. Откройте страницу без <code>?version=v2</code> чтобы увидеть рабочий вариант.
         </p>
       </section>
@@ -226,22 +257,51 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
 
       <div className="border-t border-[#e5e5e5]" />
 
-      {/* ── 4. 11 АНАЛИТИЧЕСКИХ СЕКЦИЙ ─────────────────────────────── */}
+      {/* ── 4–7. NAVIGATOR-КАРТОЧКИ ПО ЧАСТЯМ A/B/C/D ──────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14">
-        <p className="lp-eyebrow mb-4">Разбор по темам</p>
+        <p className="lp-eyebrow mb-4">Что в полном отчёте</p>
         <h2 className="text-2xl font-bold tracking-[-0.02em] mb-8">
-          11 направлений анализа
+          4 крупных Части анализа
         </h2>
         <div className="space-y-6">
-          {brief.sections.map((s, i) => (
-            <SectionCard key={s.id} section={s} index={i + 1} artifactId={artifactId} />
-          ))}
+          <NavigatorCard
+            badge="🇷🇺 Часть A"
+            title="Анализ российского рынка"
+            theses={brief.part_a_theses}
+            subtopics={PART_A_SUBTOPICS}
+            implementationL2={brief.implementation_l2_hints.part_a ?? null}
+            artifactId={artifactId}
+          />
+          <NavigatorCard
+            badge="🌍 Часть B"
+            title="Зарубежный опыт за 2 года"
+            theses={brief.part_b_theses}
+            subtopics={PART_B_SUBTOPICS}
+            implementationL2={null}
+            artifactId={artifactId}
+          />
+          <NavigatorCard
+            badge="📊 Часть C"
+            title="Что Global даёт российскому рынку"
+            theses={brief.part_c_theses}
+            subtopics={PART_C_SUBTOPICS}
+            implementationL2={brief.implementation_l2_hints.part_c ?? null}
+            artifactId={artifactId}
+          />
+          <NavigatorCard
+            badge="📋 Часть D"
+            title="Стратегия и план на 6–12 месяцев"
+            theses={brief.part_d_theses}
+            subtopics={PART_D_SUBTOPICS}
+            implementationL2={brief.implementation_l2_hints.part_d ?? null}
+            artifactId={artifactId}
+          />
         </div>
       </section>
 
       <div className="border-t border-[#e5e5e5]" />
 
-      {/* ── 5. AI-АВТОМАТИЗАЦИЯ ─────────────────────────────────────── */}
+      {/* ── 8. AI-АВТОМАТИЗАЦИЯ ─────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14 bg-[#f0fdf4]">
         <p className="lp-eyebrow mb-4" style={{ color: '#15803d' }}>
           AI-автоматизация
@@ -255,17 +315,17 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
 
         <div className="space-y-8">
           <AutomationCard
-            label="5.1"
+            label="8.1"
             title="Автоматизация бизнес-процессов"
             block={brief.ai_automation.business_process}
           />
           <AutomationCard
-            label="5.2"
+            label="8.2"
             title="Автоматизация маркетинга"
             block={brief.ai_automation.marketing}
           />
           <AutomationCard
-            label="5.3"
+            label="8.3"
             title="Нишевые автоматизации"
             block={brief.ai_automation.niche_specific}
           />
@@ -274,7 +334,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
 
       <div className="border-t border-[#e5e5e5]" />
 
-      {/* ── 6. ЧТО МЫ ДЕЛАЕМ ПОД КЛЮЧ (Level 2 hub) ────────────────── */}
+      {/* ── 9. ЧТО МЫ ДЕЛАЕМ ПОД КЛЮЧ (Level 2 hub) ────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14" id="level2-hub">
         <p className="lp-eyebrow lp-eyebrow-warm mb-4">Реализация на нашей стороне</p>
         <h2 className="text-2xl font-bold tracking-[-0.02em] mb-4">
@@ -282,8 +342,9 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </h2>
         <p className="text-base text-[#525252] leading-[1.6] mb-8 max-w-3xl">
           Когда вы выбираете реализацию у нас, мы используем <strong className="text-[#0a0a0a]">всю глубину анализа</strong> —
-          даже если вы прочитали только краткий отчёт. Полный набор УТП, сильных сторон и
-          стратегических выводов из платного отчёта применяется к работе автоматически.
+          даже если вы прочитали только краткий отчёт. Полный набор УТП, сильных сторон,
+          стратегических выводов и AI-возможностей применяется к работе автоматически,
+          независимо от того, какой уровень отчёта вы купили.
         </p>
         <div className="grid gap-5 md:grid-cols-2 mb-8">
           <article className="lp-card p-7">
@@ -292,8 +353,8 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
               Разработка сайта по критериям отчёта
             </h3>
             <p className="text-[15px] text-[#525252] leading-[1.6]">
-              Лендинг или одностраничник, который отвечает на бренд-стратегию из отчёта —
-              первый экран с УТП, посадочные под канал, формы захвата.
+              Лендинг или одностраничник, отвечающий на бренд-стратегию из полного отчёта —
+              первый экран с УТП из Части A6, посадочные под каналы из Части D, формы захвата.
             </p>
           </article>
           <article className="lp-card p-7">
@@ -303,7 +364,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
             </h3>
             <p className="text-[15px] text-[#525252] leading-[1.6]">
               Чат-боты квалификации, автопостинг по соцсетям, нишевые автоматизации —
-              реализуем то, что разобрано в блоке 5.
+              реализуем то, что разобрано в блоке 8.
             </p>
           </article>
         </div>
@@ -315,7 +376,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
 
       <div className="border-t border-[#e5e5e5]" />
 
-      {/* ── 7. БЕСПЛАТНО vs ПЛАТНО (таблица) ──────────────────────── */}
+      {/* ── 10. БЕСПЛАТНО vs ПЛАТНО (таблица) ──────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14 bg-[#fafafa]">
         <p className="lp-eyebrow mb-4">Что входит куда</p>
         <h2 className="text-2xl font-bold tracking-[-0.02em] mb-8">
@@ -337,22 +398,27 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
               </tr>
             </thead>
             <tbody>
-              {brief.sections.map((s) => (
-                <tr key={s.id} className="border-b border-[#e5e5e5]">
-                  <td className="px-4 py-3 text-[#0a0a0a]">{s.title}</td>
-                  <td className="px-4 py-3 text-[#6b7280]">обозначение темы</td>
-                  <td className="px-4 py-3 text-[#0a0a0a]">раскрытие с фактами</td>
+              {[
+                { topic: '🇷🇺 Часть A — Анализ российского рынка', brief: 'обозначение тем', full: 'Porter 5F · PESTEL · JTBD · SWOT-TOWS · Blue Ocean' },
+                { topic: '🌍 Часть B — Зарубежный опыт за 2 года', brief: 'обзорные тезисы', full: '2–3 страны · топ-инновации · ключевые игроки' },
+                { topic: '📊 Часть C — Сравнение РФ vs Global', brief: 'один тезис', full: 'таблица 8–10 параметров · opportunity gaps · что не повторять' },
+                { topic: '📋 Часть D — Стратегия и Roadmap 6–12 мес', brief: '1–2 тезиса', full: 'McKinsey 3H · KPI · 3–7 гипотез с pass/fail' },
+              ].map((row) => (
+                <tr key={row.topic} className="border-b border-[#e5e5e5]">
+                  <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.topic}</td>
+                  <td className="px-4 py-3 text-[#6b7280] align-top">{row.brief}</td>
+                  <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.full}</td>
                 </tr>
               ))}
               {[
-                'AI-автоматизация бизнес-процессов',
-                'AI-автоматизация маркетинга',
-                'Нишевые автоматизации',
-              ].map((t) => (
-                <tr key={t} className="border-b border-[#e5e5e5] bg-[#f0fdf4]">
-                  <td className="px-4 py-3 text-[#0a0a0a]">{t}</td>
-                  <td className="px-4 py-3 text-[#6b7280]">направления</td>
-                  <td className="px-4 py-3 text-[#0a0a0a]">roadmap, ROI, инструменты</td>
+                { topic: '🤖 8.1 AI-автоматизация бизнес-процессов', brief: 'направления', full: 'roadmap · ROI-оценка · инструменты' },
+                { topic: '🤖 8.2 AI-автоматизация маркетинга', brief: 'направления', full: 'roadmap · инструменты · сетка по каналам клиента' },
+                { topic: '🤖 8.3 Нишевые AI-автоматизации', brief: '1–2 паттерна', full: 'полный список + интеграционные схемы' },
+              ].map((row) => (
+                <tr key={row.topic} className="border-b border-[#e5e5e5] bg-[#f0fdf4]">
+                  <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.topic}</td>
+                  <td className="px-4 py-3 text-[#6b7280] align-top">{row.brief}</td>
+                  <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.full}</td>
                 </tr>
               ))}
             </tbody>
@@ -360,7 +426,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </div>
       </section>
 
-      {/* ── 8. CTA-БЛОК Level 1 ─────────────────────────────────────── */}
+      {/* ── 11. CTA-БЛОК Level 1 ─────────────────────────────────────── */}
       <section className="border-t border-[#e5e5e5]">
         <div className="max-w-3xl mx-auto px-6 py-20 text-center">
           <p className="lp-eyebrow mb-4">Полный отчёт</p>
@@ -368,19 +434,29 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
             За 9 999 ₽ — полный анализ
           </h2>
           <ul className="text-left max-w-md mx-auto space-y-3 mb-10 text-[15px] text-[#0a0a0a]">
-            {brief.sections.map((s) => (
-              <li key={s.id} className="flex gap-3">
-                <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
-                <span>{s.title} — раскрытие с фактами и источниками</span>
-              </li>
-            ))}
             <li className="flex gap-3">
               <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
-              <span>Roadmap AI-автоматизации (бизнес-процессы + маркетинг + нишевые)</span>
+              <span>Часть A — РФ-анализ: Porter 5F, PESTEL, JTBD, SWOT-TOWS, Blue Ocean</span>
             </li>
             <li className="flex gap-3">
               <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
-              <span>План действий на 30 / 60 / 90 дней с метриками</span>
+              <span>Часть B — Global-бенчмарк: 2–3 ведущие страны, инновации, top players</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+              <span>Часть C — Сравнение РФ vs Global: таблица, opportunity gaps, чего не повторять</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+              <span>Часть D — Стратегия и Roadmap по McKinsey 3H, метрики, 3–7 гипотез</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+              <span>AI-автоматизация: roadmap, ROI, инструменты для бизнес-процессов и маркетинга</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
+              <span>Источники с RS-маркировкой 🟢🟡🟠🔴 и список открытых вопросов</span>
             </li>
           </ul>
           <Link
@@ -396,11 +472,30 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </div>
       </section>
 
-      {/* ── 9. FOOTER-CTA Level 2 ───────────────────────────────────── */}
+      {/* ── 12. FOOTER-CTA Level 2 ───────────────────────────────────── */}
       <section className="border-t border-[#e5e5e5] bg-[#fafafa] no-print">
         <div className="max-w-3xl mx-auto px-6 py-10 text-center">
           <p className="text-sm text-[#525252] leading-[1.6]">
             Хотите сразу к реализации? <a href="#level2-hub" className="text-[#1e3a8a] underline">Обсудим ваш проект →</a>
+          </p>
+        </div>
+      </section>
+
+      {/* ── 13. METHODOLOGY DISCLAIMER ──────────────────────────────── */}
+      <section className="border-t border-[#e5e5e5]">
+        <div className="max-w-3xl mx-auto px-6 py-10">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280] mb-2">
+            О методологии
+          </p>
+          <p className="text-xs text-[#6b7280] leading-[1.65]">
+            Анализ построен на бесплатных открытых источниках: Wordstat и Я.Тренды,
+            публичные данные Я.Карт/2ГИС, открытые статистики ТГ-каналов и ВК,
+            Lighthouse и PageSpeed Insights, открытое наблюдение SERP, публичные
+            данные Rusprofile. Каждый факт сопровождается RS-маркировкой
+            (🟢 Официальный / 🟡 Оценочный / 🟠 Экспертный / 🔴 Неверифицируемый).
+            Платные SaaS-аналитики и доступы клиента (GSC, Я.Метрика, CMS) не
+            используются — отчёт строится на тех же публичных данных, по которым
+            анализируются конкуренты.
           </p>
         </div>
       </section>
@@ -410,71 +505,68 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function SectionCard({
-  section,
-  index,
+function NavigatorCard({
+  badge,
+  title,
+  theses,
+  subtopics,
+  implementationL2,
   artifactId,
 }: {
-  section: SectionV2
-  index: number
+  badge: string
+  title: string
+  theses: string[]
+  subtopics: Array<{ id: string; title: string; description: string }>
+  implementationL2: string | null
   artifactId: string
 }) {
   return (
     <article className="lp-card p-7 page-break-inside-avoid">
-      <div className="flex items-start gap-4 mb-3">
-        <span className="text-[#1e3a8a] font-bold text-base shrink-0 leading-tight pt-0.5">
-          {String(index).padStart(2, '0')}
+      <div className="flex items-start gap-3 mb-4 flex-wrap">
+        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] bg-[#dbeafe] rounded px-2 py-1 whitespace-nowrap">
+          {badge}
         </span>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold tracking-[-0.01em] leading-snug">
-            {section.title}
-          </h3>
-        </div>
+        <h3 className="text-xl font-bold tracking-[-0.01em] leading-snug flex-1 min-w-0">
+          {title}
+        </h3>
       </div>
 
-      {section.unavailable ? (
-        <p className="text-sm text-[#92400e] bg-[#fef3c7] border border-[#fde68a] rounded px-3 py-2 leading-[1.55]">
-          Доступно при предоставлении данных.
-        </p>
-      ) : section.theses.length > 0 ? (
-        <ul className="space-y-2 mb-5">
-          {section.theses.map((t, i) => (
+      {theses.length > 0 ? (
+        <ul className="space-y-2.5 mb-6">
+          {theses.map((t, i) => (
             <li key={i} className="text-[15px] text-[#0a0a0a] leading-[1.6]">
               {t}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-[#6b7280] italic mb-5">
+        <p className="text-sm text-[#6b7280] italic mb-6">
           Тезисы готовятся — подробности в полном отчёте.
         </p>
       )}
 
-      {section.in_full.length > 0 && (
-        <div className="border-t border-[#e5e5e5] pt-4">
-          <p className="text-xs font-bold text-[#6b7280] uppercase tracking-[0.12em] mb-3">
-            В полном отчёте по этой теме
-          </p>
-          <ul className="space-y-1.5">
-            {section.in_full.map((item, i) => (
-              <li
-                key={i}
-                className="text-sm text-[#525252] leading-[1.55] flex gap-2"
-              >
-                <span className="text-[#a3a3a3] shrink-0">·</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="border-t border-[#e5e5e5] pt-5">
+        <p className="text-xs font-bold text-[#6b7280] uppercase tracking-[0.12em] mb-3">
+          В полном отчёте по этой теме
+        </p>
+        <ul className="space-y-2">
+          {subtopics.map((item) => (
+            <li key={item.id} className="flex gap-3 text-sm leading-[1.55]">
+              <span className="text-[#1e3a8a] font-bold shrink-0 w-7">{item.id}</span>
+              <span className="text-[#0a0a0a]">
+                <strong>{item.title}</strong> — <span className="text-[#525252]">{item.description}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      {section.implementation_l2 && (
+      {implementationL2 && (
         <div className="mt-5 rounded-md border border-[#fbbf24]/40 bg-[#fef3c7]/40 px-4 py-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#92400e] mb-1">
             Реализация под ключ
           </p>
-          <p className="text-sm text-[#0a0a0a] leading-[1.55]">{section.implementation_l2}</p>
+          <p className="text-sm text-[#0a0a0a] leading-[1.55]">{implementationL2}</p>
         </div>
       )}
 
