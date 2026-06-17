@@ -12,7 +12,6 @@
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
 import { facts, intakeSubmissions, companies } from '@/db/schema'
-import { callOpenRouter } from './generator'
 import { AI_CONFIG } from '@/lib/ai/config'
 import {
   detectNicheId,
@@ -20,7 +19,7 @@ import {
   type NicheAutomationPattern,
 } from './niche-automations'
 
-export const BRIEF_V2_MAX_TOKENS = 4096
+export const BRIEF_V2_MAX_TOKENS = 8192
 
 // ─── Типы блоков ──────────────────────────────────────────────────────────────
 
@@ -252,6 +251,67 @@ function extractJSON(raw: string): string {
   return raw
 }
 
+// Tolerant JSON.parse: убирает trailing commas перед закрывающими скобками
+// (типовая ошибка LLM-вывода). Если стандартный parse падает — пробуем repair-fallback.
+function tolerantJsonParse(jsonStr: string): Record<string, unknown> {
+  try {
+    return JSON.parse(jsonStr) as Record<string, unknown>
+  } catch (firstErr) {
+    const repaired = jsonStr
+      .replace(/,(\s*[}\]])/g, '$1') // удалить trailing commas: ,] и ,}
+      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":') // обернуть unquoted keys
+    try {
+      return JSON.parse(repaired) as Record<string, unknown>
+    } catch {
+      throw firstErr
+    }
+  }
+}
+
+// Прямой вызов OpenRouter с response_format=json_object. Не используем callOpenRouter
+// из generator.ts, чтобы не трогать его сигнатуру (он шарится со старым brief.ts).
+async function callOpenRouterForJSON(
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  modelId: string,
+): Promise<string> {
+  const apiKey = process.env.OPENROUTER_API_KEY
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured')
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
+      'X-Title': 'ai-strategist-brief-v2',
+    },
+    body: JSON.stringify({
+      model: modelId,
+      max_tokens: maxTokens,
+      response_format: { type: 'json_object' },
+      provider: { allow_fallbacks: true, sort: 'throughput' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    }),
+  })
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '<no body>')
+    throw new Error(`OpenRouter ${res.status} ${res.statusText}: ${errText.slice(0, 300)}`)
+  }
+
+  const body = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>
+  }
+  const content = body.choices?.[0]?.message?.content
+  if (!content) throw new Error('OpenRouter: пустой content в ответе')
+  return content
+}
+
 function asString(v: unknown, fallback = ''): string {
   return typeof v === 'string' ? v.trim() : fallback
 }
@@ -285,7 +345,7 @@ function parseAutomationBlock(input: unknown): AutomationBlockV2 {
 }
 
 export function parseBriefV2(raw: string): BriefV2 {
-  const data = JSON.parse(extractJSON(raw)) as Record<string, unknown>
+  const data = tolerantJsonParse(extractJSON(raw))
 
   const sectionsRaw = Array.isArray(data.sections) ? data.sections : []
   // Гарантируем порядок и полноту: проходим по SECTION_ORDER_V2 и подставляем
@@ -341,7 +401,7 @@ export async function generateBriefV2(args: {
     nicheAutomationsPreview,
   })
 
-  const { content: raw } = await callOpenRouter(
+  const raw = await callOpenRouterForJSON(
     SYSTEM_PROMPT,
     userPrompt,
     BRIEF_V2_MAX_TOKENS,
