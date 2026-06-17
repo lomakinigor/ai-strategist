@@ -22,7 +22,12 @@ import {
 } from './niche-automations'
 import { generateBriefV2, type BriefV2 } from './brief-v2'
 
-export const FULL_V2_MAX_TOKENS = 16000
+// Каждый из 2 параллельных вызовов берёт ~половину Частей.
+// Sonnet 4.6 stabilно выдаёт ~10K output за ~60-90 сек. Параллельно
+// 2 вызова = wall time ≈ max(call1, call2) ≈ 90 сек, что укладывается
+// в Vercel maxDuration 300 сек даже с учётом brief pre-step (~30-60 сек).
+export const FULL_V2_PART1_MAX_TOKENS = 10000 // Часть 0 + A (тяжёлая)
+export const FULL_V2_PART2_MAX_TOKENS = 9000 // Части B+C+D+E+G (остальное)
 
 // ─── Типы (зеркало 9 Частей структуры краткого v2) ────────────────────────────
 
@@ -309,6 +314,163 @@ RS-МАРКИРОВКА для Part G:
 
 Возвращай ТОЛЬКО валидный JSON без markdown-обёртки.`
 
+// ─── Промпты половин ──────────────────────────────────────────────────────────
+// Каждый запрашивает СВОЙ набор Частей. Парсер мерджит в единый FullV2.
+
+const PART1_KEYS_HINT = 'Этот вызов отвечает за part_0 + part_a (Часть 0 Executive Summary + вся Часть A: A1-A6).'
+const PART2_KEYS_HINT = 'Этот вызов отвечает за part_b + part_c + part_d + part_e + part_g (Части B/C/D/E + Источники G).'
+
+export function buildFullV2Part1Prompt(args: {
+  companyName: string
+  industry: string
+  description: string | null
+  website: string | null
+  intakeQuote: string
+  briefV2: BriefV2
+  factsByType: Record<string, string[]>
+}): string {
+  return baseContextBlock(args) + `
+
+# Что ты должен вернуть
+${PART1_KEYS_HINT}
+
+## Структура JSON
+{
+  "part_0": {
+    "intake_quote": "точная цитата",
+    "ru_position": "1 параграф позиция клиента в РФ",
+    "rf_vs_global": "1 параграф где РФ относительно Global",
+    "top_3_actions": ["3 приоритетных действия"],
+    "key_risks": ["3-5 ключевых рисков"]
+  },
+  "part_a": {
+    "a1": {
+      "market_size_rub": "...", "cagr": "...", "lifecycle_stage": "...",
+      "porter_forces": [5 элементов: { name, score 1-5, rationale }],
+      "pestel": [6 осей: { axis, factors[] }],
+      "top_regulatory_risks": ["..."]
+    },
+    "a2": {
+      "jtbd_top": [{ job, priority: high|medium|low }],
+      "pains_top": [5-10 строк], "gains_top": [5-10 строк],
+      "voice_of_customer": [5-10 цитат], "segmentation": [3-5]
+    },
+    "a3": {
+      "client_lighthouse": { url, performance, seo, notes },
+      "competitors_lighthouse": [{ url, performance, seo, notes }],
+      "content_coverage": "...", "serp_observation": "...",
+      "data_limitation_note": "нет доступа к GSC/Я.Метрике"
+    },
+    "a4": {
+      "profiles": [2-5 элементов, каждый с полями: name, positioning, segments, pricing, channels, content_strategy, tech_stack, team_finance, reviews_tonality, recent_moves, scoring: {offer,audience,proof,creative,landing 0-10}, strengths[3], weaknesses[3], forecast_6m],
+      "summary_matrix_note": "..."
+    },
+    "a5": {
+      "swot": { strengths[], weaknesses[], opportunities[], threats[] },
+      "tows": { so[], st[], wo[], wt[] }
+    },
+    "a6": {
+      "client_value_curve": "...", "competitors_value_curves": "...",
+      "four_actions": { eliminate[], reduce[], raise[], create[] }
+    }
+  }
+}
+
+Только эти ключи. НЕ присылай part_b/part_c/part_d/part_e/part_g — их сгенерирует другой вызов.
+Возвращай ТОЛЬКО валидный JSON.`
+}
+
+export function buildFullV2Part2Prompt(args: {
+  companyName: string
+  industry: string
+  description: string | null
+  website: string | null
+  intakeQuote: string
+  briefV2: BriefV2
+  factsByType: Record<string, string[]>
+  nicheAutomationsPreview: NicheAutomationPattern[]
+}): string {
+  const nicheHint = args.nicheAutomationsPreview
+    .map((p) => `- "${p.title}" — ${p.description}`)
+    .join('\n')
+
+  return baseContextBlock(args) + `
+
+# Подсказка по нишевым AI-автоматизациям (для part_e.e3_niche_specific)
+${nicheHint}
+
+# Что ты должен вернуть
+${PART2_KEYS_HINT}
+
+## Структура JSON
+{
+  "part_b": {
+    "b1_global_snapshot": { leading_countries[], market_size_usd, top_players[], consolidation_level },
+    "b2_trends": [5-10 элементов: { trend, rf_arrival: already_here|in_12m|not_coming, note }],
+    "b3_top_global_players": [3-5: { name, why_different_from_rf }]
+  },
+  "part_c": {
+    "c1_comparison_table": [8-10 строк: { parameter, rf, global, delta, implication }],
+    "c2_opportunity_gaps": [3-5: { gap, client_scenario, complexity: low|medium|high }],
+    "c3_what_not_to_repeat": [3-5: { attempt, why_failed, lesson }]
+  },
+  "part_d": {
+    "d1_roadmap": {
+      "h1": [3-5: { action, why, metric, timeline }],
+      "h2": [3-5 элементов],
+      "h3": [2-3 элементов]
+    },
+    "d2_kpis": [5-8: { name, target_6m }],
+    "d3_hypotheses": [3-7: { statement, test_method, success_signal, budget_range }]
+  },
+  "part_e": {
+    "e1_business_process": { title, detailed_roadmap[], roi_estimate, emotional_argument, implementation_l2 },
+    "e2_marketing": { title, detailed_roadmap[], roi_estimate, emotional_argument, implementation_l2 },
+    "e3_niche_specific": { title, detailed_roadmap[], roi_estimate, emotional_argument, implementation_l2 }
+  },
+  "part_g": {
+    "g1_sources": [список: { description, rs: green|yellow|orange|red, url? }],
+    "g2_unverified": ["что не удалось подтвердить"],
+    "g3_open_questions": ["вопросы на 3 мес"]
+  }
+}
+
+Только эти ключи. НЕ присылай part_0/part_a — их сгенерирует другой вызов.
+part_e.e2_marketing присутствует ВСЕГДА.
+Возвращай ТОЛЬКО валидный JSON.`
+}
+
+function baseContextBlock(args: {
+  companyName: string
+  industry: string
+  description: string | null
+  website: string | null
+  intakeQuote: string
+  briefV2: BriefV2
+  factsByType: Record<string, string[]>
+}): string {
+  const factsBlock = Object.entries(args.factsByType)
+    .filter(([, items]) => items.length > 0)
+    .map(([type, items]) => `### ${type}\n${items.slice(0, 25).map((f) => `- ${f}`).join('\n')}`)
+    .join('\n\n')
+
+  return `# Компания
+${args.companyName}${args.website ? ` · ${args.website}` : ''}${args.industry ? ` · ${args.industry}` : ''}
+${args.description ? `Описание: ${args.description}` : ''}
+
+# Запрос клиента из intake (угол всех выводов)
+"${args.intakeQuote}"
+
+# Утверждённый краткий v2 — фундамент, НЕ ПРОТИВОРЕЧИТЬ
+\`\`\`json
+${JSON.stringify(args.briefV2, null, 2)}
+\`\`\`
+
+# Исходные ФАКТЫ research-стадии
+${factsBlock || '(данных мало — отметь в part_g.g2_unverified если используешь его)'}`
+}
+
+// Legacy single-prompt builder (оставлен для возможного fallback'а — не вызывается).
 export function buildFullV2Prompt(args: {
   companyName: string
   industry: string
@@ -692,17 +854,19 @@ export async function generateFullV2(args: {
     throw new Error(`Не найден research job для ${args.artifactIdOrJobId}`)
   }
 
-  // 1. Сначала генерим краткий v2 — это входной фундамент для полного
+  // 1. Сначала генерим краткий v2 — входной фундамент для согласованности
   const briefResult = await generateBriefV2({
     researchJobId: inputs.researchJobId,
     companyId: inputs.companyId,
   })
 
-  // 2. Генерим полный с brief v2 как контекстом
+  // 2. Два параллельных LLM-вызова — Часть 0+A и Часть B+C+D+E+G.
+  // Wall time ≈ max(call1, call2) ≈ 90 сек вместо 200+ сек для одного
+  // большого вызова с 16K output. Укладывается в Vercel 300 сек лимит.
   const nicheId = detectNicheId(`${inputs.industry} ${inputs.description ?? ''}`)
   const nicheAutomationsPreview = getNicheAutomations(nicheId)
 
-  const userPrompt = buildFullV2Prompt({
+  const sharedArgs = {
     companyName: inputs.companyName,
     industry: inputs.industry,
     description: inputs.description,
@@ -710,16 +874,27 @@ export async function generateFullV2(args: {
     intakeQuote: inputs.intakeQuote,
     briefV2: briefResult.parsed,
     factsByType: inputs.factsByType,
-    nicheAutomationsPreview,
-  })
+  }
 
-  const raw = await callOpenRouterForJSON(
-    SYSTEM_PROMPT,
-    userPrompt,
-    FULL_V2_MAX_TOKENS,
-    AI_CONFIG.strategy.synthesisModel,
-  )
+  const [raw1, raw2] = await Promise.all([
+    callOpenRouterForJSON(
+      SYSTEM_PROMPT,
+      buildFullV2Part1Prompt(sharedArgs),
+      FULL_V2_PART1_MAX_TOKENS,
+      AI_CONFIG.strategy.synthesisModel,
+    ),
+    callOpenRouterForJSON(
+      SYSTEM_PROMPT,
+      buildFullV2Part2Prompt({ ...sharedArgs, nicheAutomationsPreview }),
+      FULL_V2_PART2_MAX_TOKENS,
+      AI_CONFIG.strategy.synthesisModel,
+    ),
+  ])
 
-  const parsed = parseFullV2(raw)
+  const data1 = tolerantJsonParse(extractJSON(raw1))
+  const data2 = tolerantJsonParse(extractJSON(raw2))
+
+  const parsed = { ...data1, ...data2 } as unknown as FullV2
+  const raw = JSON.stringify(parsed)
   return { raw, parsed, brief: briefResult.parsed }
 }
