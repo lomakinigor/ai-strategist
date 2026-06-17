@@ -5,6 +5,7 @@ import { reportArtifacts, researchJobs, companies } from '@/db/schema'
 import { parseSections } from '@/lib/strategy/generator'
 import { CopyButton } from './CopyButton'
 import { SynthesizeButton, RegenerateSectionButton } from './TwoStageActions'
+import { FullV2View } from './FullV2View'
 import type { PartialStrategyContent } from '@/lib/types'
 
 // Server actions in this segment may run for the full Vercel Hobby budget.
@@ -263,11 +264,12 @@ export default async function ReportPage({
   searchParams,
 }: {
   params: { id: string }
-  searchParams: { artifactId?: string }
+  searchParams: { artifactId?: string; version?: string }
 }) {
   const db = getDb()
   const { id: jobId } = params
   const { artifactId } = searchParams
+  const version: 'v1' | 'v2' = searchParams.version === 'v2' ? 'v2' : 'v1'
 
   const jobs = await db
     .select()
@@ -285,6 +287,19 @@ export default async function ReportPage({
     .limit(1)
 
   const company = comps[0]
+
+  // v2 — тестовая ветка нового полного отчёта по L2-методологии. Рендерится
+  // только при ?version=v2. По умолчанию работает старый production-вариант
+  // (decision-driven §0-8) без изменений.
+  if (version === 'v2') {
+    return (
+      <FullV2View
+        jobId={jobId}
+        companyName={company?.name ?? 'Компания'}
+        industry={company?.industry ?? ''}
+      />
+    )
+  }
 
   let artifacts
   if (artifactId) {
