@@ -22,16 +22,20 @@ import {
 } from './niche-automations'
 import { generateBriefV2, type BriefV2 } from './brief-v2'
 
-// 5 параллельных LLM-вызовов. Прошлый split на 4 не справился: 1b с
-// a3+a4+a5+a6 обрывался после Competitor Profiles (a4 — самое тяжёлое:
-// 5 профилей × 9 строковых полей + скоринг + strengths/weaknesses + forecast).
-// Выделили a4 в отдельный вызов; max_tokens подняты до 7-9K (Claude Sonnet 4.6
-// поддерживает до 64K output). Wall time ≈ max(5 parallel) ≈ 60-90 сек.
-export const FULL_V2_TOKENS_1 = 8000 // Часть 0 + a1 (Industry) + a2 (Customer) — 3 средних блока
-export const FULL_V2_TOKENS_2 = 7000 // a3 (Digital) + a5 (SWOT-TOWS) + a6 (Blue Ocean) — 3 средних блока без a4
-export const FULL_V2_TOKENS_3 = 9000 // a4 (Competitor Profiles ОДИН — top-5 × 9 полей + scoring + sw3+wk3 + forecast)
-export const FULL_V2_TOKENS_4 = 7000 // part_b + part_c (Global + Comparison)
-export const FULL_V2_TOKENS_5 = 9000 // part_d + part_e + part_g (Strategy + AI + Sources)
+// 6 параллельных LLM-вызовов. Прошлый split на 5 всё ещё обрывался на хвостах:
+// — call 2 (a3+a5+a6) — SWOT-TOWS выходил очень развёрнутый, a6 (curves + 4 actions)
+//   не помещался.
+// — call 5 (d+e+g) — E1 выходил детальный (roadmap + roi + emotional + impl_l2),
+//   E2/E3 не помещались.
+// Выделили part_e в отдельный 6-й вызов, остальные оставили; токены подняты до
+// 8-10K (Claude Sonnet 4.6 поддерживает до 64K output, скорость ~80 t/s — даже
+// 10K влезают в ~125 сек, под Vercel 300 сек после brief pre-step).
+export const FULL_V2_TOKENS_1 = 10000 // Часть 0 + a1 (Industry) + a2 (Customer)
+export const FULL_V2_TOKENS_2 = 8000  // a3 (Digital) + a5 (SWOT-TOWS) + a6 (Blue Ocean)
+export const FULL_V2_TOKENS_3 = 10000 // a4 (Competitor Profiles ОДИН)
+export const FULL_V2_TOKENS_4 = 8000  // part_b + part_c (Global + Comparison)
+export const FULL_V2_TOKENS_5 = 8000  // part_d + part_g (Strategy + Sources)
+export const FULL_V2_TOKENS_6 = 10000 // part_e (E1+E2+E3 — 3 автоматизации с roadmap/roi/emotional/impl)
 
 // ─── Типы (зеркало 9 Частей структуры краткого v2) ────────────────────────────
 
@@ -485,19 +489,12 @@ ${STRICT_FILL_RULE}
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
 }
 
-// 5: Strategy + AI + Sources
-export function buildFullV2Part5Prompt(args: PromptArgs & { nicheAutomationsPreview: NicheAutomationPattern[] }): string {
-  const nicheHint = args.nicheAutomationsPreview
-    .map((p) => `- "${p.title}" — ${p.description}`)
-    .join('\n')
-
+// 5: Strategy + Sources (БЕЗ part_e — он выделен в отдельный вызов 6)
+export function buildFullV2Part5Prompt(args: PromptArgs): string {
   return baseContextBlock(args) + `
 
-# Подсказка по нишевым AI-автоматизациям (для part_e.e3_niche_specific)
-${nicheHint}
-
 # Что ты должен вернуть
-Только part_d + part_e + part_g.
+Только part_d + part_g.
 ${STRICT_FILL_RULE}
 
 ## Структура JSON
@@ -511,16 +508,52 @@ ${STRICT_FILL_RULE}
     "d2_kpis": [5-8: { name, target_6m }],
     "d3_hypotheses": [3-7: { statement, test_method, success_signal, budget_range }]
   },
+  "part_g": {
+    "g1_sources": [5-15: { description, rs: green|yellow|orange|red, url? }],
+    "g2_unverified": [3-5 что не удалось подтвердить cross-source],
+    "g3_open_questions": [3-5 вопросов на 3 мес]
+  }
+}
+
+ТОЛЬКО эти ключи. Возвращай валидный JSON.`
+}
+
+// 6: AI-автоматизация (part_e — отдельный вызов, так как E1 часто выходит
+// очень детальным с roadmap+roi+emotional_argument+implementation_l2)
+export function buildFullV2Part6Prompt(args: PromptArgs & { nicheAutomationsPreview: NicheAutomationPattern[] }): string {
+  const nicheHint = args.nicheAutomationsPreview
+    .map((p) => `- "${p.title}" — ${p.description}`)
+    .join('\n')
+
+  return baseContextBlock(args) + `
+
+# Подсказка по нишевым AI-автоматизациям (для part_e.e3_niche_specific)
+${nicheHint}
+
+# Что ты должен вернуть
+Только part_e — все 3 автоматизации (E1, E2, E3).
+${STRICT_FILL_RULE}
+
+ОБЯЗАТЕЛЬНО ВСЕ 3 БЛОКА (E1, E2, E3) С ПОЛНЫМ ЗАПОЛНЕНИЕМ:
+- detailed_roadmap — массив из 3-5 конкретных этапов внедрения
+- roi_estimate — оценка ROI в ₽ и/или % времени
+- emotional_argument — развёрнутый аргумент про издержки бездействия (3-5 предложений)
+- implementation_l2 — что делаем под ключ (2-4 предложения)
+
+Если для какого-то блока факты ограничены — заполняй на основе индустрии (E2 marketing присутствует ВСЕГДА), не оставляй пустыми.
+
+## Структура JSON
+{
   "part_e": {
     "e1_business_process": {
-      "title": "Автоматизация бизнес-процессов",
-      "detailed_roadmap": [3-5 конкретных этапов внедрения],
-      "roi_estimate": "ROI оценка в ₽ и % времени",
-      "emotional_argument": "развёрнутый аргумент про издержки бездействия",
-      "implementation_l2": "что делаем под ключ"
+      "title": "Автоматизация бизнес-процессов клиента (конкретно его боль)",
+      "detailed_roadmap": [3-5 этапов],
+      "roi_estimate": "ROI ₽/% времени",
+      "emotional_argument": "развёрнуто 3-5 предложений",
+      "implementation_l2": "что делаем под ключ 2-4 предложения"
     },
     "e2_marketing": {
-      "title": "Автоматизация маркетинга (ВСЕГДА присутствует)",
+      "title": "Автоматизация маркетинга",
       "detailed_roadmap": [3-5 этапов],
       "roi_estimate": "...",
       "emotional_argument": "...",
@@ -533,15 +566,10 @@ ${STRICT_FILL_RULE}
       "emotional_argument": "...",
       "implementation_l2": "..."
     }
-  },
-  "part_g": {
-    "g1_sources": [5-15: { description, rs: green|yellow|orange|red, url? }],
-    "g2_unverified": [3-5 что не удалось подтвердить cross-source],
-    "g3_open_questions": [3-5 вопросов на 3 мес]
   }
 }
 
-ТОЛЬКО эти ключи. part_e.e1/e2/e3 — ВСЕ ТРИ ОБЯЗАТЕЛЬНЫ И ЗАПОЛНЕНЫ. Возвращай валидный JSON.`
+ТОЛЬКО part_e. Все 3 ключа ОБЯЗАТЕЛЬНЫ И ПОЛНОСТЬЮ ЗАПОЛНЕНЫ. Возвращай валидный JSON.`
 }
 
 interface PromptArgs {
@@ -1406,10 +1434,12 @@ export async function generateFullV2(args: {
     factsByType: inputs.factsByType,
   }
 
-  // 5 параллельных LLM-вызовов. Каждый отвечает за свой кусок структуры.
-  // a4 (Competitor Profiles) — отдельный вызов (самый тяжёлый: 5×9 полей).
+  // 6 параллельных LLM-вызовов. Каждый отвечает за свой кусок структуры.
+  // — a4 (Competitor Profiles) — отдельный вызов (самый тяжёлый: 5×9 полей).
+  // — part_e (AI-автоматизация) — отдельный вызов (E1 часто выходит детальным,
+  //   из-за чего E2/E3 не помещались в общем вызове 5).
   // Если какой-то упал — рендерим то что есть (normalizeFullV2 заполнит дефолтами).
-  const [res1, res2, res3, res4, res5] = await Promise.allSettled([
+  const [res1, res2, res3, res4, res5, res6] = await Promise.allSettled([
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part1Prompt(sharedArgs),
@@ -1436,8 +1466,14 @@ export async function generateFullV2(args: {
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
-      buildFullV2Part5Prompt({ ...sharedArgs, nicheAutomationsPreview }),
+      buildFullV2Part5Prompt(sharedArgs),
       FULL_V2_TOKENS_5,
+      AI_CONFIG.strategy.synthesisModel,
+    ),
+    callOpenRouterForJSON(
+      SYSTEM_PROMPT,
+      buildFullV2Part6Prompt({ ...sharedArgs, nicheAutomationsPreview }),
+      FULL_V2_TOKENS_6,
       AI_CONFIG.strategy.synthesisModel,
     ),
   ])
@@ -1458,7 +1494,8 @@ export async function generateFullV2(args: {
     { label: '2 (Part A3+A5+A6)', settled: res2 },
     { label: '3 (Part A4 Competitors)', settled: res3 },
     { label: '4 (Part B + C)', settled: res4 },
-    { label: '5 (Part D + E + G)', settled: res5 },
+    { label: '5 (Part D + G)', settled: res5 },
+    { label: '6 (Part E AI-automation)', settled: res6 },
   ] as const
 
   for (const { label, settled } of allResults) {
@@ -1472,6 +1509,7 @@ export async function generateFullV2(args: {
   const parsed3 = tryParseLabeled('3', res3.status === 'fulfilled' ? res3.value : null)
   const parsed4 = tryParseLabeled('4', res4.status === 'fulfilled' ? res4.value : null)
   const parsed5 = tryParseLabeled('5', res5.status === 'fulfilled' ? res5.value : null)
+  const parsed6 = tryParseLabeled('6', res6.status === 'fulfilled' ? res6.value : null)
 
   // Простой spread для part_0/b/c/d/e/g (по одному источнику каждый).
   // part_a — отдельно: мерджим вложенные ключи a1/a2 (из 1), a3/a5/a6 (из 2), a4 (из 3).
@@ -1481,6 +1519,7 @@ export async function generateFullV2(args: {
     ...parsed3,
     ...parsed4,
     ...parsed5,
+    ...parsed6,
   }
   const pa1 = asObject((parsed1 as Record<string, unknown>).part_a)
   const pa2 = asObject((parsed2 as Record<string, unknown>).part_a)
@@ -1491,7 +1530,7 @@ export async function generateFullV2(args: {
 
   if (Object.keys(merged).length === 0) {
     throw new Error(
-      `Все 5 LLM-вызовов не дали валидного JSON. Статусы: ${allResults
+      `Все 6 LLM-вызовов не дали валидного JSON. Статусы: ${allResults
         .map(({ label, settled }) => `${label}=${settled.status}`)
         .join(', ')}`,
     )
