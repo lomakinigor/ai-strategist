@@ -312,40 +312,55 @@ async function callOpenRouterForJSON(
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured')
 
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
-      'X-Title': 'ai-strategist-brief-v2',
-    },
-    body: JSON.stringify({
-      model: modelId,
-      max_tokens: maxTokens,
-      // temperature=0.2 + без throughput-sort + без fallback-моделей:
-      // надёжность JSON-вывода важнее скорости; см. full-v2 диагностику
-      temperature: 0.2,
-      response_format: { type: 'json_object' },
-      provider: { allow_fallbacks: false },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  })
+  const requestBody = {
+    model: modelId,
+    max_tokens: maxTokens,
+    temperature: 0.2,
+    response_format: { type: 'json_object' },
+    // Префер Anthropic native (highest rate limits), fallback на другие
+    // провайдеры; retry-on-429 ниже страхует от временных лимитов.
+    provider: { allow_fallbacks: true, order: ['Anthropic'] },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  }
 
-  if (!res.ok) {
+  const MAX_ATTEMPTS = 3
+  let lastError = ''
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
+        'X-Title': 'ai-strategist-brief-v2',
+      },
+      body: JSON.stringify(requestBody),
+    })
+
+    if (res.ok) {
+      const body = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string } }>
+      }
+      const content = body.choices?.[0]?.message?.content
+      if (!content) throw new Error('OpenRouter: пустой content в ответе')
+      return content
+    }
+
     const errText = await res.text().catch(() => '<no body>')
-    throw new Error(`OpenRouter ${res.status} ${res.statusText}: ${errText.slice(0, 300)}`)
-  }
+    lastError = `OpenRouter ${res.status} ${res.statusText}: ${errText.slice(0, 300)}`
 
-  const body = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>
+    if ((res.status === 429 || res.status === 503) && attempt < MAX_ATTEMPTS) {
+      const backoffMs = 2000 * Math.pow(2, attempt - 1)
+      console.warn(`[brief-v2] OpenRouter ${res.status} on attempt ${attempt}, retry in ${backoffMs}ms`)
+      await new Promise((r) => setTimeout(r, backoffMs))
+      continue
+    }
+    throw new Error(lastError)
   }
-  const content = body.choices?.[0]?.message?.content
-  if (!content) throw new Error('OpenRouter: пустой content в ответе')
-  return content
+  throw new Error(lastError)
 }
 
 function asString(v: unknown, fallback = ''): string {

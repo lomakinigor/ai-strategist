@@ -1145,57 +1145,79 @@ async function callOpenRouterForJSON(
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured')
 
-  // Убираем sort: 'throughput' для full-v2 — есть риск маршрутизации на провайдера,
-  // который слабее обрабатывает json_object с большими max_tokens.
-  // allow_fallbacks=false — гарантирует что Sonnet 4.6 не подменится на другую модель.
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
-      'X-Title': 'ai-strategist-full-v2',
+  // Префер Anthropic native (highest rate limits для Sonnet 4.6),
+  // fallback на Google Vertex / AWS Bedrock если Anthropic недоступен.
+  // sort=throughput убран — он маршрутизировал на Google и сразу хитал
+  // его более низкий rate limit при 8 параллельных запросах.
+  const requestBody = {
+    model: modelId,
+    max_tokens: maxTokens,
+    // temperature=0.2 — для структурированного JSON-вывода снижает шанс
+    // случайных синтаксических ошибок в больших ответах.
+    temperature: 0.2,
+    response_format: { type: 'json_object' },
+    provider: {
+      allow_fallbacks: true,
+      order: ['Anthropic'],
     },
-    body: JSON.stringify({
-      model: modelId,
-      max_tokens: maxTokens,
-      // temperature=0.2 — для структурированного JSON-вывода снижает шанс
-      // случайных синтаксических ошибок в больших ответах (Sonnet 4.6 при
-      // дефолтной 1.0 на ~22K char JSON может пропустить запятую/кавычку).
-      temperature: 0.2,
-      response_format: { type: 'json_object' },
-      provider: { allow_fallbacks: false },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  })
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  }
 
-  if (!res.ok) {
+  // Retry-on-429 с экспоненциальным бэкоффом: при 8 параллельных вызовах
+  // один upstream-провайдер может временно рейт-лимититься.
+  const MAX_ATTEMPTS = 3
+  let lastError: string = ''
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': process.env.OPENROUTER_REFERER ?? 'https://ai-strategist-bice.vercel.app',
+        'X-Title': 'ai-strategist-full-v2',
+      },
+      body: JSON.stringify(requestBody),
+    })
+
+    if (res.ok) {
+      const body = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string; finish_reason?: string } }>
+        usage?: { prompt_tokens?: number; completion_tokens?: number }
+      }
+      const choice = body.choices?.[0]
+      const content = choice?.message?.content
+      const finishReason = choice?.message?.finish_reason
+      const completionTokens = body.usage?.completion_tokens
+
+      console.log(
+        `[full-v2] OpenRouter ok (attempt ${attempt}): finish=${finishReason ?? 'n/a'}` +
+          ` ctok=${completionTokens ?? 'n/a'} len=${content?.length ?? 0}` +
+          ` preview=${(content ?? '<empty>').slice(0, 100).replace(/\s+/g, ' ')}`,
+      )
+
+      if (!content) throw new Error('OpenRouter: пустой content в ответе')
+      return content
+    }
+
     const errText = await res.text().catch(() => '<no body>')
-    throw new Error(`OpenRouter ${res.status} ${res.statusText}: ${errText.slice(0, 300)}`)
+    lastError = `OpenRouter ${res.status} ${res.statusText}: ${errText.slice(0, 300)}`
+
+    // 429 (rate limit) или 503 (upstream temporarily unavailable) — повторяем
+    if ((res.status === 429 || res.status === 503) && attempt < MAX_ATTEMPTS) {
+      const backoffMs = 2000 * Math.pow(2, attempt - 1) // 2s, 4s, 8s
+      console.warn(
+        `[full-v2] OpenRouter ${res.status} on attempt ${attempt}, retrying in ${backoffMs}ms`,
+      )
+      await new Promise((r) => setTimeout(r, backoffMs))
+      continue
+    }
+    // Любая другая ошибка — не повторяем, кидаем
+    throw new Error(lastError)
   }
-
-  const body = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string; finish_reason?: string } }>
-    usage?: { prompt_tokens?: number; completion_tokens?: number }
-  }
-  const choice = body.choices?.[0]
-  const content = choice?.message?.content
-  const finishReason = choice?.message?.finish_reason
-  const completionTokens = body.usage?.completion_tokens
-
-  // Диагностика: пишем preview контента и финальные причины. Поможет понять
-  // в Vercel логах, какой именно вызов и почему возвращал пустоту.
-  console.log(
-    `[full-v2] OpenRouter ok: model=${modelId} finish=${finishReason ?? 'n/a'}` +
-      ` completion_tokens=${completionTokens ?? 'n/a'} content_len=${content?.length ?? 0}` +
-      ` preview=${(content ?? '<empty>').slice(0, 120).replace(/\s+/g, ' ')}`,
-  )
-
-  if (!content) throw new Error('OpenRouter: пустой content в ответе')
-  return content
+  throw new Error(lastError)
 }
 
 // Парсер. Жёстко не валидируем — если поля отсутствуют, оставляем пустыми.
