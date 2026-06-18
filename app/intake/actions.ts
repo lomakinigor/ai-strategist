@@ -18,6 +18,11 @@ export async function createResearchJob(formData: FormData) {
   const tierRaw = (formData.get('tier') as string | null) ?? 'free'
   const tier: 'free' | 'paid' = tierRaw === 'paid' ? 'paid' : 'free'
 
+  // ?version=v2 пробрасывается через скрытое поле формы — server-action иначе
+  // не видит query-параметров. Сохраняем для редиректа на /research или /pay.
+  const versionRaw = (formData.get('version') as string | null) ?? ''
+  const versionSuffix = versionRaw === 'v2' ? '?version=v2' : ''
+
   // Collect channel links (direct URLs)
   const channels = (formData.getAll('channel_link') as string[]).filter(Boolean)
 
@@ -106,7 +111,7 @@ export async function createResearchJob(formData: FormData) {
   // free → сразу на страницу прогресса research;
   // paid → на страницу оплаты QR, где будет ждать ручного approve администратором.
   if (tier === 'paid') {
-    redirect(`/pay/${job.id}`)
+    redirect(`/pay/${job.id}${versionSuffix}`)
   }
-  redirect(`/research/${job.id}`)
+  redirect(`/research/${job.id}${versionSuffix}`)
 }

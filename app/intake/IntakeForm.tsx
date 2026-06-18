@@ -307,6 +307,13 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
     formData.set('company_name', companyName.trim())
     formData.set('industry', industry.trim())
     formData.set('tier', tier)
+
+    // ?version=v2 → пробрасываем в server-action, иначе он не видит query-параметров
+    // и редиректит на /research/{id} без version, теряя v2-путь.
+    if (typeof window !== 'undefined') {
+      const v = new URLSearchParams(window.location.search).get('version')
+      if (v === 'v2') formData.set('version', 'v2')
+    }
     if (description.trim()) formData.set('description', description.trim())
     if (website.trim()) formData.set('website', website.trim())
     if (goals.trim()) formData.set('research_goal', goals.trim())
