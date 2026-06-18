@@ -1089,6 +1089,9 @@ async function callOpenRouterForJSON(
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured')
 
+  // Убираем sort: 'throughput' для full-v2 — есть риск маршрутизации на провайдера,
+  // который слабее обрабатывает json_object с большими max_tokens.
+  // allow_fallbacks=false — гарантирует что Sonnet 4.6 не подменится на другую модель.
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -1101,7 +1104,7 @@ async function callOpenRouterForJSON(
       model: modelId,
       max_tokens: maxTokens,
       response_format: { type: 'json_object' },
-      provider: { allow_fallbacks: true, sort: 'throughput' },
+      provider: { allow_fallbacks: false },
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
@@ -1115,9 +1118,22 @@ async function callOpenRouterForJSON(
   }
 
   const body = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>
+    choices?: Array<{ message?: { content?: string; finish_reason?: string } }>
+    usage?: { prompt_tokens?: number; completion_tokens?: number }
   }
-  const content = body.choices?.[0]?.message?.content
+  const choice = body.choices?.[0]
+  const content = choice?.message?.content
+  const finishReason = choice?.message?.finish_reason
+  const completionTokens = body.usage?.completion_tokens
+
+  // Диагностика: пишем preview контента и финальные причины. Поможет понять
+  // в Vercel логах, какой именно вызов и почему возвращал пустоту.
+  console.log(
+    `[full-v2] OpenRouter ok: model=${modelId} finish=${finishReason ?? 'n/a'}` +
+      ` completion_tokens=${completionTokens ?? 'n/a'} content_len=${content?.length ?? 0}` +
+      ` preview=${(content ?? '<empty>').slice(0, 120).replace(/\s+/g, ' ')}`,
+  )
+
   if (!content) throw new Error('OpenRouter: пустой content в ответе')
   return content
 }
