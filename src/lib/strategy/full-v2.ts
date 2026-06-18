@@ -22,20 +22,19 @@ import {
 } from './niche-automations'
 import { generateBriefV2, type BriefV2 } from './brief-v2'
 
-// 6 параллельных LLM-вызовов. Прошлый split на 5 всё ещё обрывался на хвостах:
-// — call 2 (a3+a5+a6) — SWOT-TOWS выходил очень развёрнутый, a6 (curves + 4 actions)
-//   не помещался.
-// — call 5 (d+e+g) — E1 выходил детальный (roadmap + roi + emotional + impl_l2),
-//   E2/E3 не помещались.
-// Выделили part_e в отдельный 6-й вызов, остальные оставили; токены подняты до
-// 8-10K (Claude Sonnet 4.6 поддерживает до 64K output, скорость ~80 t/s — даже
-// 10K влезают в ~125 сек, под Vercel 300 сек после brief pre-step).
+// 7 параллельных LLM-вызовов. Прошлый split на 6 ещё обрывался на a6:
+// SWOT-TOWS (a5) выходил с длинными стратегическими формулировками
+// («Опубликовать llms.txt и базовую страницу О компании в машиночитаемом
+// формате — устранить слабость невидимости для AI-ассистентов...») и
+// съедал бюджет вызова 2; a6 (Blue Ocean) не успевал. Выделили a6 в
+// отдельный 7-й вызов — он маленький (~800 ток. контента), бюджета 4K хватает.
 export const FULL_V2_TOKENS_1 = 10000 // Часть 0 + a1 (Industry) + a2 (Customer)
-export const FULL_V2_TOKENS_2 = 8000  // a3 (Digital) + a5 (SWOT-TOWS) + a6 (Blue Ocean)
+export const FULL_V2_TOKENS_2 = 8000  // a3 (Digital) + a5 (SWOT-TOWS) — БЕЗ a6
 export const FULL_V2_TOKENS_3 = 10000 // a4 (Competitor Profiles ОДИН)
 export const FULL_V2_TOKENS_4 = 8000  // part_b + part_c (Global + Comparison)
 export const FULL_V2_TOKENS_5 = 8000  // part_d + part_g (Strategy + Sources)
-export const FULL_V2_TOKENS_6 = 10000 // part_e (E1+E2+E3 — 3 автоматизации с roadmap/roi/emotional/impl)
+export const FULL_V2_TOKENS_6 = 10000 // part_e (E1+E2+E3)
+export const FULL_V2_TOKENS_7 = 4000  // a6 (Blue Ocean — small, alone)
 
 // ─── Типы (зеркало 9 Частей структуры краткого v2) ────────────────────────────
 
@@ -372,12 +371,12 @@ ${STRICT_FILL_RULE}
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
 }
 
-// 2: Digital + SWOT-TOWS + Blue Ocean (3 средних блока, БЕЗ a4)
+// 2: Digital + SWOT-TOWS (БЕЗ a6 — он в отдельном вызове 7)
 export function buildFullV2Part2Prompt(args: PromptArgs): string {
   return baseContextBlock(args) + `
 
 # Что ты должен вернуть
-Только part_a.a3 + a5 + a6.
+Только part_a.a3 + a5.
 ${STRICT_FILL_RULE}
 
 ## Структура JSON
@@ -403,21 +402,39 @@ ${STRICT_FILL_RULE}
         "wo": [2-4 действия: слабости × возможности],
         "wt": [2-4 действия: слабости × угрозы]
       }
-    },
-    "a6": {
-      "client_value_curve": "описание кривой ценности клиента (1-2 абзаца)",
-      "competitors_value_curves": "сравнение с top-5 кривыми (1-2 абзаца)",
-      "four_actions": {
-        "eliminate": [2-4 что убрать],
-        "reduce": [2-4 что снизить],
-        "raise": [2-4 что усилить],
-        "create": [2-4 что создать нового]
-      }
     }
   }
 }
 
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
+}
+
+// 7: Blue Ocean ОДИН (a6 — выделен в отдельный вызов, потому что в вызове 2
+// SWOT-TOWS выходил настолько развёрнутым, что a6 не помещался)
+export function buildFullV2Part7Prompt(args: PromptArgs): string {
+  return baseContextBlock(args) + `
+
+# Что ты должен вернуть
+Только part_a.a6 — Blue Ocean Value Curve и 4 действия.
+${STRICT_FILL_RULE}
+
+## Структура JSON
+{
+  "part_a": {
+    "a6": {
+      "client_value_curve": "описание кривой ценности клиента — какие 5-8 факторов конкуренции, насколько сильно клиент по ним играет (1-2 абзаца с конкретикой)",
+      "competitors_value_curves": "сравнение с кривыми top-5 конкурентов — где клиент выше/ниже, что нетипично (1-2 абзаца)",
+      "four_actions": {
+        "eliminate": [2-4 что убрать — конкретные расходы/процессы/каналы которые не дают ценность],
+        "reduce": [2-4 что снизить — где можно сократить без потерь],
+        "raise": [2-4 что усилить — недокачанные сейчас стороны],
+        "create": [2-4 что создать нового — нет ни у клиента ни у top-5]
+      }
+    }
+  }
+}
+
+ТОЛЬКО эти ключи. Все 4 действия (eliminate/reduce/raise/create) ОБЯЗАТЕЛЬНЫ И ЗАПОЛНЕНЫ. Возвращай валидный JSON.`
 }
 
 // 3: Competitor Profiles ОДИН (a4 — самый тяжёлый блок)
@@ -1434,12 +1451,12 @@ export async function generateFullV2(args: {
     factsByType: inputs.factsByType,
   }
 
-  // 6 параллельных LLM-вызовов. Каждый отвечает за свой кусок структуры.
-  // — a4 (Competitor Profiles) — отдельный вызов (самый тяжёлый: 5×9 полей).
-  // — part_e (AI-автоматизация) — отдельный вызов (E1 часто выходит детальным,
-  //   из-за чего E2/E3 не помещались в общем вызове 5).
+  // 7 параллельных LLM-вызовов. Каждый отвечает за свой кусок структуры.
+  // — a4 (Competitor Profiles) — отдельный вызов 3 (самый тяжёлый: 5×9 полей).
+  // — part_e (AI-автоматизация) — отдельный вызов 6 (E1 часто выходит детальным).
+  // — a6 (Blue Ocean) — отдельный вызов 7 (в вызове 2 SWOT-TOWS съедал бюджет).
   // Если какой-то упал — рендерим то что есть (normalizeFullV2 заполнит дефолтами).
-  const [res1, res2, res3, res4, res5, res6] = await Promise.allSettled([
+  const [res1, res2, res3, res4, res5, res6, res7] = await Promise.allSettled([
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part1Prompt(sharedArgs),
@@ -1476,6 +1493,12 @@ export async function generateFullV2(args: {
       FULL_V2_TOKENS_6,
       AI_CONFIG.strategy.synthesisModel,
     ),
+    callOpenRouterForJSON(
+      SYSTEM_PROMPT,
+      buildFullV2Part7Prompt(sharedArgs),
+      FULL_V2_TOKENS_7,
+      AI_CONFIG.strategy.synthesisModel,
+    ),
   ])
 
   const tryParseLabeled = (label: string, raw: string | null): Record<string, unknown> => {
@@ -1491,11 +1514,12 @@ export async function generateFullV2(args: {
 
   const allResults = [
     { label: '1 (Part 0 + A1/A2)', settled: res1 },
-    { label: '2 (Part A3+A5+A6)', settled: res2 },
+    { label: '2 (Part A3+A5)', settled: res2 },
     { label: '3 (Part A4 Competitors)', settled: res3 },
     { label: '4 (Part B + C)', settled: res4 },
     { label: '5 (Part D + G)', settled: res5 },
     { label: '6 (Part E AI-automation)', settled: res6 },
+    { label: '7 (Part A6 Blue Ocean)', settled: res7 },
   ] as const
 
   for (const { label, settled } of allResults) {
@@ -1510,9 +1534,11 @@ export async function generateFullV2(args: {
   const parsed4 = tryParseLabeled('4', res4.status === 'fulfilled' ? res4.value : null)
   const parsed5 = tryParseLabeled('5', res5.status === 'fulfilled' ? res5.value : null)
   const parsed6 = tryParseLabeled('6', res6.status === 'fulfilled' ? res6.value : null)
+  const parsed7 = tryParseLabeled('7', res7.status === 'fulfilled' ? res7.value : null)
 
   // Простой spread для part_0/b/c/d/e/g (по одному источнику каждый).
-  // part_a — отдельно: мерджим вложенные ключи a1/a2 (из 1), a3/a5/a6 (из 2), a4 (из 3).
+  // part_a — отдельно: мерджим вложенные ключи a1/a2 (из 1), a3/a5 (из 2),
+  // a4 (из 3), a6 (из 7).
   const merged: Record<string, unknown> = {
     ...parsed1,
     ...parsed2,
@@ -1520,17 +1546,24 @@ export async function generateFullV2(args: {
     ...parsed4,
     ...parsed5,
     ...parsed6,
+    ...parsed7,
   }
   const pa1 = asObject((parsed1 as Record<string, unknown>).part_a)
   const pa2 = asObject((parsed2 as Record<string, unknown>).part_a)
   const pa3 = asObject((parsed3 as Record<string, unknown>).part_a)
-  if (Object.keys(pa1).length > 0 || Object.keys(pa2).length > 0 || Object.keys(pa3).length > 0) {
-    merged.part_a = { ...pa1, ...pa2, ...pa3 }
+  const pa7 = asObject((parsed7 as Record<string, unknown>).part_a)
+  if (
+    Object.keys(pa1).length > 0 ||
+    Object.keys(pa2).length > 0 ||
+    Object.keys(pa3).length > 0 ||
+    Object.keys(pa7).length > 0
+  ) {
+    merged.part_a = { ...pa1, ...pa2, ...pa3, ...pa7 }
   }
 
   if (Object.keys(merged).length === 0) {
     throw new Error(
-      `Все 6 LLM-вызовов не дали валидного JSON. Статусы: ${allResults
+      `Все 7 LLM-вызовов не дали валидного JSON. Статусы: ${allResults
         .map(({ label, settled }) => `${label}=${settled.status}`)
         .join(', ')}`,
     )
