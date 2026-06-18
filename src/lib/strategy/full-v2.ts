@@ -1015,6 +1015,42 @@ function balanceBrackets(s: string): string {
   return result
 }
 
+// Находит последнюю «безопасную» позицию в строке до errPos — последнюю
+// запятую (вне строки) или индекс сразу после последней открывающей скобки
+// `[`/`{`. Это позволяет отрезать «битый» элемент на этой позиции и
+// сбалансировать скобки, сохранив всё, что было до него.
+function findSafeBoundaryBefore(s: string, pos: number): number {
+  let inStr = false
+  let esc = false
+  let lastComma = -1
+  let lastOpen = -1
+  const limit = Math.min(pos, s.length)
+  for (let i = 0; i < limit; i++) {
+    const c = s[i]
+    if (esc) {
+      esc = false
+      continue
+    }
+    if (c === '\\') {
+      esc = true
+      continue
+    }
+    if (c === '"') {
+      inStr = !inStr
+      continue
+    }
+    if (inStr) continue
+    if (c === ',') lastComma = i
+    else if (c === '[' || c === '{') lastOpen = i
+  }
+  // Если последняя запятая ПОСЛЕ последней открывающей скобки — режем по ней
+  // (slice исключит саму запятую); иначе — сразу после открывающей скобки
+  // (получим пустой массив/объект на этом месте).
+  if (lastComma > lastOpen) return lastComma
+  if (lastOpen >= 0) return lastOpen + 1
+  return -1
+}
+
 function tolerantJsonParse(jsonStr: string): Record<string, unknown> {
   try {
     return JSON.parse(jsonStr) as Record<string, unknown>
@@ -1032,8 +1068,28 @@ function tolerantJsonParse(jsonStr: string): Record<string, unknown> {
       repaired = balanceBrackets(repaired)
       try {
         return JSON.parse(repaired) as Record<string, unknown>
-      } catch {
-        // Шаг 3: режем до последнего полного объекта верхнего уровня
+      } catch (errAfterBalance) {
+        // Шаг 3 (NEW): извлекаем позицию ошибки и режем до последней безопасной
+        // границы перед ней — спасаем длинный валидный префикс при ошибке в
+        // глубоко вложенном элементе (например, пропущенная запятая внутри
+        // длинного массива в a4.profiles).
+        const errMsg = errAfterBalance instanceof Error ? errAfterBalance.message : ''
+        const posMatch = errMsg.match(/position\s+(\d+)/i)
+        if (posMatch) {
+          const errPos = parseInt(posMatch[1], 10)
+          const safeBoundary = findSafeBoundaryBefore(repaired, errPos)
+          if (safeBoundary > 0) {
+            // slice до запятой (не включая её) или до открывающей скобки + 1
+            const sliced = repaired.slice(0, safeBoundary).replace(/[,\s]+$/, '')
+            const closed = balanceBrackets(sliced)
+            try {
+              return JSON.parse(closed) as Record<string, unknown>
+            } catch {
+              // продолжаем шаг 4
+            }
+          }
+        }
+        // Шаг 4: режем до последнего полного объекта верхнего уровня
         const lastValidEnd = findLastCompleteObjectEnd(repaired)
         if (lastValidEnd > 0) {
           const truncated = balanceBrackets(repaired.slice(0, lastValidEnd + 1))
@@ -1103,6 +1159,10 @@ async function callOpenRouterForJSON(
     body: JSON.stringify({
       model: modelId,
       max_tokens: maxTokens,
+      // temperature=0.2 — для структурированного JSON-вывода снижает шанс
+      // случайных синтаксических ошибок в больших ответах (Sonnet 4.6 при
+      // дефолтной 1.0 на ~22K char JSON может пропустить запятую/кавычку).
+      temperature: 0.2,
       response_format: { type: 'json_object' },
       provider: { allow_fallbacks: false },
       messages: [

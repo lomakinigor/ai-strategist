@@ -323,8 +323,11 @@ async function callOpenRouterForJSON(
     body: JSON.stringify({
       model: modelId,
       max_tokens: maxTokens,
+      // temperature=0.2 + без throughput-sort + без fallback-моделей:
+      // надёжность JSON-вывода важнее скорости; см. full-v2 диагностику
+      temperature: 0.2,
       response_format: { type: 'json_object' },
-      provider: { allow_fallbacks: true, sort: 'throughput' },
+      provider: { allow_fallbacks: false },
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
