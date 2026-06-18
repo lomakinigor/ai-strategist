@@ -66,9 +66,19 @@ export default async function FreeReportPage({
           <Link href="/" className="text-base font-bold tracking-tight">
             AI-Стратег
           </Link>
-          <Link href={`/free-report/${params.artifactId}`} className="lp-btn-ghost text-xs">
-            ← вернуться к v1
-          </Link>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={`/free-report/${params.artifactId}`} className="lp-btn-ghost text-xs">
+              ← вернуться к v1
+            </Link>
+            {row.researchJobId && (
+              <Link
+                href={`/research/${row.researchJobId}/report?version=v2`}
+                className="lp-btn-primary text-xs"
+              >
+                Полный отчёт v2 →
+              </Link>
+            )}
+          </div>
         </nav>
         <BriefV2View
           artifactId={params.artifactId}
