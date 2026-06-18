@@ -22,19 +22,18 @@ import {
 } from './niche-automations'
 import { generateBriefV2, type BriefV2 } from './brief-v2'
 
-// 7 параллельных LLM-вызовов. Прошлый split на 6 ещё обрывался на a6:
-// SWOT-TOWS (a5) выходил с длинными стратегическими формулировками
-// («Опубликовать llms.txt и базовую страницу О компании в машиночитаемом
-// формате — устранить слабость невидимости для AI-ассистентов...») и
-// съедал бюджет вызова 2; a6 (Blue Ocean) не успевал. Выделили a6 в
-// отдельный 7-й вызов — он маленький (~800 ток. контента), бюджета 4K хватает.
+// 8 параллельных LLM-вызовов. Прошлые итерации показали закономерность:
+// LLM обрывает ПОСЛЕДНИЙ подраздел вызова если перед ним был развёрнутый блок.
+// — call 5 (d+g): g1_sources успевало, g2/g3 — обрывались.
+// Решение: каждый «хвостовой» подраздел вынесен в свой вызов с малым бюджетом.
 export const FULL_V2_TOKENS_1 = 10000 // Часть 0 + a1 (Industry) + a2 (Customer)
 export const FULL_V2_TOKENS_2 = 8000  // a3 (Digital) + a5 (SWOT-TOWS) — БЕЗ a6
 export const FULL_V2_TOKENS_3 = 10000 // a4 (Competitor Profiles ОДИН)
 export const FULL_V2_TOKENS_4 = 8000  // part_b + part_c (Global + Comparison)
-export const FULL_V2_TOKENS_5 = 8000  // part_d + part_g (Strategy + Sources)
+export const FULL_V2_TOKENS_5 = 8000  // part_d ОДИН (Roadmap + KPI + Hypotheses)
 export const FULL_V2_TOKENS_6 = 10000 // part_e (E1+E2+E3)
 export const FULL_V2_TOKENS_7 = 4000  // a6 (Blue Ocean — small, alone)
+export const FULL_V2_TOKENS_8 = 5000  // part_g (Sources + Unverified + Open questions)
 
 // ─── Типы (зеркало 9 Частей структуры краткого v2) ────────────────────────────
 
@@ -506,12 +505,12 @@ ${STRICT_FILL_RULE}
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
 }
 
-// 5: Strategy + Sources (БЕЗ part_e — он выделен в отдельный вызов 6)
+// 5: Strategy ОДИН (part_d — Roadmap + KPI + Hypotheses, БЕЗ part_g)
 export function buildFullV2Part5Prompt(args: PromptArgs): string {
   return baseContextBlock(args) + `
 
 # Что ты должен вернуть
-Только part_d + part_g.
+Только part_d.
 ${STRICT_FILL_RULE}
 
 ## Структура JSON
@@ -524,15 +523,52 @@ ${STRICT_FILL_RULE}
     },
     "d2_kpis": [5-8: { name, target_6m }],
     "d3_hypotheses": [3-7: { statement, test_method, success_signal, budget_range }]
-  },
-  "part_g": {
-    "g1_sources": [5-15: { description, rs: green|yellow|orange|red, url? }],
-    "g2_unverified": [3-5 что не удалось подтвердить cross-source],
-    "g3_open_questions": [3-5 вопросов на 3 мес]
   }
 }
 
 ТОЛЬКО эти ключи. Возвращай валидный JSON.`
+}
+
+// 8: Sources/Достоверность (part_g — выделен из вызова 5, чтобы g2/g3 не
+// обрывались после развёрнутого g1_sources/part_d)
+export function buildFullV2Part8Prompt(args: PromptArgs): string {
+  return baseContextBlock(args) + `
+
+# Что ты должен вернуть
+Только part_g — источники, неверифицированное и открытые вопросы.
+${STRICT_FILL_RULE}
+
+ОБЯЗАТЕЛЬНО ВСЕ 3 ключа заполнены контентом:
+- g1_sources — 5-15 элементов с описанием источника и RS
+- g2_unverified — 3-5 фактов которые НЕ удалось подтвердить cross-source
+  (например: точный трафик конкурентов без Similarweb, backlinks без Ahrefs,
+   финпоказатели без Контур.Фокус, Я.Метрика клиента и т.п.)
+- g3_open_questions — 3-5 вопросов для контрольной точки через 3 мес
+  (например: «закроется ли продаваемый сегмент при изменении регулирования?»,
+   «удержит ли конкурент темп роста?», «появится ли новый AI-инструмент?»)
+
+## Структура JSON
+{
+  "part_g": {
+    "g1_sources": [
+      { "description": "официальный сайт компании", "rs": "green", "url": "..." },
+      { "description": "Wordstat — спрос на запрос «...»", "rs": "yellow", "url": "https://wordstat.yandex.ru" },
+      ... (5-15 источников)
+    ],
+    "g2_unverified": [
+      "Точный трафик конкурентов — нет доступа к Similarweb",
+      "Backlink-профили — нет доступа к Ahrefs/Semrush",
+      ... (3-5 пунктов)
+    ],
+    "g3_open_questions": [
+      "Удержит ли конкурент X темп роста при текущем CAC?",
+      "Сработает ли AI-агент квалификации на сегменте Y?",
+      ... (3-5 пунктов)
+    ]
+  }
+}
+
+ТОЛЬКО эти ключи. g2_unverified и g3_open_questions НЕ ПУСТЫЕ. Возвращай валидный JSON.`
 }
 
 // 6: AI-автоматизация (part_e — отдельный вызов, так как E1 часто выходит
@@ -1451,12 +1487,13 @@ export async function generateFullV2(args: {
     factsByType: inputs.factsByType,
   }
 
-  // 7 параллельных LLM-вызовов. Каждый отвечает за свой кусок структуры.
+  // 8 параллельных LLM-вызовов. Каждый отвечает за свой кусок структуры.
   // — a4 (Competitor Profiles) — отдельный вызов 3 (самый тяжёлый: 5×9 полей).
   // — part_e (AI-автоматизация) — отдельный вызов 6 (E1 часто выходит детальным).
   // — a6 (Blue Ocean) — отдельный вызов 7 (в вызове 2 SWOT-TOWS съедал бюджет).
+  // — part_g (Sources) — отдельный вызов 8 (g2/g3 обрывались после d+g1).
   // Если какой-то упал — рендерим то что есть (normalizeFullV2 заполнит дефолтами).
-  const [res1, res2, res3, res4, res5, res6, res7] = await Promise.allSettled([
+  const [res1, res2, res3, res4, res5, res6, res7, res8] = await Promise.allSettled([
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part1Prompt(sharedArgs),
@@ -1499,6 +1536,12 @@ export async function generateFullV2(args: {
       FULL_V2_TOKENS_7,
       AI_CONFIG.strategy.synthesisModel,
     ),
+    callOpenRouterForJSON(
+      SYSTEM_PROMPT,
+      buildFullV2Part8Prompt(sharedArgs),
+      FULL_V2_TOKENS_8,
+      AI_CONFIG.strategy.synthesisModel,
+    ),
   ])
 
   const tryParseLabeled = (label: string, raw: string | null): Record<string, unknown> => {
@@ -1517,9 +1560,10 @@ export async function generateFullV2(args: {
     { label: '2 (Part A3+A5)', settled: res2 },
     { label: '3 (Part A4 Competitors)', settled: res3 },
     { label: '4 (Part B + C)', settled: res4 },
-    { label: '5 (Part D + G)', settled: res5 },
+    { label: '5 (Part D)', settled: res5 },
     { label: '6 (Part E AI-automation)', settled: res6 },
     { label: '7 (Part A6 Blue Ocean)', settled: res7 },
+    { label: '8 (Part G Sources)', settled: res8 },
   ] as const
 
   for (const { label, settled } of allResults) {
@@ -1535,6 +1579,7 @@ export async function generateFullV2(args: {
   const parsed5 = tryParseLabeled('5', res5.status === 'fulfilled' ? res5.value : null)
   const parsed6 = tryParseLabeled('6', res6.status === 'fulfilled' ? res6.value : null)
   const parsed7 = tryParseLabeled('7', res7.status === 'fulfilled' ? res7.value : null)
+  const parsed8 = tryParseLabeled('8', res8.status === 'fulfilled' ? res8.value : null)
 
   // Простой spread для part_0/b/c/d/e/g (по одному источнику каждый).
   // part_a — отдельно: мерджим вложенные ключи a1/a2 (из 1), a3/a5 (из 2),
@@ -1547,6 +1592,7 @@ export async function generateFullV2(args: {
     ...parsed5,
     ...parsed6,
     ...parsed7,
+    ...parsed8,
   }
   const pa1 = asObject((parsed1 as Record<string, unknown>).part_a)
   const pa2 = asObject((parsed2 as Record<string, unknown>).part_a)
@@ -1563,7 +1609,7 @@ export async function generateFullV2(args: {
 
   if (Object.keys(merged).length === 0) {
     throw new Error(
-      `Все 7 LLM-вызовов не дали валидного JSON. Статусы: ${allResults
+      `Все 8 LLM-вызовов не дали валидного JSON. Статусы: ${allResults
         .map(({ label, settled }) => `${label}=${settled.status}`)
         .join(', ')}`,
     )
