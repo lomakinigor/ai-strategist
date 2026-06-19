@@ -149,6 +149,52 @@ export async function getJobsBreakdown(limit = 30): Promise<JobBreakdown[]> {
   }))
 }
 
+export interface ProviderUsage {
+  provider: string
+  totalUsd: number
+  totalRub: number
+  callsCount: number
+  todayUsd: number
+  weekUsd: number
+  monthUsd: number
+}
+
+/** Разбивка расходов по провайдеру за разные периоды (для виджетов вверху страницы). */
+export async function getProviderUsage(): Promise<ProviderUsage[]> {
+  const db = getDb()
+  const rows = await db.execute<{
+    provider: string
+    total_usd: string | null
+    total_rub: string | null
+    calls_count: string
+    today_usd: string | null
+    week_usd: string | null
+    month_usd: string | null
+  }>(sql`
+    SELECT
+      provider,
+      COALESCE(SUM(cost_usd), 0) AS total_usd,
+      COALESCE(SUM(cost_rub), 0) AS total_rub,
+      COUNT(*) AS calls_count,
+      COALESCE(SUM(cost_usd) FILTER (WHERE created_at >= now() - interval '1 day'), 0) AS today_usd,
+      COALESCE(SUM(cost_usd) FILTER (WHERE created_at >= now() - interval '7 days'), 0) AS week_usd,
+      COALESCE(SUM(cost_usd) FILTER (WHERE created_at >= now() - interval '30 days'), 0) AS month_usd
+    FROM llm_calls
+    GROUP BY provider
+    ORDER BY total_usd DESC
+  `)
+
+  return rows.map((r) => ({
+    provider: r.provider,
+    totalUsd: parseFloat(r.total_usd ?? '0'),
+    totalRub: parseFloat(r.total_rub ?? '0'),
+    callsCount: parseInt(r.calls_count, 10),
+    todayUsd: parseFloat(r.today_usd ?? '0'),
+    weekUsd: parseFloat(r.week_usd ?? '0'),
+    monthUsd: parseFloat(r.month_usd ?? '0'),
+  }))
+}
+
 /** Получить баланс OpenRouter через /api/v1/credits. */
 export async function getOpenRouterBalance(): Promise<{
   totalCredits: number

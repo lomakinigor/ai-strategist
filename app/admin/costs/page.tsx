@@ -10,11 +10,12 @@ import {
   getStageBreakdown,
   getJobsBreakdown,
   getOpenRouterBalance,
+  getProviderUsage,
   type PeriodTotals,
   type StageBreakdown,
   type JobBreakdown,
+  type ProviderUsage,
 } from '@/lib/cost/queries'
-import { getUsdRubRate } from '@/lib/cost/rates'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,7 +65,7 @@ function fmtDate(d: Date): string {
 }
 
 export default async function AdminCostsPage() {
-  const [today, week, month, allTime, stageBreakdown, jobsBreakdown, balance, usdRubRate] = await Promise.all([
+  const [today, week, month, allTime, stageBreakdown, jobsBreakdown, balance, providerUsage] = await Promise.all([
     getTotalsForPeriod(1),
     getTotalsForPeriod(7),
     getTotalsForPeriod(30),
@@ -72,8 +73,10 @@ export default async function AdminCostsPage() {
     getStageBreakdown(null),
     getJobsBreakdown(30),
     getOpenRouterBalance(),
-    getUsdRubRate(),
+    getProviderUsage(),
   ])
+
+  const openaiUsage = providerUsage.find((p) => p.provider === 'openai') ?? null
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
@@ -82,17 +85,17 @@ export default async function AdminCostsPage() {
         <div>
           <p className="lp-eyebrow lp-eyebrow-warm mb-2">Этап 1.1 admin-панели</p>
           <h1 className="text-3xl font-bold tracking-[-0.02em]">Стоимость pipeline</h1>
-          <p className="text-sm text-[#525252] mt-2">
-            Курс конвертации USD→₽ на момент записи фиксируется. Текущий курс ЦБ: <strong>{usdRubRate.toFixed(2)} ₽/$</strong>.
-          </p>
         </div>
         <div className="text-xs text-[#737373] text-right">
           Данные обновляются при каждом открытии страницы.
         </div>
       </div>
 
-      {/* OpenRouter balance widget */}
-      <BalanceWidget balance={balance} />
+      {/* Provider widgets — два рядом: OpenRouter балансом, OpenAI расходом */}
+      <div className="grid md:grid-cols-2 gap-3 mb-6">
+        <BalanceWidget balance={balance} />
+        <OpenAiUsageWidget usage={openaiUsage} />
+      </div>
 
       {/* 4 KPI */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
@@ -229,8 +232,9 @@ function BalanceWidget({
 }) {
   if (!balance) {
     return (
-      <div className="border border-yellow-200 bg-yellow-50 rounded p-4 mb-6 text-sm">
-        Баланс OpenRouter недоступен (нет ключа или сеть). Проверь через{' '}
+      <div className="border border-yellow-200 bg-yellow-50 rounded p-4 text-sm">
+        <p className="text-[11px] uppercase tracking-wider font-bold mb-1">OpenRouter</p>
+        Баланс недоступен (нет ключа или сеть). Проверь через{' '}
         <a
           href="https://openrouter.ai/credits"
           target="_blank"
@@ -249,7 +253,7 @@ function BalanceWidget({
   const emoji = isCritical ? '🔴' : isLow ? '🟡' : '🟢'
 
   return (
-    <div className={`border rounded p-4 mb-6 ${bg}`}>
+    <div className={`border rounded p-4 ${bg}`}>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[11px] uppercase tracking-wider font-bold mb-1">Баланс OpenRouter {emoji}</p>
@@ -276,6 +280,68 @@ function BalanceWidget({
             : 'Баланс заканчивается. Рекомендуется пополнить до начала тестов.'}
         </p>
       )}
+    </div>
+  )
+}
+
+// Виджет OpenAI — баланс через API не доступен (требует session key, не secret).
+// Показываем только то, что точно знаем: расходы из нашей таблицы llm_calls.
+function OpenAiUsageWidget({ usage }: { usage: ProviderUsage | null }) {
+  if (!usage || usage.callsCount === 0) {
+    return (
+      <div className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
+        <p className="text-[11px] uppercase tracking-wider font-bold mb-1">OpenAI</p>
+        <p className="text-sm text-[#525252]">
+          Ещё нет вызовов OpenAI. Они появятся после первого нового research-job (gpt-4o-mini + web_search для 4 потоков, ~$0.05/job).
+        </p>
+        <a
+          href="https://platform.openai.com/usage"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="lp-btn-ghost text-xs mt-3 inline-block"
+        >
+          Открыть OpenAI dashboard →
+        </a>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <p className="text-[11px] uppercase tracking-wider font-bold mb-1">Расходы OpenAI 🟦</p>
+          <p className="text-xl font-bold">${usage.totalUsd.toFixed(4)}</p>
+          <p className="text-xs text-[#525252] mt-1">
+            {usage.callsCount} вызовов · {usage.totalRub.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽
+          </p>
+        </div>
+        <a
+          href="https://platform.openai.com/usage"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="lp-btn-ghost text-xs"
+        >
+          Dashboard →
+        </a>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <p className="text-[#737373]">За 24ч</p>
+          <p className="font-semibold">${usage.todayUsd.toFixed(4)}</p>
+        </div>
+        <div>
+          <p className="text-[#737373]">За 7д</p>
+          <p className="font-semibold">${usage.weekUsd.toFixed(4)}</p>
+        </div>
+        <div>
+          <p className="text-[#737373]">За 30д</p>
+          <p className="font-semibold">${usage.monthUsd.toFixed(4)}</p>
+        </div>
+      </div>
+      <p className="text-[10px] text-[#737373] mt-2 italic">
+        Баланс OpenAI не доступен через API-ключ. Показаны расходы из нашей БД (расчёт по pricing.ts ±10%).
+      </p>
     </div>
   )
 }
