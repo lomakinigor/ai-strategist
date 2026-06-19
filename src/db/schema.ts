@@ -7,6 +7,7 @@ import {
   boolean,
   jsonb,
   timestamp,
+  numeric,
   index,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
@@ -293,6 +294,35 @@ export const magicLinks = pgTable(
   ],
 )
 
+// Cost-tracking каждого LLM-вызова pipeline (для админ-дашборда /admin/costs).
+// stage — этап ('intake_parse' | 'research_business' | 'brief_v2' |
+//          'full_v2_part_1' | ...).
+// provider — 'openrouter' | 'openai'.
+// cost_usd — берётся из ответа OpenRouter usage.cost когда доступно,
+//           иначе считается по модельной таблице цен.
+// cost_rub — cost_usd × курс ЦБ на момент записи (исторически фиксированный).
+export const llmCalls = pgTable(
+  'llm_calls',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    researchJobId: uuid('research_job_id').references(() => researchJobs.id),
+    stage: text('stage').notNull(),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    promptTokens: integer('prompt_tokens'),
+    completionTokens: integer('completion_tokens'),
+    costUsd: numeric('cost_usd', { precision: 12, scale: 6 }),
+    costRub: numeric('cost_rub', { precision: 12, scale: 2 }),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('llm_calls_research_job_id_idx').on(table.researchJobId),
+    index('llm_calls_created_at_idx').on(table.createdAt),
+    index('llm_calls_stage_idx').on(table.stage),
+  ],
+)
+
 // Embeddings for RAG pipeline
 // NOTE: vector column added in T-007 after pgvector extension is configured.
 // Run: CREATE EXTENSION IF NOT EXISTS vector;
@@ -345,6 +375,14 @@ export const researchJobsRelations = relations(researchJobs, ({ one, many }) => 
   facts: many(facts),
   strategyArtifacts: many(strategyArtifacts),
   reportArtifacts: many(reportArtifacts),
+  llmCalls: many(llmCalls),
+}))
+
+export const llmCallsRelations = relations(llmCalls, ({ one }) => ({
+  researchJob: one(researchJobs, {
+    fields: [llmCalls.researchJobId],
+    references: [researchJobs.id],
+  }),
 }))
 
 export const sourcesRelations = relations(sources, ({ one, many }) => ({

@@ -21,6 +21,7 @@ import {
   type NicheAutomationPattern,
 } from './niche-automations'
 import { generateBriefV2, type BriefV2 } from './brief-v2'
+import { recordLlmCall } from '@/lib/cost/record'
 
 // 8 параллельных LLM-вызовов. Прошлые итерации показали закономерность:
 // LLM обрывает ПОСЛЕДНИЙ подраздел вызова если перед ним был развёрнутый блок.
@@ -1141,6 +1142,7 @@ async function callOpenRouterForJSON(
   userPrompt: string,
   maxTokens: number,
   modelId: string,
+  costContext?: { researchJobId?: string | null; stage: string },
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured')
@@ -1185,18 +1187,38 @@ async function callOpenRouterForJSON(
     if (res.ok) {
       const body = (await res.json()) as {
         choices?: Array<{ message?: { content?: string; finish_reason?: string } }>
-        usage?: { prompt_tokens?: number; completion_tokens?: number }
+        usage?: {
+          prompt_tokens?: number
+          completion_tokens?: number
+          cost?: number
+        }
       }
       const choice = body.choices?.[0]
       const content = choice?.message?.content
       const finishReason = choice?.message?.finish_reason
+      const promptTokens = body.usage?.prompt_tokens
       const completionTokens = body.usage?.completion_tokens
+      const usageCost = body.usage?.cost
 
       console.log(
         `[full-v2] OpenRouter ok (attempt ${attempt}): finish=${finishReason ?? 'n/a'}` +
           ` ctok=${completionTokens ?? 'n/a'} len=${content?.length ?? 0}` +
           ` preview=${(content ?? '<empty>').slice(0, 100).replace(/\s+/g, ' ')}`,
       )
+
+      // Cost tracking — fire-and-forget, не блокирует и не ломает на ошибке
+      if (costContext) {
+        void recordLlmCall({
+          researchJobId: costContext.researchJobId,
+          stage: costContext.stage,
+          provider: 'openrouter',
+          model: modelId,
+          promptTokens,
+          completionTokens,
+          costUsd: typeof usageCost === 'number' ? usageCost : null,
+          metadata: { finish_reason: finishReason, attempt },
+        })
+      }
 
       if (!content) throw new Error('OpenRouter: пустой content в ответе')
       return content
@@ -1591,54 +1613,63 @@ export async function generateFullV2(args: {
   // — a6 (Blue Ocean) — отдельный вызов 7 (в вызове 2 SWOT-TOWS съедал бюджет).
   // — part_g (Sources) — отдельный вызов 8 (g2/g3 обрывались после d+g1).
   // Если какой-то упал — рендерим то что есть (normalizeFullV2 заполнит дефолтами).
+  const jobId = inputs.researchJobId
   const [res1, res2, res3, res4, res5, res6, res7, res8] = await Promise.allSettled([
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part1Prompt(sharedArgs),
       FULL_V2_TOKENS_1,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_1' },
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part2Prompt(sharedArgs),
       FULL_V2_TOKENS_2,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_2' },
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part3Prompt(sharedArgs),
       FULL_V2_TOKENS_3,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_3' },
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part4Prompt(sharedArgs),
       FULL_V2_TOKENS_4,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_4' },
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part5Prompt(sharedArgs),
       FULL_V2_TOKENS_5,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_5' },
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part6Prompt({ ...sharedArgs, nicheAutomationsPreview }),
       FULL_V2_TOKENS_6,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_6' },
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part7Prompt(sharedArgs),
       FULL_V2_TOKENS_7,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_7' },
     ),
     callOpenRouterForJSON(
       SYSTEM_PROMPT,
       buildFullV2Part8Prompt(sharedArgs),
       FULL_V2_TOKENS_8,
       AI_CONFIG.strategy.synthesisModel,
+      { researchJobId: jobId, stage: 'full_v2_part_8' },
     ),
   ])
 

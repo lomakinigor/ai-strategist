@@ -1,6 +1,7 @@
 import type { ResearchProvider, ResearchRequest, ResearchResult, ExtendedResearchType } from '../types'
 import type { RawDataPoint, ResearchType } from '../../types'
 import { inferSourceType } from './perplexity-research-provider'
+import { recordLlmCall } from '../../cost/record'
 
 // OpenAI Responses API shape (web_search_preview tool)
 interface UrlCitation {
@@ -24,6 +25,7 @@ interface OutputMessage {
 
 interface OpenAIResponse {
   output: Array<{ type: string } & Partial<OutputMessage>>
+  usage?: { input_tokens?: number; output_tokens?: number }
 }
 
 const VERIFIABILITY_RULE =
@@ -224,6 +226,21 @@ export class OpenAIResearchProvider implements ResearchProvider {
     const citations = (textContent?.annotations ?? []).filter((a): a is UrlCitation => a.type === 'url_citation')
 
     const points = parseInsights(text, citations, dbResearchType)
+
+    // Cost tracking — stage конкатенируется из расширенного типа исследования.
+    // OpenAI прямой вызов: cost считаем в pricing.ts по токенам (нет usage.cost).
+    if (request.costContext) {
+      void recordLlmCall({
+        researchJobId: request.costContext.researchJobId,
+        stage: request.costContext.stage,
+        provider: 'openai',
+        model: modelId,
+        promptTokens: json.usage?.input_tokens,
+        completionTokens: json.usage?.output_tokens,
+        costUsd: null, // estimateCostUsd сделает по токенам и модели
+        metadata: { researchType: request.researchType, citations: citations.length },
+      })
+    }
 
     // Enrich source records with proper source type
     for (const point of points) {

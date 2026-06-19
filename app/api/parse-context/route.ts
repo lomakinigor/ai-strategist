@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { recordLlmCall } from '@/lib/cost/record'
 
 const RF_CHANNELS = [
   'ВКонтакте', 'Telegram', 'YouTube', 'Instagram',
@@ -18,7 +19,8 @@ const PARSE_MODEL = process.env.OPENROUTER_PARSE_MODEL ?? 'deepseek/deepseek-v4-
 const PARSE_FALLBACK_MODEL = process.env.OPENROUTER_PARSE_FALLBACK_MODEL ?? 'anthropic/claude-sonnet-4.6'
 
 interface OpenRouterResponse {
-  choices: Array<{ message: { content: string } }>
+  choices: Array<{ message: { content: string; finish_reason?: string } }>
+  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number }
 }
 
 const SYSTEM_PROMPT = `Ты извлекаешь структурированные данные о компании из произвольного текста и возвращаешь СТРОГО один JSON-объект без префиксов и пояснений.
@@ -123,6 +125,20 @@ async function tryParseOnce(text: string, model: string): Promise<ParseAttempt> 
     return { parsed: null, rawHead: '', errorDetail: `HTTP ${response.status}: ${errText.slice(0, 200)}` }
   }
   const data = (await response.json()) as OpenRouterResponse & { error?: { message?: string } }
+
+  // Cost tracking — researchJobId не передаём, т.к. парсинг intake происходит ДО
+  // создания research_job. Запись попадает в /admin/costs без привязки к job.
+  void recordLlmCall({
+    researchJobId: null,
+    stage: 'intake_parse',
+    provider: 'openrouter',
+    model,
+    promptTokens: data.usage?.prompt_tokens,
+    completionTokens: data.usage?.completion_tokens,
+    costUsd: typeof data.usage?.cost === 'number' ? data.usage.cost : null,
+    metadata: { finish_reason: data.choices?.[0]?.message?.finish_reason },
+  })
+
   if (!data.choices?.length) {
     return { parsed: null, rawHead: '', errorDetail: data.error?.message ?? 'no_choices' }
   }

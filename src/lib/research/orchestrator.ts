@@ -83,7 +83,12 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
 
   const siteMarketingStream = query.website
     ? provider
-        .research({ query, researchType: 'site_marketing', modelId })
+        .research({
+          query,
+          researchType: 'site_marketing',
+          modelId,
+          costContext: { researchJobId: jobId, stage: 'research_site_marketing' },
+        })
         .then((r) => r.points)
         .catch((err) => {
           console.warn(`[orchestrator] site_marketing failed:`, err instanceof Error ? err.message : err)
@@ -106,6 +111,7 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
               query: { ...query, competitorName: name },
               researchType: 'competitor_single',
               modelId,
+              costContext: { researchJobId: jobId, stage: 'research_competitor_single' },
             })
             .then((r) => r.points)
             .catch(() => [] as RawDataPoint[]), // один упавший конкурент не валит остальных
@@ -120,7 +126,12 @@ async function runRealResearch(companyId: string, jobId: string, query: Research
     Promise.all(
       STREAM_TYPES.map((type) =>
         provider
-          .research({ query, researchType: type, modelId })
+          .research({
+            query,
+            researchType: type,
+            modelId,
+            costContext: { researchJobId: jobId, stage: `research_${type}` },
+          })
           .then((r) => r.points)
           .catch((err) => {
             console.warn(

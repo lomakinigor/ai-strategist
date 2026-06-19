@@ -13,6 +13,7 @@ import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
 import { facts, intakeSubmissions, companies } from '@/db/schema'
 import { AI_CONFIG } from '@/lib/ai/config'
+import { recordLlmCall } from '@/lib/cost/record'
 import {
   detectNicheId,
   getNicheAutomations,
@@ -308,6 +309,7 @@ async function callOpenRouterForJSON(
   userPrompt: string,
   maxTokens: number,
   modelId: string,
+  costContext?: { researchJobId?: string | null; stage: string },
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) throw new Error('OPENROUTER_API_KEY is not configured')
@@ -342,9 +344,28 @@ async function callOpenRouterForJSON(
 
     if (res.ok) {
       const body = (await res.json()) as {
-        choices?: Array<{ message?: { content?: string } }>
+        choices?: Array<{ message?: { content?: string; finish_reason?: string } }>
+        usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number }
       }
-      const content = body.choices?.[0]?.message?.content
+      const choice = body.choices?.[0]
+      const content = choice?.message?.content
+      const promptTokens = body.usage?.prompt_tokens
+      const completionTokens = body.usage?.completion_tokens
+      const usageCost = body.usage?.cost
+
+      if (costContext) {
+        void recordLlmCall({
+          researchJobId: costContext.researchJobId,
+          stage: costContext.stage,
+          provider: 'openrouter',
+          model: modelId,
+          promptTokens,
+          completionTokens,
+          costUsd: typeof usageCost === 'number' ? usageCost : null,
+          metadata: { finish_reason: choice?.message?.finish_reason, attempt },
+        })
+      }
+
       if (!content) throw new Error('OpenRouter: пустой content в ответе')
       return content
     }
@@ -445,6 +466,7 @@ export async function generateBriefV2(args: {
     userPrompt,
     BRIEF_V2_MAX_TOKENS,
     AI_CONFIG.strategy.synthesisModel,
+    { researchJobId: args.researchJobId, stage: 'brief_v2' },
   )
 
   const parsed = parseBriefV2(raw)

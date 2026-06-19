@@ -12,6 +12,8 @@ export interface ResearchRequest {
   researchType: ExtendedResearchType
   providerId?: AIProviderId
   modelId?: AIModelId
+  /** Опциональный контекст для cost-tracking в /admin/costs */
+  costContext?: { researchJobId?: string | null; stage: string }
 }
 
 export interface ResearchResult {
