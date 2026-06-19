@@ -3,8 +3,8 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { AdminNav } from './AdminNav'
 
 function checkAuth(): boolean {
   const expected = process.env.ADMIN_ARCHIVE_PASSWORD
@@ -29,24 +29,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-white text-[#0a0a0a]">
-      <nav className="border-b border-[#e5e5e5]">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-          <Link href="/" className="text-base font-bold tracking-tight">
-            AI-Стратег · admin
-          </Link>
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/admin/costs" className="text-[#525252] hover:text-[#0a0a0a]">
-              Стоимости
-            </Link>
-            <Link href="/admin/usage" className="text-[#525252] hover:text-[#0a0a0a]">
-              Использование
-            </Link>
-            <Link href="/archive" className="text-[#525252] hover:text-[#0a0a0a]">
-              Архив отчётов
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <AdminNav />
       {children}
     </div>
   )

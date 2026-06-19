@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getDb } from '@/db'
 import { reportArtifacts, companies } from '@/db/schema'
 import { ArchiveList } from './ArchiveList'
+import { AdminNav } from '../admin/AdminNav'
 
 export const metadata = {
   title: 'Архив отчётов — AI-Стратег',
@@ -74,8 +75,9 @@ export default async function ArchivePage() {
   const doneCount = reports.filter((r) => r.status === 'done').length
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-3xl mx-auto px-6">
+    <main className="min-h-screen bg-gray-50">
+      <AdminNav />
+      <div className="max-w-3xl mx-auto px-6 py-12">
 
         {/* Header */}
         <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
