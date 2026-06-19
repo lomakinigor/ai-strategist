@@ -38,6 +38,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Link href="/admin/costs" className="text-[#525252] hover:text-[#0a0a0a]">
               Стоимости
             </Link>
+            <Link href="/admin/usage" className="text-[#525252] hover:text-[#0a0a0a]">
+              Использование
+            </Link>
             <Link href="/archive" className="text-[#525252] hover:text-[#0a0a0a]">
               Архив отчётов
             </Link>

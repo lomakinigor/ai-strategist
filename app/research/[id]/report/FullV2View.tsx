@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { trackUsage } from '@/lib/usage/client'
 
 type RsLevel = 'green' | 'yellow' | 'orange' | 'red'
 
@@ -182,7 +183,9 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
 
   useEffect(() => {
     console.log('Full report version: v2')
-  }, [])
+    // Логируем просмотр полного отчёта для /admin/usage. Один раз на mount.
+    trackUsage({ eventType: 'full_viewed', researchJobId: jobId })
+  }, [jobId])
 
   useEffect(() => {
     if (full) return
@@ -266,7 +269,14 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
               </span>
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => {
+                  trackUsage({
+                    eventType: 'pdf_downloaded',
+                    researchJobId: jobId,
+                    metadata: { source: 'full_v2' },
+                  })
+                  window.print()
+                }}
                 className="lp-btn-ghost text-sm"
               >
                 Скачать PDF

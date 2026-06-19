@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { trackUsage } from '@/lib/usage/client'
 
 interface AutomationBlockV2 {
   emotional_thesis: string
@@ -109,7 +110,9 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
 
   useEffect(() => {
     console.log('Report version: v2')
-  }, [])
+    // Логируем просмотр краткого отчёта для /admin/usage. Один раз на mount.
+    trackUsage({ eventType: 'brief_viewed', artifactId })
+  }, [artifactId])
 
   useEffect(() => {
     if (brief) return
@@ -212,7 +215,10 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         <div className="no-print mt-5">
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => {
+              trackUsage({ eventType: 'pdf_downloaded', artifactId, metadata: { source: 'brief_v2' } })
+              window.print()
+            }}
             className="lp-btn-ghost text-sm"
           >
             Скачать PDF

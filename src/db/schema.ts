@@ -323,6 +323,32 @@ export const llmCalls = pgTable(
   ],
 )
 
+// Usage tracking — отслеживание событий использования отчётов для админ-дашборда
+// /admin/usage. Фронт логирует через POST /api/usage-event:
+// - 'brief_viewed' — пользователь открыл /free-report/[artifactId]
+// - 'full_viewed' — пользователь открыл /research/[jobId]/report
+// - 'pdf_downloaded' — клик «Скачать PDF» в Brief или Full views
+// Один из двух идентификаторов обязателен (research_job_id ИЛИ artifact_id).
+// Дубликаты не фильтруются на insert — все события сохраняются, дедупликация
+// делается в SQL-запросах админ-дашборда через MIN(created_at).
+export const usageEvents = pgTable(
+  'usage_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    researchJobId: uuid('research_job_id').references(() => researchJobs.id),
+    artifactId: uuid('artifact_id').references(() => reportArtifacts.id),
+    eventType: text('event_type').notNull(),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('usage_events_research_job_id_idx').on(table.researchJobId),
+    index('usage_events_artifact_id_idx').on(table.artifactId),
+    index('usage_events_event_type_idx').on(table.eventType),
+    index('usage_events_created_at_idx').on(table.createdAt),
+  ],
+)
+
 // Embeddings for RAG pipeline
 // NOTE: vector column added in T-007 after pgvector extension is configured.
 // Run: CREATE EXTENSION IF NOT EXISTS vector;
@@ -382,6 +408,17 @@ export const llmCallsRelations = relations(llmCalls, ({ one }) => ({
   researchJob: one(researchJobs, {
     fields: [llmCalls.researchJobId],
     references: [researchJobs.id],
+  }),
+}))
+
+export const usageEventsRelations = relations(usageEvents, ({ one }) => ({
+  researchJob: one(researchJobs, {
+    fields: [usageEvents.researchJobId],
+    references: [researchJobs.id],
+  }),
+  artifact: one(reportArtifacts, {
+    fields: [usageEvents.artifactId],
+    references: [reportArtifacts.id],
   }),
 }))
 
