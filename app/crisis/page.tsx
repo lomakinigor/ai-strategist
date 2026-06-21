@@ -20,8 +20,8 @@ export default function CrisisHome() {
         <Link href="/" className="text-base font-bold tracking-tight">
           AI-Стратег
         </Link>
-        <Link href="/archive" className="lp-btn-ghost">
-          Архив →
+        <Link href="/admin/costs" className="lp-btn-ghost">
+          Admin →
         </Link>
       </nav>
 
