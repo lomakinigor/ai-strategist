@@ -98,18 +98,9 @@ export function ResearchProgress({
           return
         }
         if (data.stage === 'done' && data.redirectTo) {
-          // Пробрасываем ?version=v2 из текущего URL в редирект на /free-report —
-          // чтобы тестировать v2-путь end-to-end одной query-меткой.
-          const currentVersion =
-            typeof window !== 'undefined'
-              ? new URLSearchParams(window.location.search).get('version')
-              : null
-          const target =
-            currentVersion === 'v2'
-              ? `${data.redirectTo}${data.redirectTo.includes('?') ? '&' : '?'}version=v2`
-              : data.redirectTo
-          // Маленькая пауза чтобы юзер увидел «✓ Готово» прежде чем редирект
-          setTimeout(() => router.push(target), 1200)
+          // Маленькая пауза чтобы юзер увидел «✓ Готово» прежде чем редирект.
+          // v1/v2 selector удалён — теперь всегда v2, рендерится одним роутом.
+          setTimeout(() => router.push(data.redirectTo!), 1200)
           return
         }
         if (data.stage === 'error') {

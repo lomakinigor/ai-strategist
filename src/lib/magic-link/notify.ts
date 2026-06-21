@@ -1,8 +1,8 @@
-// Вызывается из generator.ts когда артефакт переходит в status='done'.
-// Лукапит email клиента из companies, создаёт magic-link, отправляет письмо.
-// Любые ошибки логируются, но НЕ пробрасываются — невозможность отправить
-// письмо не должна валить генерацию отчёта (у клиента всегда есть прямой
-// доступ через /research/[jobId] → /brief/[artifactId]).
+// Уведомление клиента: artifact готов → magic-link на email.
+// v1 brief auto-gen удалён 2026-06-19 — теперь brief v2 генерируется
+// on-demand при просмотре /free-report, pre-generation не нужна.
+//
+// Вызывается из app/api/auto-pipeline после создания placeholder артефакта.
 
 import { eq } from 'drizzle-orm'
 import { getDb } from '@/db'
@@ -10,7 +10,6 @@ import { reportArtifacts, companies } from '@/db/schema'
 import { createMagicLink } from './tokens'
 import { renderFreeReportReadyEmail } from './email-template'
 import { sendEmail } from './sender'
-import { generateBriefReport } from '@/lib/strategy/brief'
 
 export async function notifyArtifactReady(artifactId: string): Promise<void> {
   try {
@@ -18,8 +17,6 @@ export async function notifyArtifactReady(artifactId: string): Promise<void> {
     const rows = await db
       .select({
         tier: reportArtifacts.tier,
-        briefJson: reportArtifacts.briefJson,
-        contentMarkdown: reportArtifacts.contentMarkdown,
         companyName: companies.name,
         industry: companies.industry,
         clientEmail: companies.clientEmail,
@@ -35,37 +32,8 @@ export async function notifyArtifactReady(artifactId: string): Promise<void> {
       return
     }
     if (!row.clientEmail) {
-      console.log(`[notify] no client_email for artifact ${artifactId} — skipping (legacy intake without email)`)
+      console.log(`[notify] no client_email for artifact ${artifactId} — skipping`)
       return
-    }
-
-    // ── Free-tier: автоматически генерируем brief ДО отправки письма ────────
-    // Чтобы пользователь открыл magic-link → /free-report сразу увидел готовую
-    // карточку, а не «пробник в обработке, нажмите сгенерировать». UX-аудит
-    // топ-2: устранение dead-end в free-flow. Стоимость: ~$0.02 на free-юзера
-    // (Sonnet 4.6 дистилляция). Ошибки логируем — не валим отправку письма.
-    if (
-      row.tier === 'free' &&
-      !row.briefJson &&
-      row.contentMarkdown &&
-      row.companyName
-    ) {
-      try {
-        const { parsed } = await generateBriefReport(
-          row.companyName,
-          row.industry ?? '',
-          row.contentMarkdown,
-        )
-        await db
-          .update(reportArtifacts)
-          .set({ briefJson: parsed, updatedAt: new Date() })
-          .where(eq(reportArtifacts.id, artifactId))
-        console.log(`[notify] auto-generated brief for free artifact ${artifactId}`)
-      } catch (err) {
-        console.error(`[notify] free brief auto-gen failed for ${artifactId}:`, err)
-        // Продолжаем — отправим письмо, юзер увидит «пробник в обработке»
-        // и сможет сгенерировать вручную как раньше.
-      }
     }
 
     const link = await createMagicLink({
@@ -73,7 +41,7 @@ export async function notifyArtifactReady(artifactId: string): Promise<void> {
       artifactId,
     })
     const rendered = renderFreeReportReadyEmail({
-      companyName: row.companyName,
+      companyName: row.companyName ?? 'Компания',
       magicLinkUrl: link.url,
       tier: row.tier,
     })
@@ -87,7 +55,7 @@ export async function notifyArtifactReady(artifactId: string): Promise<void> {
       )
     }
   } catch (err) {
-    // Никогда не пробрасываем — генерация отчёта не должна падать из-за email.
+    // Никогда не пробрасываем — отправка отчёта не должна падать из-за email.
     console.error(`[notify] unexpected error for artifact ${artifactId}:`, err)
   }
 }

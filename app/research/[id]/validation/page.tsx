@@ -10,8 +10,8 @@ import { researchJobs, companies } from '@/db/schema'
 import { AI_CONFIG } from '@/lib/ai/config'
 import { getFactsForJob } from '@/lib/reporting/validation'
 import type { ResearchType, FactType, ConfidenceLevel } from '@/lib/types'
+import Link from 'next/link'
 import { FactToggleButton } from './FactToggleButton'
-import { GenerateStrategyButton } from '../ResearchActions'
 
 // ─── Label maps ──────────────────────────────────────────────────────────────
 
@@ -426,7 +426,12 @@ export default async function ValidationPage({
                   Сформировать стратегию →
                 </button>
               ) : (
-                <GenerateStrategyButton jobId={params.id} />
+                <Link
+                  href={`/research/${params.id}/report`}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Открыть полный отчёт →
+                </Link>
               )}
             </div>
           </>
