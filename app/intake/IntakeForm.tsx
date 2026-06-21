@@ -390,7 +390,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
     setSubmitError(null)
     if (currentStep === 1) {
       if (!canAdvanceFromStep1) {
-        setSubmitError('Заполните название, отрасль и корректный email — потом сможем идти дальше.')
+        setSubmitError('Заполните название и отрасль — потом сможем идти дальше.')
         return
       }
       setCurrentStep(2)
@@ -447,7 +447,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          ШАГ 1 — О бизнесе (контекст + название + email + чейн + отрасль)
+          ШАГ 1 — О бизнесе (контекст + название + чейн + отрасль)
           ═══════════════════════════════════════════════════════════════════ */}
       {currentStep === 1 && (
       <>

@@ -4,6 +4,7 @@ import './globals.css'
 import { ArchiveHotkey } from './ArchiveHotkey'
 import YandexMetrica from './YandexMetrica'
 import UtmCapture from './UtmCapture'
+import { ContactAdminButton } from '@/components/ContactAdminButton'
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -67,6 +68,7 @@ export default function RootLayout({
         <UtmCapture />
         <ArchiveHotkey />
         {children}
+        <ContactAdminButton />
       </body>
     </html>
   )

@@ -487,6 +487,29 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </div>
       </section>
 
+      {/* ── 12.5 ФИНАЛЬНАЯ КНОПКА Save PDF ──────────────────────────── */}
+      <section className="border-t border-[#e5e5e5] no-print">
+        <div className="max-w-3xl mx-auto px-6 py-12 text-center">
+          <p className="text-sm text-[#525252] leading-[1.6] mb-5">
+            Сохраните разбор себе — в браузере вкладку можно случайно закрыть.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              trackUsage({
+                eventType: 'pdf_downloaded',
+                artifactId,
+                metadata: { source: 'brief_v2_footer' },
+              })
+              window.print()
+            }}
+            className="lp-btn-ghost"
+          >
+            ⤓ Скачать PDF
+          </button>
+        </div>
+      </section>
+
       {/* ── 13. METHODOLOGY DISCLAIMER ──────────────────────────────── */}
       <section className="border-t border-[#e5e5e5]">
         <div className="max-w-3xl mx-auto px-6 py-10">

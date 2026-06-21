@@ -811,6 +811,27 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
             </li>
           </ul>
         </Part>
+
+        {/* Конечная кнопка Save PDF — дублирует шапку для длинных отчётов */}
+        <div className="no-print flex flex-col items-center gap-4 py-12 border-t border-[#e5e5e5] mt-8">
+          <p className="text-sm text-[#525252] text-center max-w-md leading-[1.6]">
+            Сохраните отчёт себе — в браузере вкладку можно случайно закрыть.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              trackUsage({
+                eventType: 'pdf_downloaded',
+                researchJobId: jobId,
+                metadata: { source: 'full_v2_footer' },
+              })
+              window.print()
+            }}
+            className="lp-btn-primary"
+          >
+            ⤓ Скачать PDF
+          </button>
+        </div>
       </main>
     </>
   )
