@@ -7,9 +7,9 @@ import Link from 'next/link'
 import CTALink from '../CTALink'
 
 export const metadata = {
-  title: 'AI-Стратег — за 24 часа покажем, где теряете деньги',
+  title: 'AI-Стратег в кризис — стратегия выхода за 10 минут за 9 999 ₽',
   description:
-    'Анализ зон роста, конкурентов и бизнес-процессов за 24 часа. Что бесплатно сделать прямо сейчас, куда вкладывать бюджет и где экономить. Без интервью, с источниками.',
+    'Полный анализ конкурентов, зон роста и бизнес-процессов за 10 минут. Куда вкладывать бюджет и где экономить — с источниками и оценкой достоверности.',
 }
 
 export default function CrisisHome() {
@@ -30,23 +30,28 @@ export default function CrisisHome() {
         <p className="lp-eyebrow mb-8">Маркетинг в кризис</p>
 
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.03em] leading-[1.02] mb-8">
-          За 24 часа покажем, где теряете деньги и что сделать бесплатно уже завтра.
+          Стратегия выхода из кризиса —
+          <br />
+          за 10 минут. <span className="text-[#1e3a8a]">9 999 ₽.</span>
         </h1>
 
         <p className="text-lg sm:text-xl text-[#525252] max-w-2xl mx-auto leading-[1.55] mb-12">
-          AI разберёт ваш маркетинг и 4–6 конкурентов. Получите три вещи: что
-          бесплатно сделать прямо сейчас, как работают конкуренты и куда тратить
-          бюджет, где оптимизировать бизнес-процессы.
+          AI разберёт ваш маркетинг и 4–6 конкурентов. Получите три вещи в одном
+          отчёте: куда вкладывать бюджет сейчас, что делают конкуренты и где
+          оптимизировать бизнес-процессы. С источниками и оценкой достоверности.
         </p>
 
         <div className="flex flex-col items-center">
-          <CTALink href="/intake" goal="open_intake" className="lp-btn-primary">
-            Получить бесплатный разбор
+          <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary">
+            Получить отчёт за 9 999 ₽
             <span aria-hidden>→</span>
           </CTALink>
           <p className="text-sm text-[#6b7280] mt-5">
-            Анкета 5 минут. Без оплаты, без звонков менеджера.
+            Анкета 5 минут. Оплата по СБП. Отчёт через 10 минут на email.
           </p>
+          <CTALink href="/intake" goal="open_intake" className="text-sm text-[#1e3a8a] hover:underline mt-4 inline-block">
+            или попробовать бесплатный пробник →
+          </CTALink>
         </div>
       </section>
 
@@ -246,7 +251,7 @@ export default function CrisisHome() {
             Увеличить вашу выручку <span className="text-[#fbbf24]">в&nbsp;1,5&nbsp;раза</span> при снижении затрат <span className="text-[#fbbf24]">в&nbsp;2&nbsp;раза</span>
           </h2>
           <p className="text-lg sm:text-xl text-white/75 leading-[1.6] max-w-2xl mx-auto">
-            За счёт анализа вашего маркетинга и бизнес-процессов. AI-Стратег делает за 24 часа то, на что у директора по маркетингу уходят недели.
+            За счёт анализа вашего маркетинга и бизнес-процессов. AI-Стратег делает за 10 минут то, на что у директора по маркетингу уходят недели.
           </p>
         </div>
       </section>
@@ -382,19 +387,22 @@ export default function CrisisHome() {
       <section className="border-t border-[#e5e5e5]">
         <div className="max-w-3xl mx-auto px-6 py-28 text-center">
           <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.025em] leading-[1.1] mb-6">
-            Понятно, куда движется рынок — понятно, куда вкладывать
+            Получите стратегию выхода из кризиса за 10 минут
           </h2>
           <p className="text-lg text-[#525252] mb-10 max-w-xl mx-auto leading-[1.6]">
-            Бесплатный разбор покажет 3 ваших слабых точки и одну идею для
-            быстрого роста — без оплаты и без созвона.
+            Куда вкладывать сейчас, что делают конкуренты, где сэкономить —
+            всё в одном отчёте с источниками. Через 10 минут после оплаты на email.
           </p>
-          <CTALink href="/intake" goal="open_intake" className="lp-btn-primary">
-            Запустить разбор
+          <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary">
+            Получить отчёт за 9 999 ₽
             <span aria-hidden>→</span>
           </CTALink>
           <p className="text-sm text-[#6b7280] mt-5">
-            Анкета 5 минут. Без оплаты, без звонков.
+            Анкета 5 минут. Оплата по СБП. Готовый отчёт — через 10 минут на email.
           </p>
+          <CTALink href="/intake" goal="open_intake" className="text-sm text-[#1e3a8a] hover:underline mt-4 inline-block">
+            или попробовать бесплатный пробник →
+          </CTALink>
         </div>
       </section>
 
@@ -489,7 +497,7 @@ const COMPARISON = [
   {
     label: 'Срок до решения',
     them: 'Недели на интервью, согласования, поиск маркетолога',
-    us: '24 часа на готовый отчёт с действиями',
+    us: '10 минут на готовый отчёт с действиями',
   },
   {
     label: 'Ваше время',
@@ -566,33 +574,34 @@ const ROI_EXAMPLES = [
 const TARIFFS = [
   {
     badge: null,
-    name: 'Бесплатно',
-    subtitle: 'Пробник, чтобы понять формат',
+    name: 'Пробник',
+    subtitle: 'Чтобы понять формат до покупки',
     price: 'Бесплатно',
-    priceHint: '24 часа · Дашборд + email',
+    priceHint: '10 минут · Дашборд + email',
     features: [
       '2 конкурента — что они делают сейчас',
       '2 слабые точки вашего бизнеса',
       '1 идея для быстрого роста',
     ],
-    cta: 'Получить',
+    cta: 'Попробовать',
     href: '/intake',
     goal: 'open_intake',
     featured: false,
     note: null,
   },
   {
-    badge: 'Популярный',
-    name: '9 999 ₽',
-    subtitle: 'Полный разбор с планом действий',
+    badge: 'Главный продукт',
+    name: 'Стратегический отчёт',
+    subtitle: 'Полный разбор с планом действий в кризис',
     price: '9 999 ₽',
-    priceHint: '24 часа · PDF + дашборд + email',
+    priceHint: '10 минут · PDF + дашборд + email',
     features: [
-      'Анализ конкурентов с конкретными выводами и рекомендациями',
-      'Конкретный план действий по каналам: с чем работать, куда вкладывать бюджет, а где не нужно',
-      'Анализ текущего состояния маркетинга и бизнес-процессов для понимания зон роста',
+      'Анализ 4–6 конкурентов с конкретными выводами и рекомендациями',
+      'Конкретный план по каналам: куда вкладывать бюджет, а где не нужно',
+      'Анализ маркетинга и бизнес-процессов для понимания зон роста',
+      'Каждый факт с RS-оценкой достоверности (1–5)',
     ],
-    cta: 'Заказать',
+    cta: 'Получить за 9 999 ₽',
     href: '/intake?tier=paid',
     goal: 'paywall_click',
     featured: true,
@@ -605,7 +614,7 @@ const TARIFFS = [
     price: 'от 100 000 ₽/мес',
     priceHint: 'От 1 месяца · Договор, персональный куратор',
     features: [
-      'Всё из тарифа «9 999 ₽»',
+      'Всё из «Стратегического отчёта» каждый месяц',
       'Ежемесячный мониторинг конкурентов и рынка',
       'Управление маркетинговой стратегией в кризис',
       'Постоянная оптимизация бюджета и процессов',
