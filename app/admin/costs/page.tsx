@@ -17,7 +17,6 @@ import {
   type ProviderUsage,
 } from '@/lib/cost/queries'
 import { getUsdRubRate } from '@/lib/cost/rates'
-import { PersonalLinkButton } from '../PersonalLinkButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,12 +93,25 @@ function stageLabel(stage: string): string {
   return STAGE_LABEL[stage] ?? stage
 }
 
-// Whitelist провайдеров с защищённым переходом. Должен совпадать с
-// PROVIDER_URLS в /api/admin/personal-link/route.ts. Если в будущем
-// появится новый провайдер — добавь его сначала там, потом сюда.
-const KNOWN_PERSONAL_PROVIDERS = ['openrouter', 'openai', 'anthropic', 'deepseek', 'yookassa'] as const
-function isKnownProvider(p: string): p is (typeof KNOWN_PERSONAL_PROVIDERS)[number] {
-  return (KNOWN_PERSONAL_PROVIDERS as readonly string[]).includes(p)
+// Личные ссылки: реальная защита — провайдерский логин. Если у пользователя
+// нет сессии (на чужом компе) — провайдер сам покажет форму входа. Если есть
+// сессия (на своём компе) — он может перейти и через адресную строку, наша
+// «защита» не помешает. Подпись «↗ личный аккаунт» — визуальный сигнал что
+// клик ведёт в твой кабинет, не в часть админки.
+function PersonalLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="lp-btn-ghost text-xs inline-flex items-center gap-1.5"
+      title="Откроется личный кабинет провайдера в новой вкладке"
+    >
+      <span aria-hidden>🔒</span>
+      <span>{label}</span>
+      <span aria-hidden className="text-[#737373]">↗</span>
+    </a>
+  )
 }
 
 function fmtRub(n: number): string {
@@ -320,10 +332,7 @@ function BalanceWidget({
       <div className="border border-yellow-200 bg-yellow-50 rounded p-4 text-sm">
         <p className="text-[11px] uppercase tracking-wider font-bold mb-1">{label}</p>
         <p className="mb-2">Баланс недоступен (нет ключа или сеть). Проверь личный кабинет:</p>
-        <PersonalLinkButton provider="openrouter" label={`Открыть ${label}`} />
-        <span className="ml-2 text-xs text-[#737373]">
-          ({dashboardUrl.replace(/^https?:\/\//, '')})
-        </span>
+        <PersonalLink href={dashboardUrl} label={`Открыть ${label}`} />
       </div>
     )
   }
@@ -347,7 +356,7 @@ function BalanceWidget({
             Потрачено: ${balance.totalUsage.toFixed(2)} · в нашей БД: ${usage.totalUsd.toFixed(2)} ({usage.callsCount} вызовов)
           </p>
         </div>
-        <PersonalLinkButton provider="openrouter" label="Пополнить" />
+        <PersonalLink href={dashboardUrl} label="Пополнить" />
       </div>
       {isLow && (
         <p className="text-xs mt-3">
@@ -385,12 +394,9 @@ function ProviderUsageWidget({
         <p className="text-sm text-[#525252]">
           Ещё нет вызовов. Появятся после первого использования провайдера.
         </p>
-        {dashboardUrl && isKnownProvider(providerKey) && (
+        {dashboardUrl && (
           <div className="mt-3">
-            <PersonalLinkButton
-              provider={providerKey as 'openrouter' | 'openai' | 'anthropic' | 'deepseek' | 'yookassa'}
-              label="Открыть dashboard"
-            />
+            <PersonalLink href={dashboardUrl} label="Открыть dashboard" />
           </div>
         )}
       </div>
@@ -409,12 +415,7 @@ function ProviderUsageWidget({
             {usage.callsCount} вызовов · {usage.totalRub.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽
           </p>
         </div>
-        {dashboardUrl && isKnownProvider(providerKey) && (
-          <PersonalLinkButton
-            provider={providerKey as 'openrouter' | 'openai' | 'anthropic' | 'deepseek' | 'yookassa'}
-            label="Dashboard"
-          />
-        )}
+        {dashboardUrl && <PersonalLink href={dashboardUrl} label="Dashboard" />}
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div>
