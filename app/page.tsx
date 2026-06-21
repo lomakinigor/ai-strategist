@@ -11,12 +11,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white text-[#0a0a0a]">
       {/* ── Навигация ─────────────────────────────────────────────────────── */}
-      <nav className="max-w-5xl mx-auto px-6 pt-8 flex items-center justify-between">
+      <nav className="max-w-5xl mx-auto px-6 pt-8">
         <Link href="/" className="text-base font-bold tracking-tight">
           AI-Стратег
-        </Link>
-        <Link href="/admin/costs" className="lp-btn-ghost">
-          Admin →
         </Link>
       </nav>
 
