@@ -19,6 +19,52 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+// Реестр провайдеров. ЛЮБОЙ новый провайдер в llm_calls.provider автоматически
+// появится виджетом — для известных используется конфиг отсюда, для неизвестных
+// — дефолтная карточка с названием-как-есть и предупреждением «нет конфига».
+// Когда добавляешь новый провайдер (например, anthropic_direct / deepseek_direct):
+//   1. Добавь сюда запись со label / dashboardUrl / color
+//   2. Передавай его в recordLlmCall({ provider: '<имя>' }) при инструментации
+//   3. (опционально) реализуй getXxxBalance() в queries.ts и подключи здесь
+interface ProviderConfig {
+  label: string
+  /** URL личного кабинета провайдера */
+  dashboardUrl: string
+  /** Эмодзи или маленький префикс перед названием */
+  emoji: string
+  /** Если у провайдера есть публичный API баланса — true (рендерится отдельный widget) */
+  hasBalanceApi?: boolean
+}
+
+const PROVIDER_CONFIG: Record<string, ProviderConfig> = {
+  openrouter: {
+    label: 'OpenRouter',
+    dashboardUrl: 'https://openrouter.ai/credits',
+    emoji: '🟦',
+    hasBalanceApi: true,
+  },
+  openai: {
+    label: 'OpenAI',
+    dashboardUrl: 'https://platform.openai.com/usage',
+    emoji: '🟢',
+  },
+  anthropic: {
+    label: 'Anthropic (direct)',
+    dashboardUrl: 'https://console.anthropic.com/settings/billing',
+    emoji: '🟧',
+  },
+  deepseek: {
+    label: 'DeepSeek (direct)',
+    dashboardUrl: 'https://platform.deepseek.com/usage',
+    emoji: '🐋',
+  },
+  yookassa: {
+    label: 'YooKassa (платежи)',
+    dashboardUrl: 'https://yookassa.ru/my',
+    emoji: '💳',
+  },
+}
+
 const STAGE_LABEL: Record<string, string> = {
   intake_parse: 'Парсинг intake',
   intake_scanner: 'Сканер intake (OCR)',
@@ -76,7 +122,11 @@ export default async function AdminCostsPage() {
     getProviderUsage(),
   ])
 
-  const openaiUsage = providerUsage.find((p) => p.provider === 'openai') ?? null
+  // Список провайдеров для виджетов: всё что есть в llm_calls + те что в
+  // PROVIDER_CONFIG но ещё без вызовов (показать «ждём первого вызова»).
+  // Так автоматически появится виджет когда мы начнём использовать новый провайдер.
+  const seenProviders = new Set(providerUsage.map((p) => p.provider))
+  const knownProvidersNotYetUsed = Object.keys(PROVIDER_CONFIG).filter((p) => !seenProviders.has(p))
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
@@ -91,10 +141,22 @@ export default async function AdminCostsPage() {
         </div>
       </div>
 
-      {/* Provider widgets — два рядом: OpenRouter балансом, OpenAI расходом */}
+      {/* Provider widgets — динамически по каждому провайдеру.
+          Для OpenRouter — отдельный балансовый widget (есть API).
+          Для остальных — generic с расходами из БД. */}
       <div className="grid md:grid-cols-2 gap-3 mb-6">
-        <BalanceWidget balance={balance} />
-        <OpenAiUsageWidget usage={openaiUsage} />
+        {/* Виджеты по уже использованным провайдерам */}
+        {providerUsage.map((usage) => {
+          const cfg = PROVIDER_CONFIG[usage.provider]
+          if (usage.provider === 'openrouter') {
+            return <BalanceWidget key={usage.provider} balance={balance} usage={usage} config={cfg} />
+          }
+          return <ProviderUsageWidget key={usage.provider} usage={usage} config={cfg} providerKey={usage.provider} />
+        })}
+        {/* Виджеты-заглушки для известных, но ещё не использованных провайдеров */}
+        {knownProvidersNotYetUsed.map((p) => (
+          <ProviderUsageWidget key={p} usage={null} config={PROVIDER_CONFIG[p]} providerKey={p} />
+        ))}
       </div>
 
       {/* 4 KPI */}
@@ -225,23 +287,27 @@ function KpiCard({ label, totals }: { label: string; totals: PeriodTotals }) {
   )
 }
 
+// BalanceWidget — для провайдеров с публичным API баланса (сейчас только OpenRouter).
+// Показывает остаток + цвет (зелёный/жёлтый/красный) + ссылку на пополнение.
 function BalanceWidget({
   balance,
+  usage,
+  config,
 }: {
   balance: { totalCredits: number; totalUsage: number; remaining: number } | null
+  usage: ProviderUsage
+  config: ProviderConfig | undefined
 }) {
+  const label = config?.label ?? 'OpenRouter'
+  const dashboardUrl = config?.dashboardUrl ?? 'https://openrouter.ai/credits'
+
   if (!balance) {
     return (
       <div className="border border-yellow-200 bg-yellow-50 rounded p-4 text-sm">
-        <p className="text-[11px] uppercase tracking-wider font-bold mb-1">OpenRouter</p>
+        <p className="text-[11px] uppercase tracking-wider font-bold mb-1">{label}</p>
         Баланс недоступен (нет ключа или сеть). Проверь через{' '}
-        <a
-          href="https://openrouter.ai/credits"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline font-medium"
-        >
-          openrouter.ai/credits
+        <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">
+          {dashboardUrl.replace(/^https?:\/\//, '')}
         </a>.
       </div>
     )
@@ -250,26 +316,23 @@ function BalanceWidget({
   const isLow = balance.remaining < 5
   const isCritical = balance.remaining < 1
   const bg = isCritical ? 'bg-red-50 border-red-200' : isLow ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'
-  const emoji = isCritical ? '🔴' : isLow ? '🟡' : '🟢'
+  const stateEmoji = isCritical ? '🔴' : isLow ? '🟡' : '🟢'
 
   return (
     <div className={`border rounded p-4 ${bg}`}>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <p className="text-[11px] uppercase tracking-wider font-bold mb-1">Баланс OpenRouter {emoji}</p>
+          <p className="text-[11px] uppercase tracking-wider font-bold mb-1">
+            Баланс {label} {stateEmoji}
+          </p>
           <p className="text-xl font-bold">
             ${balance.remaining.toFixed(2)} осталось из ${balance.totalCredits.toFixed(2)}
           </p>
           <p className="text-xs text-[#525252] mt-1">
-            Потрачено: ${balance.totalUsage.toFixed(2)}
+            Потрачено: ${balance.totalUsage.toFixed(2)} · в нашей БД: ${usage.totalUsd.toFixed(2)} ({usage.callsCount} вызовов)
           </p>
         </div>
-        <a
-          href="https://openrouter.ai/credits"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lp-btn-ghost text-xs"
-        >
+        <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="lp-btn-ghost text-xs">
           Пополнить →
         </a>
       </div>
@@ -284,24 +347,41 @@ function BalanceWidget({
   )
 }
 
-// Виджет OpenAI — баланс через API не доступен (требует session key, не secret).
-// Показываем только то, что точно знаем: расходы из нашей таблицы llm_calls.
-function OpenAiUsageWidget({ usage }: { usage: ProviderUsage | null }) {
+// ProviderUsageWidget — для любого провайдера БЕЗ публичного API баланса.
+// Показывает суммарный расход из нашей БД (llm_calls) + разбивку 24ч/7д/30д +
+// ссылку на dashboard провайдера. Используется для OpenAI, Anthropic direct,
+// DeepSeek direct, YooKassa и любых будущих провайдеров.
+function ProviderUsageWidget({
+  usage,
+  config,
+  providerKey,
+}: {
+  usage: ProviderUsage | null
+  config: ProviderConfig | undefined
+  providerKey: string
+}) {
+  const label = config?.label ?? providerKey
+  const emoji = config?.emoji ?? '⚙️'
+  const dashboardUrl = config?.dashboardUrl
+
+  // Нет вызовов вообще (заглушка для известных провайдеров до первого использования)
   if (!usage || usage.callsCount === 0) {
     return (
       <div className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
-        <p className="text-[11px] uppercase tracking-wider font-bold mb-1">OpenAI</p>
+        <p className="text-[11px] uppercase tracking-wider font-bold mb-1">{label} {emoji}</p>
         <p className="text-sm text-[#525252]">
-          Ещё нет вызовов OpenAI. Они появятся после первого нового research-job (gpt-4o-mini + web_search для 4 потоков, ~$0.05/job).
+          Ещё нет вызовов. Появятся после первого использования провайдера.
         </p>
-        <a
-          href="https://platform.openai.com/usage"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lp-btn-ghost text-xs mt-3 inline-block"
-        >
-          Открыть OpenAI dashboard →
-        </a>
+        {dashboardUrl && (
+          <a
+            href={dashboardUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lp-btn-ghost text-xs mt-3 inline-block"
+          >
+            Открыть dashboard →
+          </a>
+        )}
       </div>
     )
   }
@@ -310,20 +390,19 @@ function OpenAiUsageWidget({ usage }: { usage: ProviderUsage | null }) {
     <div className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <p className="text-[11px] uppercase tracking-wider font-bold mb-1">Расходы OpenAI 🟦</p>
+          <p className="text-[11px] uppercase tracking-wider font-bold mb-1">
+            Расходы {label} {emoji}
+          </p>
           <p className="text-xl font-bold">${usage.totalUsd.toFixed(4)}</p>
           <p className="text-xs text-[#525252] mt-1">
             {usage.callsCount} вызовов · {usage.totalRub.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽
           </p>
         </div>
-        <a
-          href="https://platform.openai.com/usage"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lp-btn-ghost text-xs"
-        >
-          Dashboard →
-        </a>
+        {dashboardUrl && (
+          <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="lp-btn-ghost text-xs">
+            Dashboard →
+          </a>
+        )}
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div>
@@ -339,9 +418,12 @@ function OpenAiUsageWidget({ usage }: { usage: ProviderUsage | null }) {
           <p className="font-semibold">${usage.monthUsd.toFixed(4)}</p>
         </div>
       </div>
-      <p className="text-[10px] text-[#737373] mt-2 italic">
-        Баланс OpenAI не доступен через API-ключ. Показаны расходы из нашей БД (расчёт по pricing.ts ±10%).
-      </p>
+      {!config && (
+        <p className="text-[10px] text-amber-700 mt-2 italic">
+          Провайдер «{providerKey}» не зарегистрирован в PROVIDER_CONFIG —
+          добавь конфиг в app/admin/costs/page.tsx для красивого названия и ссылки на dashboard.
+        </p>
+      )}
     </div>
   )
 }
