@@ -4,9 +4,9 @@
 // на лету через /api/full-v2/[jobId] и кешируется в SessionStorage у клиента.
 
 import { eq } from 'drizzle-orm'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getDb } from '@/db'
-import { researchJobs, companies } from '@/db/schema'
+import { researchJobs, companies, reportArtifacts } from '@/db/schema'
 import { FullV2View } from './FullV2View'
 
 export const maxDuration = 300
@@ -27,6 +27,22 @@ export default async function ReportPage({
 
   const job = jobs[0]
   if (!job) notFound()
+
+  // Paywall: полный отчёт показываем ТОЛЬКО для оплаченных paid-job.
+  // Любой другой случай (tier=free или paid+unpaid) — редиректим на /free-report
+  // (там есть upgrade-to-paid кнопка). Без этого гейта free-юзер мог открыть
+  // полный отчёт по прямой ссылке без оплаты.
+  if (job.tier !== 'paid' || !job.paid) {
+    const arts = await db
+      .select({ id: reportArtifacts.id })
+      .from(reportArtifacts)
+      .where(eq(reportArtifacts.researchJobId, jobId))
+      .limit(1)
+    if (arts[0]) {
+      redirect(`/free-report/${arts[0].id}`)
+    }
+    redirect('/')
+  }
 
   const comps = await db
     .select()

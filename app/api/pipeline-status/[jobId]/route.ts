@@ -154,14 +154,20 @@ export async function GET(_req: Request, { params }: { params: { jobId: string }
     return NextResponse.json(body)
   }
 
-  // Артефакт done. Оба tier'а теперь идут на /free-report — там единая «Карточка
-  // позиции» в белом дизайне, tier-aware: free показывает Cliffhanger + Paywall,
-  // paid показывает CTA «Открыть полный отчёт» на /research/[id]/report.
+  // Артефакт done. Tier-aware редирект:
+  //   - free → /free-report/[artifactId] (BriefV2View)
+  //   - paid → /research/[jobId]/report (FullV2View)
+  // Главное: paid клиент после оплаты НЕ должен сначала видеть brief.
+  const redirectTo =
+    job.tier === 'paid' && job.paid
+      ? `/research/${job.id}/report`
+      : `/free-report/${artifact.id}`
+
   const body: StatusResponse = {
     stage: 'done',
     jobStatus: job.status,
     streams,
-    redirectTo: `/free-report/${artifact.id}`,
+    redirectTo,
     errorMessage: null,
   }
   return NextResponse.json(body)

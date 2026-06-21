@@ -44,14 +44,12 @@ export default async function FreeReportPage({
         <Link href="/" className="text-base font-bold tracking-tight">
           AI-Стратег
         </Link>
-        {row.researchJobId && (
-          <Link
-            href={`/research/${row.researchJobId}/report`}
-            className="lp-btn-primary text-xs"
-          >
-            Полный отчёт →
-          </Link>
-        )}
+        <Link
+          href={`/api/upgrade-to-paid?artifactId=${params.artifactId}`}
+          className="lp-btn-primary text-xs"
+        >
+          Получить полный за 9 999 ₽ →
+        </Link>
       </nav>
       <BriefV2View
         artifactId={params.artifactId}

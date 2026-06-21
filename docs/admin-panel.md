@@ -345,6 +345,31 @@
 - A/B-тест нового vs старого посыла (требует Feature Flags из Этапа 3.4)
 - UX-аудит обновлённого лендинга (`/ux-audit`) — можно прогнать после деплоя
 
+### 2.7 — Save PDF + кнопка «Написать админу» + paywall фиксы ✅ DONE (2026-06-22)
+
+Реализовано в commits `6d7ec47` (Phase 1) + следующий (Phase 2 fixes) во время совместного прогона MVP.
+
+Что сделано:
+
+- **Save PDF** — кнопка в шапке + конце brief и full отчётов (window.print + @media print стили)
+- **Floating «💬 Написать админу»** в bottom-right на всех страницах (`ContactAdminButton`) → модалка с полями контакт+сообщение → POST `/api/contact-admin` → TG-группа админа через существующий `sendTelegramMessage`
+- **Floating «🔐 Админ»** в bottom-left на всех страницах — дискретная ссылка на `/admin/costs`, не привлекает внимание клиентов
+- **Goal обязателен в intake** — добавлен `Boolean(goals.trim())` в `canSubmit`, label получил `*`, кнопка disabled пока не заполнен
+- **Paywall на /research/[id]/report** — раньше любой мог открыть прямую ссылку без оплаты. Теперь: если `job.tier !== 'paid' || !job.paid` → редирект на `/free-report/[artifactId]`
+- **Шапочная «Полный отчёт →»** на /free-report заменена на «Получить полный за 9 999 ₽ →» через `/api/upgrade-to-paid`
+- **`/api/pipeline-status/[jobId]`** — tier-aware redirect: для `tier=paid && paid` идёт на `/research/[id]/report`, иначе на `/free-report`. Раньше всегда был brief → paid юзер после оплаты видел brief снова.
+- **Email опционально в intake** (поле фактически давно убрано, чистка текстов)
+- **Бейджи `v2 · тестовая версия` и `Полный — 9 999 ₽`** убраны из шапок brief и full
+- **Save PDF** перекрашен в `lp-btn-primary` (был `lp-btn-ghost` — незаметно)
+
+### 2.8 — upgrade-to-paid дублирует research (backlog для итерации)
+
+`/api/upgrade-to-paid` сейчас создаёт **новый** research-job tier=paid → после оплаты pipeline крутит research **повторно**. Это правильно работает (юзер получит full отчёт), но research стоит ~$0.50-$2 и дублируется зря.
+
+**Правильное решение:** переключать tier существующего job на paid (вместо создания нового). После approve pipeline видит status=done и не запускает research снова — сразу создаёт artifact tier=paid → редирект на `/research/[id]/report`.
+
+**Когда делать:** после первых 5-10 платных клиентов (если конверсия будет, нужно экономить research токены). Сейчас не блокер — paid флоу работает, просто чуть дороже.
+
 ### 2.6 — Запуск UTM-меток и рассылка ссылок на приложение (after 2.5)
 
 Запрошено пользователем 2026-06-19. Триггер: «далее запускаем метки и рассылку».

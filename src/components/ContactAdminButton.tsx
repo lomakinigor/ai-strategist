@@ -59,7 +59,7 @@ export function ContactAdminButton() {
 
   return (
     <>
-      {/* Floating button — bottom-right */}
+      {/* Floating button — bottom-right (для клиента) */}
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -69,6 +69,19 @@ export function ContactAdminButton() {
         <span aria-hidden>💬</span>
         <span className="hidden sm:inline">Написать админу</span>
       </button>
+
+      {/* Скрытая админ-ссылка — bottom-left, неприметная для клиента.
+          Архив доступен через скрытую кнопку справа от логотипа или по
+          этой ссылке. Не привлекает внимание клиентов, но всегда под рукой
+          у админа на любой странице. */}
+      <a
+        href="/admin/costs"
+        className="no-print fixed bottom-6 left-6 z-40 bg-white border border-[#e5e5e5] text-[#525252] hover:text-[#0a0a0a] hover:border-[#0a0a0a] transition-colors rounded-full shadow-sm w-10 h-10 flex items-center justify-center text-base"
+        title="Админ-панель"
+        aria-label="Админ-панель"
+      >
+        🔐
+      </a>
 
       {/* Modal */}
       {open && (

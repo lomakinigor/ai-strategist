@@ -193,17 +193,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
 
       {/* ── 1. HEADER ─────────────────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 pt-14 pb-8">
-        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-          <p className="lp-eyebrow lp-eyebrow-warm">Краткий разбор</p>
-          <div className="flex items-center gap-2 no-print">
-            <span className="text-[10px] uppercase tracking-[0.12em] font-bold px-2 py-1 rounded bg-[#fef3c7] text-[#92400e]">
-              v2 · тестовая версия
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.12em] font-bold px-2 py-1 rounded bg-[#dbeafe] text-[#1e3a8a]">
-              Полный — 9 999 ₽
-            </span>
-          </div>
-        </div>
+        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Краткий разбор</p>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
           Краткий разбор — {companyName}
         </h1>
@@ -219,9 +209,9 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
               trackUsage({ eventType: 'pdf_downloaded', artifactId, metadata: { source: 'brief_v2' } })
               window.print()
             }}
-            className="lp-btn-ghost text-sm"
+            className="lp-btn-primary"
           >
-            Скачать PDF
+            ⤓ Скачать PDF
           </button>
         </div>
       </section>
@@ -503,7 +493,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
               })
               window.print()
             }}
-            className="lp-btn-ghost"
+            className="lp-btn-primary"
           >
             ⤓ Скачать PDF
           </button>

@@ -380,7 +380,8 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
     !isSubmitting &&
     directionsGateOk &&
     (!confirmationRequired || parseConfirmed) &&
-    dataConsent
+    dataConsent &&
+    Boolean(goals.trim())
 
   // Валидация перехода между шагами (мягкая — кнопка disabled пока не выполнено).
   const canAdvanceFromStep1 = Boolean(companyName.trim() && industry.trim())
@@ -773,15 +774,16 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
       {/* ── Research goal ── */}
       <div>
         <label htmlFor="research_goal" className="block text-sm font-medium text-gray-700 mb-1">
-          Цель исследования
+          Цель исследования <span className="text-[#dc2626]">*</span>
         </label>
         <textarea
           id="research_goal"
           name="research_goal"
           rows={2}
+          required
           value={goals}
           onChange={(e) => setGoals(e.target.value)}
-          placeholder="Что хотите понять или получить от исследования"
+          placeholder="Что хотите понять или получить от исследования — без этого пункта отчёт не запустится"
           className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
       </div>
@@ -885,7 +887,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
       <button
         type="submit"
         disabled={!canSubmit}
-        title={!canSubmit ? 'Поставьте галочку «Да» и согласие 152-ФЗ — это финальный шаг перед запуском' : undefined}
+        title={!canSubmit ? 'Заполните «Цель исследования», галочку «Да» и согласие 152-ФЗ — это финальный шаг перед запуском' : undefined}
         className="lp-btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? <Spinner /> : null}
