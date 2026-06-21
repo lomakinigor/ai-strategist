@@ -16,6 +16,8 @@ import {
   type JobBreakdown,
   type ProviderUsage,
 } from '@/lib/cost/queries'
+import { getUsdRubRate } from '@/lib/cost/rates'
+import { PersonalLinkButton } from '../PersonalLinkButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -92,6 +94,14 @@ function stageLabel(stage: string): string {
   return STAGE_LABEL[stage] ?? stage
 }
 
+// Whitelist провайдеров с защищённым переходом. Должен совпадать с
+// PROVIDER_URLS в /api/admin/personal-link/route.ts. Если в будущем
+// появится новый провайдер — добавь его сначала там, потом сюда.
+const KNOWN_PERSONAL_PROVIDERS = ['openrouter', 'openai', 'anthropic', 'deepseek', 'yookassa'] as const
+function isKnownProvider(p: string): p is (typeof KNOWN_PERSONAL_PROVIDERS)[number] {
+  return (KNOWN_PERSONAL_PROVIDERS as readonly string[]).includes(p)
+}
+
 function fmtRub(n: number): string {
   return n.toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' ₽'
 }
@@ -111,7 +121,7 @@ function fmtDate(d: Date): string {
 }
 
 export default async function AdminCostsPage() {
-  const [today, week, month, allTime, stageBreakdown, jobsBreakdown, balance, providerUsage] = await Promise.all([
+  const [today, week, month, allTime, stageBreakdown, jobsBreakdown, balance, providerUsage, usdRubRate] = await Promise.all([
     getTotalsForPeriod(1),
     getTotalsForPeriod(7),
     getTotalsForPeriod(30),
@@ -120,6 +130,7 @@ export default async function AdminCostsPage() {
     getJobsBreakdown(30),
     getOpenRouterBalance(),
     getProviderUsage(),
+    getUsdRubRate(),
   ])
 
   // Список провайдеров для виджетов: всё что есть в llm_calls + те что в
@@ -137,7 +148,10 @@ export default async function AdminCostsPage() {
           <h1 className="text-3xl font-bold tracking-[-0.02em]">Стоимость pipeline</h1>
         </div>
         <div className="text-xs text-[#737373] text-right">
-          Данные обновляются при каждом открытии страницы.
+          <p>
+            Курс ЦБ: <strong className="text-[#0a0a0a]">1 $ = {usdRubRate.toFixed(2)} ₽</strong>
+          </p>
+          <p className="mt-0.5">Данные обновляются при каждом открытии страницы.</p>
         </div>
       </div>
 
@@ -305,10 +319,11 @@ function BalanceWidget({
     return (
       <div className="border border-yellow-200 bg-yellow-50 rounded p-4 text-sm">
         <p className="text-[11px] uppercase tracking-wider font-bold mb-1">{label}</p>
-        Баланс недоступен (нет ключа или сеть). Проверь через{' '}
-        <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="underline font-medium">
-          {dashboardUrl.replace(/^https?:\/\//, '')}
-        </a>.
+        <p className="mb-2">Баланс недоступен (нет ключа или сеть). Проверь личный кабинет:</p>
+        <PersonalLinkButton provider="openrouter" label={`Открыть ${label}`} />
+        <span className="ml-2 text-xs text-[#737373]">
+          ({dashboardUrl.replace(/^https?:\/\//, '')})
+        </span>
       </div>
     )
   }
@@ -332,9 +347,7 @@ function BalanceWidget({
             Потрачено: ${balance.totalUsage.toFixed(2)} · в нашей БД: ${usage.totalUsd.toFixed(2)} ({usage.callsCount} вызовов)
           </p>
         </div>
-        <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="lp-btn-ghost text-xs">
-          Пополнить →
-        </a>
+        <PersonalLinkButton provider="openrouter" label="Пополнить" />
       </div>
       {isLow && (
         <p className="text-xs mt-3">
@@ -372,15 +385,13 @@ function ProviderUsageWidget({
         <p className="text-sm text-[#525252]">
           Ещё нет вызовов. Появятся после первого использования провайдера.
         </p>
-        {dashboardUrl && (
-          <a
-            href={dashboardUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="lp-btn-ghost text-xs mt-3 inline-block"
-          >
-            Открыть dashboard →
-          </a>
+        {dashboardUrl && isKnownProvider(providerKey) && (
+          <div className="mt-3">
+            <PersonalLinkButton
+              provider={providerKey as 'openrouter' | 'openai' | 'anthropic' | 'deepseek' | 'yookassa'}
+              label="Открыть dashboard"
+            />
+          </div>
         )}
       </div>
     )
@@ -398,10 +409,11 @@ function ProviderUsageWidget({
             {usage.callsCount} вызовов · {usage.totalRub.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽
           </p>
         </div>
-        {dashboardUrl && (
-          <a href={dashboardUrl} target="_blank" rel="noopener noreferrer" className="lp-btn-ghost text-xs">
-            Dashboard →
-          </a>
+        {dashboardUrl && isKnownProvider(providerKey) && (
+          <PersonalLinkButton
+            provider={providerKey as 'openrouter' | 'openai' | 'anthropic' | 'deepseek' | 'yookassa'}
+            label="Dashboard"
+          />
         )}
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">

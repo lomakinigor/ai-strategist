@@ -4,18 +4,30 @@
 // Кликаем → открывается модалка: контакт (опционально) + сообщение (обязательно).
 // Submit → POST /api/contact-admin → пушится в TG-группу админа.
 //
+// На /admin/* НЕ показывается — там и так навигация админская, кнопки клиента
+// не нужны (и могут смутить если админ показывает экран другому человеку).
+//
 // Класс no-print — кнопка и модалка не попадают в PDF при window.print().
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
 export function ContactAdminButton() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [contact, setContact] = useState('')
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  // На админ-страницах кнопки клиента не показываем (включая 🔐 — там и так нав
+  // ведёт в админ-разделы, кнопка избыточна и может смутить если экран показывают
+  // другому человеку).
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
 
   const close = () => {
     if (status === 'sending') return
