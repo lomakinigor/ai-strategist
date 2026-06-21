@@ -17,6 +17,9 @@ export function AdminNav() {
           <Link href="/admin/usage" className="text-[#525252] hover:text-[#0a0a0a]">
             Использование
           </Link>
+          <Link href="/admin/leads" className="text-[#525252] hover:text-[#0a0a0a]">
+            Лиды
+          </Link>
           <Link href="/archive" className="text-[#525252] hover:text-[#0a0a0a]">
             Архив отчётов
           </Link>

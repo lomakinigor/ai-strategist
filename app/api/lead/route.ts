@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   const db = getDb()
   const [inserted] = await db
     .insert(leads)
-    .values({ leadType: type, name, email, phone, company, message })
+    .values({ leadType: type, name, email, phone, company, message, utm })
     .returning()
 
   // Уведомление оператору (stub-логгер если RESEND_API_KEY не задан).

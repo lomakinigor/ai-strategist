@@ -68,6 +68,10 @@ export const reportTierEnum = pgEnum('report_tier', ['free', 'paid', 'retainer']
 // собеседование для сопровождения от 100 000 ₽/мес).
 export const leadTypeEnum = pgEnum('lead_type', ['paid', 'retainer'])
 
+// Статус ведения лида в CRM-lite (/admin/leads). new — только что пришёл,
+// in_progress — оператор уже связался, closed — закрыт (продан / отказ).
+export const leadStatusEnum = pgEnum('lead_status', ['new', 'in_progress', 'closed'])
+
 // ─── Tables ──────────────────────────────────────────────────────────────────
 
 // Placeholder for future auth — not used in single-user MVP
@@ -265,11 +269,21 @@ export const leads = pgTable(
     phone: text('phone'),
     company: text('company'),
     message: text('message'),
+    // CRM-lite fields (Этап 2.2):
+    status: leadStatusEnum('status').default('new').notNull(),
+    // UTM-метки с лендинга (utm_source/medium/campaign/term/content). nullable
+    // т.к. часть лидов приходит без меток (прямой переход / органика).
+    utm: jsonb('utm'),
+    // Заметки оператора при ведении лида. text без длины — для будущей CRM-логики.
+    adminNotes: text('admin_notes'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     index('leads_lead_type_idx').on(table.leadType),
     index('leads_email_idx').on(table.email),
+    index('leads_status_idx').on(table.status),
+    index('leads_created_at_idx').on(table.createdAt),
   ],
 )
 
