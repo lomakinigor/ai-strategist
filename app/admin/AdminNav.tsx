@@ -1,9 +1,21 @@
+'use client'
+
 // Общая admin-навигация. Используется и в /admin/* (через app/admin/layout.tsx),
 // и в /archive (т.к. /archive не лежит под /admin layout).
+// Client component — usePathname() для подсветки активной вкладки.
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+const TABS = [
+  { href: '/admin/costs', label: 'Стоимости' },
+  { href: '/admin/usage', label: 'Использование' },
+  { href: '/admin/leads', label: 'Лиды' },
+  { href: '/archive', label: 'Архив отчётов' },
+] as const
 
 export function AdminNav() {
+  const pathname = usePathname()
   return (
     <nav className="border-b border-[#e5e5e5] bg-white">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
@@ -20,19 +32,26 @@ export function AdminNav() {
             AI-Стратег · admin
           </Link>
         </div>
-        <div className="flex items-center gap-4 text-sm">
-          <Link href="/admin/costs" className="text-[#525252] hover:text-[#0a0a0a]">
-            Стоимости
-          </Link>
-          <Link href="/admin/usage" className="text-[#525252] hover:text-[#0a0a0a]">
-            Использование
-          </Link>
-          <Link href="/admin/leads" className="text-[#525252] hover:text-[#0a0a0a]">
-            Лиды
-          </Link>
-          <Link href="/archive" className="text-[#525252] hover:text-[#0a0a0a]">
-            Архив отчётов
-          </Link>
+        <div className="flex items-center gap-1 text-sm flex-wrap">
+          {TABS.map((tab) => {
+            // /archive имеет sub-routes (/archive/[id]) — startsWith ловит и их.
+            // /admin/costs точно совпадает чтобы /admin/costs/something не подсвечивало.
+            const isActive = pathname === tab.href || pathname?.startsWith(tab.href + '/')
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={
+                  isActive
+                    ? 'text-[#1e3a8a] font-bold bg-[#eff6ff] px-3 py-1.5 rounded transition-colors'
+                    : 'text-[#525252] hover:text-[#0a0a0a] px-3 py-1.5 rounded hover:bg-[#fafafa] transition-colors'
+                }
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {tab.label}
+              </Link>
+            )
+          })}
         </div>
       </div>
     </nav>
