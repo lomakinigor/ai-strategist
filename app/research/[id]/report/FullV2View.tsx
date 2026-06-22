@@ -230,13 +230,14 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
   if (error) {
     return (
       <section className="max-w-3xl mx-auto px-6 py-20 text-center">
-        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Ошибка генерации полного v2</p>
+        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Ошибка генерации</p>
         <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">
-          Не удалось сформировать полный отчёт v2
+          Не удалось сформировать полный отчёт
         </h2>
         <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6] mb-2">{error}</p>
-        <p className="text-xs text-[#737373] mt-4">
-          Это тестовая версия. Уберите <code>?version=v2</code> чтобы увидеть рабочий старый полный отчёт.
+        <p className="text-sm text-[#525252] mt-4">
+          Нажмите «💬 Написать админу» в правом нижнем углу — мы вручную перезапустим
+          генерацию или вернём деньги.
         </p>
       </section>
     )
@@ -245,7 +246,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
   if (!full) {
     return (
       <section className="max-w-3xl mx-auto px-6 py-20 text-center">
-        <p className="lp-eyebrow mb-4">Полный v2 — тестовая версия</p>
+        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Полный стратегический отчёт</p>
         <div className="flex items-center justify-center mb-6">
           <span
             aria-hidden
@@ -254,8 +255,8 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         </div>
         <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">Формируем полный отчёт…</h2>
         <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6]">
-          На этом уровне идёт двойной LLM-вызов (краткий → полный), занимает 60–120 секунд.
-          Прошло {elapsed} сек.
+          Глубокий анализ занимает 60–120 секунд — мы делаем 8 параллельных LLM-вызовов
+          по разным разделам отчёта. Прошло {elapsed} сек.
         </p>
       </section>
     )

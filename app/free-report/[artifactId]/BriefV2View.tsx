@@ -161,15 +161,16 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
   if (error) {
     return (
       <section className="max-w-3xl mx-auto px-6 py-20 text-center">
-        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Ошибка генерации v2</p>
+        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Ошибка генерации</p>
         <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">
-          Не удалось сформировать краткий отчёт v2
+          Не удалось сформировать краткий отчёт
         </h2>
         <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6] mb-2">
           {error}
         </p>
-        <p className="text-xs text-[#737373] mt-4">
-          Это тестовая версия. Откройте страницу без <code>?version=v2</code> чтобы увидеть рабочий вариант.
+        <p className="text-sm text-[#525252] mt-4">
+          Нажмите «💬 Написать админу» в правом нижнем углу — мы вручную
+          перезапустим генерацию.
         </p>
       </section>
     )
@@ -178,7 +179,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
   if (!brief) {
     return (
       <section className="max-w-3xl mx-auto px-6 py-20 text-center">
-        <p className="lp-eyebrow mb-4">v2 — тестовая версия</p>
+        <p className="lp-eyebrow lp-eyebrow-warm mb-4">Краткий разбор</p>
         <div className="flex items-center justify-center mb-6">
           <span
             aria-hidden
