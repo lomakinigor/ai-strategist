@@ -154,7 +154,7 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-6 pt-28 pb-32 text-center">
         <p className="lp-eyebrow mb-8">Для российских компаний</p>
 
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-[-0.03em] leading-[1.02] mb-8">
+        <h1 className="text-[2.25rem] sm:text-6xl md:text-7xl font-bold tracking-[-0.03em] leading-[1.05] sm:leading-[1.02] mb-8 break-words">
           Стратегический отчёт о вашем рынке —
           <br />
           за 10 минут. <span className="text-[#1e3a8a]">9 999 ₽.</span>
