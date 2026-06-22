@@ -73,12 +73,19 @@ export async function getFunnelStats(): Promise<FunnelStats> {
   }
 }
 
-/** Гистограмма «время возврата за полным после первого просмотра брифа». */
+/** Гистограмма «время возврата за полным после первого просмотра брифа».
+ * Также показывает direct-paid: клиенты которые купили полный без захода в бриф. */
 export async function getReturnTimeBuckets(): Promise<ReturnTimeBucket[]> {
   const db = getDb()
-  // Для каждой research_job — берём MIN(brief_viewed) и MIN(full_viewed),
-  // считаем разницу в секундах. Группируем по корзинам.
+  // Для каждой research_job — берём MIN(brief_viewed) и MIN(full_viewed).
+  // 4 случая:
+  //   brief NULL, full NULL    → исключаем (просто intake без отчётов)
+  //   brief NULL, full NOT NULL → «Сразу полный (без брифа)» — direct-paid флоу
+  //   brief NOT NULL, full NULL → «Не вернулись (только бриф)»
+  //   brief NOT NULL, full NOT NULL → одна из временных корзин по diff
   const rows = await db.execute<{
+    brief_seen: boolean
+    full_seen: boolean
     diff_sec: string | null
   }>(sql`
     WITH per_job AS (
@@ -90,9 +97,12 @@ export async function getReturnTimeBuckets(): Promise<ReturnTimeBucket[]> {
       WHERE research_job_id IS NOT NULL
       GROUP BY research_job_id
     )
-    SELECT EXTRACT(EPOCH FROM (full_at - brief_at)) AS diff_sec
+    SELECT
+      brief_at IS NOT NULL AS brief_seen,
+      full_at IS NOT NULL AS full_seen,
+      EXTRACT(EPOCH FROM (full_at - brief_at)) AS diff_sec
     FROM per_job
-    WHERE brief_at IS NOT NULL
+    WHERE brief_at IS NOT NULL OR full_at IS NOT NULL
   `)
 
   const buckets: ReturnTimeBucket[] = [
@@ -103,17 +113,28 @@ export async function getReturnTimeBuckets(): Promise<ReturnTimeBucket[]> {
     { label: '1–7 дн', upperBoundSec: 7 * 24 * 60 * 60, count: 0 },
     { label: '> 7 дн', upperBoundSec: Number.POSITIVE_INFINITY, count: 0 },
     { label: 'Не вернулись (нет full)', upperBoundSec: null, count: 0 },
+    { label: 'Сразу полный (без брифа)', upperBoundSec: null, count: 0 },
   ]
 
+  const IDX_NEVER_RETURNED = 6
+  const IDX_DIRECT_PAID = 7
+
   for (const r of rows) {
-    if (r.diff_sec === null) {
-      // brief viewed, full NOT viewed — «не вернулись»
-      buckets[buckets.length - 1].count++
+    if (!r.brief_seen && r.full_seen) {
+      // Direct-paid: оплатили сразу без захода в бриф
+      buckets[IDX_DIRECT_PAID].count++
       continue
     }
+    if (r.brief_seen && !r.full_seen) {
+      // Бриф был, full не открыли — «не вернулись»
+      buckets[IDX_NEVER_RETURNED].count++
+      continue
+    }
+    // brief_seen && full_seen — раскладываем по времени diff
+    if (r.diff_sec === null) continue
     const diff = parseFloat(r.diff_sec)
-    if (diff < 0) continue // full viewed раньше брифа? пропустим
-    for (let i = 0; i < buckets.length - 1; i++) {
+    if (diff < 0) continue // full viewed раньше брифа? пропустим (нелогично)
+    for (let i = 0; i < IDX_NEVER_RETURNED; i++) {
       const upper = buckets[i].upperBoundSec
       if (upper !== null && diff <= upper) {
         buckets[i].count++

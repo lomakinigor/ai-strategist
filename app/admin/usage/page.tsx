@@ -64,9 +64,11 @@ export default async function AdminUsagePage() {
 
       {/* Histogram */}
       <section className="mb-10">
-        <h2 className="text-xl font-bold mb-4">Время возврата за полным после краткого</h2>
+        <h2 className="text-xl font-bold mb-4">Путь к полному отчёту</h2>
         <p className="text-sm text-[#525252] mb-4">
-          Сколько проходит между первым просмотром брифа и первым просмотром полного отчёта одной компанией.
+          Время между первым просмотром брифа и первым просмотром полного отчёта (синий) ·
+          компании которые посмотрели бриф и не вернулись (красный) ·
+          компании которые купили полный сразу, без брифа (зелёный).
         </p>
         <ReturnHistogram buckets={returnBuckets} />
       </section>
@@ -201,13 +203,23 @@ function ReturnHistogram({ buckets }: { buckets: ReturnTimeBucket[] }) {
     <div className="space-y-2">
       {buckets.map((b) => {
         const widthPct = (b.count / max) * 100
-        const isNotReturned = b.upperBoundSec === null
+        // Цвет полоски по семантике:
+        //   • Не вернулись (есть бриф, нет full)            → красный (отток)
+        //   • Сразу полный (нет брифа, есть full)            → зелёный (direct-paid)
+        //   • Временные корзины (бриф→full с задержкой)      → синий (конверсия через бриф)
+        const isNeverReturned = b.label.startsWith('Не вернулись')
+        const isDirectPaid = b.label.startsWith('Сразу полный')
+        const barColor = isNeverReturned
+          ? 'bg-red-300'
+          : isDirectPaid
+            ? 'bg-emerald-500'
+            : 'bg-[#1e3a8a]'
         return (
           <div key={b.label} className="flex items-center gap-3">
             <div className="w-44 text-sm shrink-0 text-[#525252]">{b.label}</div>
             <div className="flex-1 bg-[#f1f5f9] rounded h-7 relative overflow-hidden">
               <div
-                className={`h-full ${isNotReturned ? 'bg-red-300' : 'bg-[#1e3a8a]'}`}
+                className={`h-full ${barColor}`}
                 style={{ width: `${widthPct}%` }}
               />
               <div className="absolute inset-0 flex items-center px-3 text-xs font-semibold">
