@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createResearchJob } from './actions'
 import { normalizeAdChannel } from './normalize'
 import { ymGoal } from '../YandexMetrica'
+import { readUtm } from '@/lib/utm'
 
 // localStorage save-draft: версионированный ключ, чтобы при изменении схемы
 // можно было инвалидировать старые черновики. UX-аудит 2.10 «Память контекста».
@@ -341,16 +342,22 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
       if (other) formData.append('ad_channel', `Другое: ${other}`)
     }
 
+    // UTM-метки из sessionStorage (UtmCapture сохранил их при заходе с UTM-ссылки).
+    // Без этого мы не знаем какой канал привёл платящего клиента — критично для
+    // ROI-анализа кампаний. notifyPaymentRequest потом покажет источник в TG.
+    const utm = readUtm()
+    if (utm.utm_source) formData.set('utm_source', utm.utm_source)
+    if (utm.utm_medium) formData.set('utm_medium', utm.utm_medium)
+    if (utm.utm_campaign) formData.set('utm_campaign', utm.utm_campaign)
+    if (utm.utm_term) formData.set('utm_term', utm.utm_term)
+    if (utm.utm_content) formData.set('utm_content', utm.utm_content)
+
     try {
-      // Очищаем draft до redirect — после createResearchJob клиент уйдёт на
-      // /research/[id] и сюда больше не вернётся, состояние больше не нужно.
-      if (typeof window !== 'undefined') {
-        try {
-          window.localStorage.removeItem(DRAFT_KEY)
-        } catch {
-          /* ignore — приватный режим / квота */
-        }
-      }
+      // Draft НЕ очищаем здесь — клиент может попасть на /pay и захотеть
+      // вернуться поправить опечатку. Draft переживёт submit и доступен для
+      // restore при /intake?back=1. UX-аудит 2.5 «Прощение ошибок».
+      // Очистка драфта — при первом успешном просмотре отчёта (BriefV2View /
+      // FullV2View) — там же на mount.
       await createResearchJob(formData)
     } catch (err) {
       // redirect() в Next.js server-actions кидает специальный NEXT_REDIRECT —

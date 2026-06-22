@@ -112,6 +112,14 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
     console.log('Report version: v2')
     // Логируем просмотр краткого отчёта для /admin/usage. Один раз на mount.
     trackUsage({ eventType: 'brief_viewed', artifactId })
+    // Чистим intake draft — клиент дошёл до отчёта, форма больше не нужна.
+    // UX-аудит 2.5 + 2.10: draft переживал submit чтобы позволить «вернуться
+    // и поправить» с /pay, но после успешного отчёта смысла его держать нет.
+    try {
+      window.localStorage.removeItem('ai-strategist-intake-draft-v1')
+    } catch {
+      /* ignore */
+    }
   }, [artifactId])
 
   useEffect(() => {

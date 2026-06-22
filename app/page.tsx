@@ -1,15 +1,148 @@
 import Link from 'next/link'
 import CTALink from './CTALink'
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-strategist-bice.vercel.app'
+
 export const metadata = {
   title: 'AI-Стратег — стратегический отчёт за 10 минут за 9 999 ₽',
   description:
     'Полный анализ 4–6 конкурентов, 3 варианта УТП и план на 30/60/90 дней. За 10 минут вместо 2–3 недель консалтинга. С источниками и оценкой достоверности.',
 }
 
+// Structured data для AI-краулеров и поисковиков. Organization + 3 услуги-Offer
+// + FAQPage. AI-агенты (ChatGPT, Claude, Perplexity) парсят это для корректного
+// цитирования. Поисковики используют для rich snippets.
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#org`,
+      name: 'AI-Стратег',
+      url: SITE_URL,
+      description:
+        'Российский сервис автоматизированного стратегического анализа. Полный отчёт о рынке за 10 минут вместо 2-3 недель консалтинга.',
+      areaServed: { '@type': 'Country', name: 'Russia' },
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer service',
+        availableLanguage: ['Russian'],
+        url: `${SITE_URL}/`,
+      },
+    },
+    {
+      '@type': 'Service',
+      '@id': `${SITE_URL}/#service-paid`,
+      name: 'Стратегический отчёт',
+      provider: { '@id': `${SITE_URL}/#org` },
+      description:
+        'Полный стратегический отчёт о российском рынке клиента: Porter 5 Forces, PESTEL, JTBD, SWOT-TOWS, Blue Ocean, профили top-5 конкурентов, roadmap McKinsey 3H, KPI, AI-автоматизация. Каждый факт с источником и RS-оценкой.',
+      areaServed: { '@type': 'Country', name: 'Russia' },
+      offers: {
+        '@type': 'Offer',
+        price: '9999',
+        priceCurrency: 'RUB',
+        availability: 'https://schema.org/InStock',
+        url: `${SITE_URL}/intake?tier=paid`,
+      },
+    },
+    {
+      '@type': 'Service',
+      '@id': `${SITE_URL}/#service-free`,
+      name: 'Краткий разбор (пробник)',
+      provider: { '@id': `${SITE_URL}/#org` },
+      description:
+        'Бесплатный краткий разбор: 2 конкурента, 2 слабые точки бизнеса, 1 тизер УТП. Без credit card, без подписки.',
+      areaServed: { '@type': 'Country', name: 'Russia' },
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'RUB',
+        availability: 'https://schema.org/InStock',
+        url: `${SITE_URL}/intake`,
+      },
+    },
+    {
+      '@type': 'Service',
+      '@id': `${SITE_URL}/#service-retainer`,
+      name: 'Сопровождение (AI + куратор)',
+      provider: { '@id': `${SITE_URL}/#org` },
+      description:
+        'Маркетинговая команда: куратор-стратег + AI-движок. Ежемесячный мониторинг конкурентов, стратегические сессии, управление маркетинговой стратегией.',
+      areaServed: { '@type': 'Country', name: 'Russia' },
+      offers: {
+        '@type': 'Offer',
+        price: '100000',
+        priceCurrency: 'RUB',
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: '100000',
+          priceCurrency: 'RUB',
+          unitText: 'MONTH',
+          referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitText: 'MONTH' },
+        },
+        availability: 'https://schema.org/InStock',
+        url: `${SITE_URL}/lead/retainer`,
+      },
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${SITE_URL}/#faq`,
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Откуда вы берёте данные о конкурентах?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Публичные источники: сайты конкурентов, их соцсети, поисковая выдача, базы вакансий, картографические сервисы. Никаких внутренних или закрытых данных — мы анализируем то, что и сами клиенты конкурента видят.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'А что если у меня нет списка конкурентов?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Назовите нишу и регион — мы найдём по 4-6 ключевых автоматически. Можно дополнить своим списком, если кого-то знаете.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Что если AI ошибётся?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Каждый факт в отчёте сопровождается источником, датой и оценкой надёжности (5 уровней). Вы сами видите, на чём построен вывод — и можете отбросить недостоверное.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Безопасно ли загружать данные о моём бизнесе?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Данные хранятся в зашифрованной базе на серверах в РФ. Не передаются третьим лицам, не используются для обучения моделей. Можно удалить по запросу.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Чем это отличается от SEO-сервисов вроде Spywords?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Spywords показывает сырые ключевые слова — нужно ещё уметь их интерпретировать. AI-Стратег делает стратегию: что ваш бизнес делает слабо, в чём отстроиться, какое УТП написать на первом экране сайта.',
+          },
+        },
+      ],
+    },
+  ],
+}
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-[#0a0a0a]">
+      {/* JSON-LD structured data для AI-краулеров (ChatGPT, Claude, Perplexity)
+          и поисковиков (Yandex, Google rich snippets). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       {/* ── Навигация ─────────────────────────────────────────────────────── */}
       <nav className="max-w-5xl mx-auto px-6 pt-8">
         <Link href="/" className="text-base font-bold tracking-tight">

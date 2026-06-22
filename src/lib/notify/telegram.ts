@@ -59,7 +59,7 @@ export async function sendTelegramMessage(opts: SendOptions): Promise<boolean> {
 }
 
 // Удобный шорткат: уведомить о запросе QR-оплаты.
-// Шлёт в группу: данные компании из intake + кнопка «Подтвердить оплату» (approve-ссылка с secret).
+// Шлёт в группу: данные компании из intake + UTM-метки + кнопка «Подтвердить оплату» (approve-ссылка с secret).
 export async function notifyPaymentRequest(args: {
   jobId: string
   companyName: string
@@ -68,6 +68,13 @@ export async function notifyPaymentRequest(args: {
   description: string | null
   competitors: string | null
   goals: string | null
+  utm?: {
+    utm_source?: string | null
+    utm_medium?: string | null
+    utm_campaign?: string | null
+    utm_term?: string | null
+    utm_content?: string | null
+  } | null
 }): Promise<boolean> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-strategist-bice.vercel.app'
   const approveSecret = process.env.ADMIN_APPROVE_SECRET ?? 'MISSING_SECRET'
@@ -83,6 +90,21 @@ export async function notifyPaymentRequest(args: {
   if (args.description) lines.push(`<b>Описание:</b> ${escapeHtml(truncate(args.description, 200))}`)
   if (args.competitors) lines.push(`<b>Конкуренты:</b> ${escapeHtml(truncate(args.competitors, 200))}`)
   if (args.goals) lines.push(`<b>Цель:</b> ${escapeHtml(truncate(args.goals, 200))}`)
+
+  // UTM-метки — критично для ROI анализа: видим из какого канала пришёл платящий клиент
+  if (args.utm) {
+    const parts: string[] = []
+    if (args.utm.utm_source) parts.push(`source=${escapeHtml(args.utm.utm_source)}`)
+    if (args.utm.utm_medium) parts.push(`medium=${escapeHtml(args.utm.utm_medium)}`)
+    if (args.utm.utm_campaign) parts.push(`campaign=${escapeHtml(args.utm.utm_campaign)}`)
+    if (args.utm.utm_term) parts.push(`term=${escapeHtml(args.utm.utm_term)}`)
+    if (args.utm.utm_content) parts.push(`content=${escapeHtml(args.utm.utm_content)}`)
+    if (parts.length) {
+      lines.push('')
+      lines.push(`<b>🎯 Источник:</b> ${parts.join(' · ')}`)
+    }
+  }
+
   lines.push('')
   lines.push(`<b>jobId:</b> <code>${args.jobId}</code>`)
   lines.push('')

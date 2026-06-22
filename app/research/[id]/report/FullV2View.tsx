@@ -185,6 +185,13 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
     console.log('Full report version: v2')
     // Логируем просмотр полного отчёта для /admin/usage. Один раз на mount.
     trackUsage({ eventType: 'full_viewed', researchJobId: jobId })
+    // Чистим intake draft — клиент дошёл до отчёта, форма больше не нужна.
+    // См. BriefV2View с тем же ключом.
+    try {
+      window.localStorage.removeItem('ai-strategist-intake-draft-v1')
+    } catch {
+      /* ignore */
+    }
   }, [jobId])
 
   useEffect(() => {

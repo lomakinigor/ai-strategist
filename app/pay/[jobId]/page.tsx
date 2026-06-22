@@ -2,11 +2,11 @@
 // При маунте триггерит Telegram-уведомление администратору о запросе оплаты.
 // Polling каждые 5 секунд: когда paid=true → автоматический редирект на /research/[jobId].
 
-import { eq } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getDb } from '@/db'
-import { researchJobs, companies } from '@/db/schema'
+import { researchJobs, companies, intakeSubmissions } from '@/db/schema'
 import { notifyPaymentRequest } from '@/lib/notify/telegram'
 import { PayPolling } from './PayPolling'
 
@@ -23,6 +23,7 @@ export default async function PayPage({ params }: { params: { jobId: string } })
   const rows = await db
     .select({
       jobId: researchJobs.id,
+      companyId: researchJobs.companyId,
       tier: researchJobs.tier,
       paid: researchJobs.paid,
       paidAt: researchJobs.paidAt,
@@ -51,6 +52,31 @@ export default async function PayPage({ params }: { params: { jobId: string } })
     redirect(`/research/${row.jobId}`)
   }
 
+  // UTM-метки из последней intake-записи по этой компании. Передаём в TG-нотификацию
+  // чтобы админ видел источник трафика платящего клиента (критично для ROI-анализа
+  // кампаний). Не падаем если не нашли — UTM опционален.
+  let utm: {
+    utm_source?: string | null
+    utm_medium?: string | null
+    utm_campaign?: string | null
+    utm_term?: string | null
+    utm_content?: string | null
+  } | null = null
+  if (row.companyId) {
+    try {
+      const intakeRows = await db
+        .select({ inputPayload: intakeSubmissions.inputPayload })
+        .from(intakeSubmissions)
+        .where(eq(intakeSubmissions.companyId, row.companyId))
+        .orderBy(desc(intakeSubmissions.createdAt))
+        .limit(1)
+      const payload = intakeRows[0]?.inputPayload as { utm?: typeof utm } | null
+      if (payload?.utm) utm = payload.utm
+    } catch {
+      /* ignore — UTM не критичен для notify */
+    }
+  }
+
   // Шлём админу нотификацию о запросе оплаты (best-effort, не блокирует рендер).
   // Дедуп: Telegram сам не дедуплицирует, поэтому при каждой загрузке /pay/[jobId]
   // прилетит сообщение. В MVP это OK — нет смысла плодить state, перезагрузки от
@@ -64,6 +90,7 @@ export default async function PayPage({ params }: { params: { jobId: string } })
     description: row.description,
     competitors: row.competitors,
     goals: row.goals,
+    utm,
   })
 
   return (
@@ -157,6 +184,23 @@ export default async function PayPage({ params }: { params: { jobId: string } })
           Сохраните URL этой страницы (или вкладку в избранное) — он&nbsp;вам понадобится, если случайно
           закроете окно. По нему мы вернёмся к&nbsp;ожиданию оплаты, а&nbsp;потом — к&nbsp;готовому отчёту.
         </p>
+
+        {/* Backlink — позволяет вернуться поправить опечатку до оплаты.
+            Draft не очищается при submit (см. IntakeForm:344), форма
+            восстановится из localStorage. После повторного submit создастся
+            новая заявка, старая останется unpaid в БД. */}
+        <div className="mt-8 pt-6 border-t border-[#e5e5e5]">
+          <p className="text-sm text-[#525252] leading-[1.6]">
+            Заметили ошибку в данных?{' '}
+            <Link href="/intake" className="text-[#1e3a8a] font-medium underline hover:text-[#172554]">
+              Вернуться к анкете и поправить →
+            </Link>
+            <br />
+            <span className="text-xs text-[#6b7280]">
+              Если уже оплатили — лучше напишите админу (кнопка справа внизу), мы вручную исправим перед запуском.
+            </span>
+          </p>
+        </div>
       </section>
 
       <footer className="border-t border-[#e5e5e5]">

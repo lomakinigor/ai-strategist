@@ -50,6 +50,17 @@ export async function createResearchJob(formData: FormData) {
   const chainScope = isChain ? ((formData.get('chain_scope') as string | null) ?? 'network') : null
   const city = (chainScope === 'location' ? ((formData.get('city') as string | null) ?? '').trim() : '') || null
 
+  // UTM-метки от клиента (IntakeForm читает readUtm() из sessionStorage перед submit).
+  // Сохраняем как объект в intake_submissions.inputPayload для ROI-анализа по каналам.
+  const utm = {
+    utm_source: ((formData.get('utm_source') as string | null) ?? '').trim() || null,
+    utm_medium: ((formData.get('utm_medium') as string | null) ?? '').trim() || null,
+    utm_campaign: ((formData.get('utm_campaign') as string | null) ?? '').trim() || null,
+    utm_term: ((formData.get('utm_term') as string | null) ?? '').trim() || null,
+    utm_content: ((formData.get('utm_content') as string | null) ?? '').trim() || null,
+  }
+  const hasUtm = Object.values(utm).some((v) => v !== null)
+
   if (!name || !industry) {
     throw new Error('Название компании и отрасль обязательны')
   }
@@ -93,6 +104,7 @@ export async function createResearchJob(formData: FormData) {
       chain_scope: chainScope,
       city,
       tier,
+      ...(hasUtm ? { utm } : {}),
     },
     fallbackQuestionsNeeded: false,
   })
