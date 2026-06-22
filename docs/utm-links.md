@@ -34,15 +34,22 @@
 | **Personal email** | `https://ai-strategist-bice.vercel.app/?utm_source=personal&utm_medium=email&utm_campaign=mvp_launch_2026_06&utm_content=main` |
 | **Personal мессенджеры** (общая — кому неудобно делить email/tg/wa) | `https://ai-strategist-bice.vercel.app/?utm_source=personal&utm_medium=dm&utm_campaign=mvp_launch_2026_06&utm_content=main` |
 
-### Антикризисный лендинг (если делаешь отдельную акцию)
+### Антикризисный лендинг — полный набор по тем же 8 каналам
 
-Замени `/?` на `/crisis?` (и `utm_content=main` → `utm_content=crisis`):
+Используй когда контекст разговора УЖЕ о трудностях (чаты антикризисных
+групп, ситуации когда человек сам пожаловался на падение продаж). На
+холодную не отправляй — может прозвучать оскорбительно.
 
 | Канал | Готовая ссылка |
 |---|---|
-| **ВК сообщество** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=vk&utm_medium=community&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
-| **TG канал** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=tg&utm_medium=channel&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
-| **MAX чаты** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=max&utm_medium=chat&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **ВК — пост в сообществе** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=vk&utm_medium=community&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **ВК — личное сообщение** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=vk&utm_medium=dm&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **TG — пост в канале** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=tg&utm_medium=channel&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **TG — личное сообщение** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=tg&utm_medium=dm&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **MAX — чаты** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=max&utm_medium=chat&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **MAX — личные сообщения** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=max&utm_medium=dm&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **Personal email** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=personal&utm_medium=email&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
+| **Personal мессенджеры** | `https://ai-strategist-bice.vercel.app/crisis?utm_source=personal&utm_medium=dm&utm_campaign=mvp_launch_2026_06&utm_content=crisis` |
 
 ## A/B тест разных постов в одном канале
 
