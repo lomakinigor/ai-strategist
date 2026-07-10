@@ -42,3 +42,4 @@ drizzle/meta/
 
 # VS Code workspace (personal)
 *.code-workspace
+.env*.local

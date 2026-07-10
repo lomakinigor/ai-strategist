@@ -11,7 +11,11 @@ export async function GET(
     const db = getDb()
 
     const artifacts = await db
-      .select()
+      .select({
+        status: reportArtifacts.status,
+        contentMarkdown: reportArtifacts.contentMarkdown,
+        researchJobId: reportArtifacts.researchJobId,
+      })
       .from(reportArtifacts)
       .where(eq(reportArtifacts.id, params.artifactId))
       .limit(1)
