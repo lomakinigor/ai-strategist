@@ -13,7 +13,7 @@ import { recordLlmCall } from '@/lib/cost/record'
 import type { FullV2 } from './full-v2'
 import type { BriefV2 } from './brief-v2'
 
-export const INTERACTIVE_V2_MAX_TOKENS = 10000
+export const INTERACTIVE_V2_MAX_TOKENS = 16000
 
 // ─── Типы (зеркало секций innodor-report.html) ─────────────────────────────
 
