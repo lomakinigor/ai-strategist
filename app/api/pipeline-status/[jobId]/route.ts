@@ -156,11 +156,12 @@ export async function GET(_req: Request, { params }: { params: { jobId: string }
 
   // Артефакт done. Tier-aware редирект:
   //   - free → /free-report/[artifactId] (BriefV2View)
-  //   - paid → /research/[jobId]/report (FullV2View)
+  //   - paid → /research/[jobId]/report/interactive (InteractiveV2View,
+  //     интерактивный «рабочий отчёт»; кросс-ссылка на 70+ стр. FullV2View)
   // Главное: paid клиент после оплаты НЕ должен сначала видеть brief.
   const redirectTo =
     job.tier === 'paid' && job.paid
-      ? `/research/${job.id}/report`
+      ? `/research/${job.id}/report/interactive`
       : `/free-report/${artifact.id}`
 
   const body: StatusResponse = {

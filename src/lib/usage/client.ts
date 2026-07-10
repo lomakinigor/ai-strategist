@@ -1,7 +1,7 @@
 // Тоненький fire-and-forget хелпер для фронта. Используется из BriefV2View,
 // FullV2View, PrintButton. Не блокирует UI и не валит компонент при ошибке.
 
-export type UsageEventType = 'brief_viewed' | 'full_viewed' | 'pdf_downloaded'
+export type UsageEventType = 'brief_viewed' | 'full_viewed' | 'interactive_viewed' | 'pdf_downloaded'
 
 export interface TrackUsageParams {
   eventType: UsageEventType

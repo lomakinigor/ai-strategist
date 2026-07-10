@@ -95,7 +95,7 @@ function ReportCard({ report }: { report: ReportRow }) {
       <div className="flex items-center gap-2 shrink-0">
         {report.status === 'done' && report.researchJobId && (
           <a
-            href={`/research/${report.researchJobId}/report?artifactId=${report.id}`}
+            href={`/research/${report.researchJobId}/report/interactive?artifactId=${report.id}`}
             className="text-xs px-3 py-1.5 rounded-md border border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
           >
             Открыть
@@ -103,7 +103,7 @@ function ReportCard({ report }: { report: ReportRow }) {
         )}
         {report.status === 'partial' && report.researchJobId && (
           <a
-            href={`/research/${report.researchJobId}/report?artifactId=${report.id}`}
+            href={`/research/${report.researchJobId}/report/interactive?artifactId=${report.id}`}
             className="text-xs px-3 py-1.5 rounded-md border border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
           >
             Открыть

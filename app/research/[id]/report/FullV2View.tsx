@@ -271,20 +271,25 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         <header className="mb-12 page-break-after-avoid">
           <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <p className="lp-eyebrow lp-eyebrow-warm">Полный стратегический отчёт</p>
-            <button
-              type="button"
-              onClick={() => {
-                trackUsage({
-                  eventType: 'pdf_downloaded',
-                  researchJobId: jobId,
-                  metadata: { source: 'full_v2' },
-                })
-                window.print()
-              }}
-              className="lp-btn-primary no-print"
-            >
-              ⤓ Скачать PDF
-            </button>
+            <div className="flex items-center gap-3 no-print">
+              <Link href={`/research/${jobId}/report/interactive`} className="text-sm text-[#1e3a8a] font-medium hover:underline">
+                ← Рабочий отчёт
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  trackUsage({
+                    eventType: 'pdf_downloaded',
+                    researchJobId: jobId,
+                    metadata: { source: 'full_v2' },
+                  })
+                  window.print()
+                }}
+                className="lp-btn-primary"
+              >
+                ⤓ Скачать PDF
+              </button>
+            </div>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
             {companyName} — стратегический анализ

@@ -9,10 +9,15 @@
 //
 // Класс no-print — кнопка и модалка не попадают в PDF при window.print().
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
+
+// Другие компоненты (например CTA в конце интерактивного рабочего отчёта)
+// открывают эту модалку программно через кастомное событие, не имея прямого
+// доступа к её состоянию — избегаем протаскивания state через весь layout.
+export const OPEN_CONTACT_ADMIN_EVENT = 'open-contact-admin'
 
 export function ContactAdminButton() {
   const pathname = usePathname()
@@ -21,6 +26,16 @@ export function ContactAdminButton() {
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ message?: string } | undefined>).detail
+      if (detail?.message) setMessage(detail.message)
+      setOpen(true)
+    }
+    window.addEventListener(OPEN_CONTACT_ADMIN_EVENT, handler)
+    return () => window.removeEventListener(OPEN_CONTACT_ADMIN_EVENT, handler)
+  }, [])
 
   // На админ-страницах кнопки клиента не показываем (включая 🔐 — там и так нав
   // ведёт в админ-разделы, кнопка избыточна и может смутить если экран показывают

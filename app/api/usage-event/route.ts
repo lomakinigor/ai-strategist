@@ -18,6 +18,7 @@ export const dynamic = 'force-dynamic'
 const ALLOWED_EVENT_TYPES = new Set([
   'brief_viewed',
   'full_viewed',
+  'interactive_viewed',
   'pdf_downloaded',
 ])
 

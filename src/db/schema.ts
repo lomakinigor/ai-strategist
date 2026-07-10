@@ -247,6 +247,9 @@ export const reportArtifacts = pgTable(
     // Кеш краткого отчёта (BRIEF_REPORT, 6 блоков) — генерируется по запросу,
     // чтобы не пересоздавать дорогостоящий brief при каждом просмотре.
     briefJson: jsonb('brief_json'),
+    // Кеш интерактивного «рабочего отчёта» (InteractiveV2, дизайн innodor-report.html) —
+    // дистилляция FullV2/BriefV2, первый экран для paid-клиента после оплаты.
+    interactiveJson: jsonb('interactive_json'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },

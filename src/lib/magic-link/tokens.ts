@@ -61,12 +61,13 @@ export async function createMagicLink({
 }
 
 export type VerifyResult =
-  | { ok: true; artifactId: string; tier: 'free' | 'paid' | 'retainer' }
+  | { ok: true; artifactId: string; tier: 'free' | 'paid' | 'retainer'; researchJobId: string | null }
   | { ok: false; reason: 'not_found' | 'expired' }
 
 /**
- * Проверяет токен: жив ли, не протух ли. Возвращает artifactId + tier
- * для маршрутизации в /free-report/[id] или /brief/[id].
+ * Проверяет токен: жив ли, не протух ли. Возвращает artifactId + tier + researchJobId
+ * для маршрутизации в /free-report/[id] (free) или /research/[jobId]/report/interactive
+ * (paid/retainer — интерактивный рабочий отчёт).
  */
 export async function verifyMagicLink(token: string): Promise<VerifyResult> {
   if (!token) return { ok: false, reason: 'not_found' }
@@ -77,6 +78,7 @@ export async function verifyMagicLink(token: string): Promise<VerifyResult> {
       artifactId: magicLinks.artifactId,
       expiresAt: magicLinks.expiresAt,
       tier: reportArtifacts.tier,
+      researchJobId: reportArtifacts.researchJobId,
     })
     .from(magicLinks)
     .leftJoin(reportArtifacts, eq(reportArtifacts.id, magicLinks.artifactId))
@@ -87,7 +89,7 @@ export async function verifyMagicLink(token: string): Promise<VerifyResult> {
   if (!row) return { ok: false, reason: 'not_found' }
   if (row.expiresAt < new Date()) return { ok: false, reason: 'expired' }
 
-  return { ok: true, artifactId: row.artifactId, tier: row.tier ?? 'paid' }
+  return { ok: true, artifactId: row.artifactId, tier: row.tier ?? 'paid', researchJobId: row.researchJobId ?? null }
 }
 
 /**

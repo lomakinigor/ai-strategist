@@ -1,6 +1,7 @@
 // /access?token=<base64url>
 // Принимает magic-link токен → проверяет → редиректит на /free-report/[id]
-// или /brief/[id] в зависимости от tier артефакта.
+// (free) или /research/[jobId]/report/interactive (paid/retainer, интерактивный
+// рабочий отчёт) в зависимости от tier артефакта.
 //
 // Если токена нет / истёк / не найден — рендерит вежливое сообщение со
 // ссылкой на главную и предложением запросить новую ссылку.
@@ -33,11 +34,13 @@ export default async function AccessPage({
     return <AccessError reason={result.reason} />
   }
 
-  // Маршрутизация по тарифу: free → урезанный view, paid/retainer → полный бриф.
+  // Маршрутизация по тарифу: free → урезанный view, paid/retainer → интерактивный
+  // рабочий отчёт (если researchJobId почему-то не найден — fallback на free-report,
+  // там тоже есть upgrade-путь).
   const target =
-    result.tier === 'free'
+    result.tier === 'free' || !result.researchJobId
       ? `/free-report/${result.artifactId}`
-      : `/brief/${result.artifactId}`
+      : `/research/${result.researchJobId}/report/interactive`
 
   redirect(target)
 }
