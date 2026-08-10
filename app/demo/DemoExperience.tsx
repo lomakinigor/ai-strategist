@@ -61,15 +61,9 @@ function ReportBlock({ block }: { block: DemoReportBlock }) {
 
 export default function DemoExperience() {
   const [step, setStep] = useState<DemoStep>('input')
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
-  const [actionsOnly, setActionsOnly] = useState(false)
   const [progress, setProgress] = useState(0)
   const activeIndex = STEPS.findIndex((item) => item.id === step)
-  const reportSections = actionsOnly
-    ? DEMO_SNAPSHOT.fullReport.sections.filter((section) =>
-        ['summary', 'automation', 'roadmap', 'tests'].includes(section.id),
-      )
-    : DEMO_SNAPSHOT.fullReport.sections
+  const reportSections = DEMO_SNAPSHOT.fullReport.sections
 
   useEffect(() => {
     const updateProgress = () => {
@@ -89,45 +83,13 @@ export default function DemoExperience() {
   }
 
   return (
-    <main
-      className={styles.demo}
-      data-theme={theme}
-    >
+    <main className={styles.demo}>
       <header className={styles.topbar}>
         <Link href="/" className={styles.brand} aria-label="AI-Стратег — на главную">
           <span className={styles.brandMark}>AI</span>
           <span>Стратег</span>
         </Link>
         <div className={styles.demoBadge}>Обезличенный рабочий отчёт</div>
-        <div className={styles.topActions}>
-          <div className={styles.viewToggle} aria-label="Режим просмотра">
-            <button
-              type="button"
-              className={!actionsOnly ? styles.viewActive : ''}
-              onClick={() => setActionsOnly(false)}
-            >
-              Полный
-            </button>
-            <button
-              type="button"
-              className={actionsOnly ? styles.viewActive : ''}
-              onClick={() => setActionsOnly(true)}
-            >
-              Только действия
-            </button>
-          </div>
-          <button
-            type="button"
-            className={styles.utilityButton}
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            aria-label="Сменить тему"
-          >
-            {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
-          </button>
-          <button type="button" className={styles.utilityButton} onClick={() => window.print()}>
-            Печать / PDF
-          </button>
-        </div>
       </header>
 
       <div className={styles.shell}>
@@ -384,9 +346,7 @@ export default function DemoExperience() {
                 <p>{DEMO_SNAPSHOT.interactive.thesis}</p>
               </details>
 
-              <section
-                className={`${styles.contentSection} ${actionsOnly ? styles.hiddenInActions : ''}`}
-              >
+              <section className={styles.contentSection}>
                 <div className={styles.sectionNumber}>01</div>
                 <div className={styles.sectionBody}>
                   <p className={styles.kicker}>Позиция</p>
@@ -432,9 +392,7 @@ export default function DemoExperience() {
                 </div>
               </section>
 
-              <section
-                className={`${styles.contentSection} ${actionsOnly ? styles.hiddenInActions : ''}`}
-              >
+              <section className={styles.contentSection}>
                 <div className={styles.sectionNumber}>03</div>
                 <div className={styles.sectionBody}>
                   <p className={styles.kicker}>Конкурентное поле</p>

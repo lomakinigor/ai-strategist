@@ -36,11 +36,20 @@ describe('Demo report design contract', () => {
     expect(css).toContain("[data-theme='dark']")
   })
 
-  it('сохраняет интерактивные функции эталонного отчёта', () => {
-    expect(component).toContain('Только действия')
+  it('оставляет в правой части header только название отчёта', () => {
+    expect(component).toContain('<div className={styles.demoBadge}>Обезличенный рабочий отчёт</div>')
+    expect(component).not.toContain('styles.topActions')
+    expect(component).not.toContain('Только действия')
+    expect(component).not.toContain('Сменить тему')
+    expect(component).not.toContain('Печать / PDF')
+    expect(css).toMatch(/\.topbar\s*\{[\s\S]*?grid-template-columns:\s*240px 1fr/)
+    expect(css).toMatch(/\.demoBadge\s*\{[\s\S]*?justify-self:\s*end/)
+    expect(css).toMatch(/\.demoBadge\s*\{[\s\S]*?font-size:\s*13px/)
+  })
+
+  it('сохраняет навигацию и прогресс эталонного отчёта', () => {
     expect(component).toContain('Прочитано')
-    expect(component).toContain('Сменить тему')
-    expect(component).toContain('Печать / PDF')
+    expect(component).toContain('Этапы демонстрации')
   })
 
   it('показывает факты до свёрнутого AI-резюме и объясняет методологию', () => {
