@@ -23,6 +23,10 @@ describe('Demo report design contract', () => {
     expect(contactAdmin).toContain('<span>Написать админу</span>')
   })
 
+  it('keeps the demo hero in one upright type style', () => {
+    expect(css).toMatch(/\.stageIntro h1 em\s*\{[\s\S]*?font-style:\s*normal/)
+  })
+
   it('использует Pomelli tokens и сохраняет размеры рабочего отчёта', () => {
     expect(css).toContain('--color-bg: #fafafa')
     expect(css).toContain('--color-primary: #1e3a8a')

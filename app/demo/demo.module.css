@@ -339,6 +339,7 @@
   color: var(--gold);
   font-family: var(--font-inter);
   font-weight: 400;
+  font-style: normal;
 }
 .lead {
   max-width: 720px;
