@@ -7,6 +7,10 @@ const css = readFileSync(resolve(root, 'app/demo/demo.module.css'), 'utf8')
 const component = readFileSync(resolve(root, 'app/demo/DemoExperience.tsx'), 'utf8')
 
 describe('Demo report design contract', () => {
+  it('keeps technical audit values readable in light and dark themes', () => {
+    expect(css).toMatch(/\.auditMetrics strong\s*\{[\s\S]*?color:\s*var\(--color-text\)/)
+  })
+
   it('использует Pomelli tokens и сохраняет размеры рабочего отчёта', () => {
     expect(css).toContain('--color-bg: #fafafa')
     expect(css).toContain('--color-primary: #1e3a8a')
