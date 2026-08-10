@@ -83,40 +83,40 @@ export default async function AdminUsagePage() {
       <section>
         <h2 className="text-xl font-bold mb-4">Последние {companies.length} компаний</h2>
         {companies.length === 0 ? (
-          <p className="text-sm text-[#737373] italic">
+          <p className="text-sm text-[#525252] italic">
             Ещё нет компаний с зарегистрированными событиями. Запусти один intake → дойди до полного отчёта.
           </p>
         ) : (
-          <div className="overflow-x-auto border border-[#e5e5e5] rounded">
+          <div className="overflow-x-auto border border-black/10 rounded">
             <table className="w-full text-sm">
               <thead className="bg-[#fafafa]">
                 <tr>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Дата intake</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Компания</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Tier</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Краткий ✓</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Полный ✓</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Δ (бриф→полный)</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">PDF</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Job</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Дата intake</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Компания</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Tier</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Краткий ✓</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Полный ✓</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Δ (бриф→полный)</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">PDF</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Job</th>
                 </tr>
               </thead>
               <tbody>
                 {companies.map((c: CompanyUsageRow) => (
-                  <tr key={c.researchJobId} className="border-b border-[#f1f5f9]">
+                  <tr key={c.researchJobId} className="border-b border-black/10">
                     <td className="px-3 py-2 whitespace-nowrap">{fmtDate(c.intakeAt)}</td>
                     <td className="px-3 py-2">
                       <div className="font-medium">{c.companyName ?? '—'}</div>
-                      <div className="text-xs text-[#737373]">{c.industry ?? ''}</div>
+                      <div className="text-xs text-[#525252]">{c.industry ?? ''}</div>
                     </td>
                     <td className="px-3 py-2">
                       <span
                         className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
                           c.tier === 'paid'
-                            ? 'bg-green-50 text-green-800'
+                            ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
                             : c.tier === 'retainer'
-                              ? 'bg-purple-50 text-purple-800'
-                              : 'bg-gray-50 text-gray-700'
+                              ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
+                              : 'bg-[#fafafa] text-[#525252]'
                         }`}
                       >
                         {c.tier ?? 'free'}
@@ -133,9 +133,9 @@ export default async function AdminUsagePage() {
                         <span
                           className={`font-medium ${
                             c.briefToFullSec < 60 * 60
-                              ? 'text-green-700'
+                              ? 'text-[#1e3a8a]'
                               : c.briefToFullSec < 24 * 60 * 60
-                                ? 'text-amber-700'
+                                ? 'text-[#1e3a8a]'
                                 : 'text-[#525252]'
                           }`}
                         >
@@ -145,11 +145,11 @@ export default async function AdminUsagePage() {
                         '—'
                       )}
                     </td>
-                    <td className="px-3 py-2">{c.pdfDownloadedAt ? '📄' : '—'}</td>
+                    <td className="px-3 py-2">{c.pdfDownloadedAt ? 'Да' : '—'}</td>
                     <td className="px-3 py-2">
                       <Link
                         href={`/research/${c.researchJobId}/report?version=v2`}
-                        className="text-xs text-[#1e3a8a] hover:underline font-mono"
+                        className="text-xs text-[#1e3a8a] hover:underline font-sans tabular-nums"
                       >
                         {c.researchJobId.slice(0, 8)}…
                       </Link>
@@ -162,7 +162,7 @@ export default async function AdminUsagePage() {
         )}
       </section>
 
-      <p className="text-xs text-[#737373] mt-8 italic">
+      <p className="text-xs text-[#525252] mt-8 italic">
         События пишутся при mount компонента (один раз на сессию) и при клике «Скачать PDF».
         Если клиент перезагружает страницу — события пишутся повторно, но в воронке учитываются как один просмотр (DISTINCT по research_job_id).
       </p>
@@ -182,8 +182,8 @@ function FunnelWidget({ funnel }: { funnel: FunnelStats }) {
       <h2 className="text-xl font-bold mb-4">Воронка</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {steps.map((s, i) => (
-          <article key={s.label} className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
-            <p className="text-[11px] uppercase tracking-wider font-bold text-[#737373] mb-1">
+          <article key={s.label} className="border border-black/10 rounded p-4 bg-[#fafafa]">
+            <p className="text-[11px] uppercase tracking-wider font-bold text-[#525252] mb-1">
               {i + 1}. {s.label}
             </p>
             <p className="text-3xl font-bold tracking-[-0.01em]">{s.count}</p>
@@ -210,14 +210,14 @@ function ReturnHistogram({ buckets }: { buckets: ReturnTimeBucket[] }) {
         const isNeverReturned = b.label.startsWith('Не вернулись')
         const isDirectPaid = b.label.startsWith('Сразу полный')
         const barColor = isNeverReturned
-          ? 'bg-red-300'
+          ? 'bg-[#1e3a8a]/10'
           : isDirectPaid
-            ? 'bg-emerald-500'
+            ? 'bg-[#1e3a8a]'
             : 'bg-[#1e3a8a]'
         return (
           <div key={b.label} className="flex items-center gap-3">
             <div className="w-44 text-sm shrink-0 text-[#525252]">{b.label}</div>
-            <div className="flex-1 bg-[#f1f5f9] rounded h-7 relative overflow-hidden">
+            <div className="flex-1 bg-[#fafafa] rounded h-7 relative overflow-hidden">
               <div
                 className={`h-full ${barColor}`}
                 style={{ width: `${widthPct}%` }}
@@ -235,7 +235,7 @@ function ReturnHistogram({ buckets }: { buckets: ReturnTimeBucket[] }) {
 
 function IndustriesChart({ industries, totalIntake }: { industries: IndustryStat[]; totalIntake: number }) {
   if (industries.length === 0) {
-    return <p className="text-sm text-[#737373] italic">Нет данных по нишам.</p>
+    return <p className="text-sm text-[#525252] italic">Нет данных по нишам.</p>
   }
   const max = Math.max(1, ...industries.map((i) => i.intakeCount))
   return (
@@ -248,8 +248,8 @@ function IndustriesChart({ industries, totalIntake }: { industries: IndustryStat
             <div className="w-44 text-sm shrink-0 text-[#525252] truncate" title={i.industry}>
               {i.industry}
             </div>
-            <div className="flex-1 bg-[#f1f5f9] rounded h-7 relative overflow-hidden">
-              <div className="h-full bg-amber-300" style={{ width: `${widthPct}%` }} />
+            <div className="flex-1 bg-[#fafafa] rounded h-7 relative overflow-hidden">
+              <div className="h-full bg-[#1e3a8a]/10" style={{ width: `${widthPct}%` }} />
               <div className="absolute inset-0 flex items-center px-3 text-xs font-semibold">
                 {i.intakeCount} · {fmtPct(sharePct)}
               </div>

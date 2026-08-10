@@ -75,21 +75,21 @@ export default async function ArchivePage() {
   const doneCount = reports.filter((r) => r.status === 'done').length
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#fafafa]">
       <AdminNav />
       <div className="max-w-3xl mx-auto px-6 py-12">
 
         {/* Header */}
         <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Архив отчётов</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-[#525252]">Архив отчётов</h1>
+            <p className="mt-1 text-sm text-[#525252]">
               Все итерации исследований — каждая запись соответствует одному запуску анализа
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-2xl font-bold text-gray-900">{total}</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-2xl font-bold text-[#525252]">{total}</p>
+            <p className="text-xs text-[#525252]">
               {total === 1 ? 'запись' : total >= 2 && total <= 4 ? 'записи' : 'записей'}
               {total > 0 && ` · ${doneCount} готов${doneCount === 1 ? '' : doneCount >= 2 && doneCount <= 4 ? 'ы' : 'о'}`}
             </p>
@@ -98,7 +98,7 @@ export default async function ArchivePage() {
 
         {/* Cleanup hint */}
         {total >= 10 && (
-          <div className="mb-6 border border-amber-200 bg-amber-50 rounded-lg px-4 py-3 text-xs text-amber-800">
+          <div className="mb-6 border border-[#1e3a8a]/30 bg-[#1e3a8a]/10 rounded-lg px-4 py-3 text-xs text-[#1e3a8a]">
             В архиве {total} записей — рекомендуем удалить старые итерации, которые уже не нужны.
           </div>
         )}
@@ -108,10 +108,10 @@ export default async function ArchivePage() {
 
         {/* Nav */}
         <div className="mt-8 flex gap-4">
-          <a href="/intake" className="text-sm text-blue-600 hover:underline">
+          <a href="/intake" className="text-sm text-[#1e3a8a] hover:underline">
             + Новое исследование
           </a>
-          <a href="/" className="text-sm text-gray-400 hover:underline ml-auto">
+          <a href="/" className="text-sm text-[#525252] hover:underline ml-auto">
             ← Главная
           </a>
         </div>

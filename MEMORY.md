@@ -82,6 +82,7 @@
 | 2026-05-21 | Claude Sonnet 4.6 на синтезе, Flash на секциях/brief | Синтез — главный результат (~$0.05/отчёт); лёгкие задачи дешевле на Flash |
 | 2026-05-21 | maxDuration 60 → 300 (Vercel Fluid Compute) | Hobby max = 300с с апр 2025; старое ограничение 60с снято |
 | 2026-08-10 | Pomelli brand book — source of truth для публичного UI | PDF хранится в `docs/brand/`, машинно-читаемые правила — `docs/brand/DESIGN.md`; canonical palette: #FFFFFF, #1E3A8A, #0A0A0A, #525252, #FAFAFA |
+| 2026-08-10 | Pomelli brand system распространён на весь UI | Landing, demo, intake, reports, admin, archive, dialogs, print и OpenGraph используют Inter + canonical palette; возврат legacy colors/fonts блокирует `src/lib/ui/__tests__/brand-system.test.ts` |
 
 ## Ссылки
 

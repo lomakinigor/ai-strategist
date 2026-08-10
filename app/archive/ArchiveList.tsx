@@ -23,11 +23,11 @@ const STATUS_LABEL: Record<string, string> = {
 }
 
 const STATUS_CLASS: Record<string, string> = {
-  done: 'text-green-700 bg-green-100',
-  partial: 'text-indigo-700 bg-indigo-100',
-  error: 'text-red-700 bg-red-100',
-  generating: 'text-yellow-700 bg-yellow-100',
-  pending: 'text-gray-600 bg-gray-100',
+  done: 'text-[#1e3a8a] bg-[#1e3a8a]/10',
+  partial: 'text-[#1e3a8a] bg-[#1e3a8a]/10',
+  error: 'text-[#1e3a8a] bg-[#1e3a8a]/10',
+  generating: 'text-[#1e3a8a] bg-[#1e3a8a]/10',
+  pending: 'text-[#525252] bg-[#fafafa]',
 }
 
 function Spinner() {
@@ -69,24 +69,24 @@ function ReportCard({ report }: { report: ReportRow }) {
   })
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg px-5 py-4 flex items-start gap-4 hover:border-gray-300 transition-colors">
+    <div className="bg-white border border-black/10 rounded-lg px-5 py-4 flex items-start gap-4 hover:border-black/10 transition-colors">
       {/* Seq number */}
-      <span className="text-xs font-mono text-gray-400 mt-0.5 w-10 shrink-0 text-right">
+      <span className="text-xs font-sans tabular-nums text-[#525252] mt-0.5 w-10 shrink-0 text-right">
         #{String(report.seq).padStart(3, '0')}
       </span>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-gray-900 truncate">
+          <span className="text-sm font-semibold text-[#525252] truncate">
             {report.companyName}
           </span>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_CLASS[report.status] ?? STATUS_CLASS.pending}`}>
             {STATUS_LABEL[report.status] ?? report.status}
           </span>
         </div>
-        <p className="text-xs text-gray-500 mt-0.5 truncate">{report.industry}</p>
-        <p className="text-xs text-gray-400 mt-1 font-mono">
+        <p className="text-xs text-[#525252] mt-0.5 truncate">{report.industry}</p>
+        <p className="text-xs text-[#525252] mt-1 font-sans tabular-nums">
           {report.label} · {dateStr} {timeStr}
         </p>
       </div>
@@ -96,7 +96,7 @@ function ReportCard({ report }: { report: ReportRow }) {
         {report.status === 'done' && report.researchJobId && (
           <a
             href={`/research/${report.researchJobId}/report/interactive?artifactId=${report.id}`}
-            className="text-xs px-3 py-1.5 rounded-md border border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-md border border-black/10 text-[#525252] hover:border-black/10 hover:text-[#525252] transition-colors"
           >
             Открыть
           </a>
@@ -104,7 +104,7 @@ function ReportCard({ report }: { report: ReportRow }) {
         {report.status === 'partial' && report.researchJobId && (
           <a
             href={`/research/${report.researchJobId}/report/interactive?artifactId=${report.id}`}
-            className="text-xs px-3 py-1.5 rounded-md border border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-md border border-black/10 text-[#525252] hover:border-black/10 hover:text-[#525252] transition-colors"
           >
             Открыть
           </a>
@@ -115,8 +115,8 @@ function ReportCard({ report }: { report: ReportRow }) {
           disabled={deleting}
           className={`text-xs px-3 py-1.5 rounded-md border transition-colors select-none cursor-pointer disabled:opacity-60 inline-flex items-center gap-1.5 ${
             confirmed
-              ? 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100'
-              : 'border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-600'
+              ? 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10 text-[#1e3a8a] hover:bg-[#1e3a8a]/10'
+              : 'border-black/10 text-[#525252] hover:border-[#1e3a8a]/30 hover:text-[#1e3a8a]'
           }`}
         >
           {deleting && <Spinner />}
@@ -126,7 +126,7 @@ function ReportCard({ report }: { report: ReportRow }) {
         {confirmed && !deleting && (
           <button
             onClick={() => setConfirmed(false)}
-            className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer select-none"
+            className="text-xs text-[#525252] hover:text-[#525252] cursor-pointer select-none"
           >
             Отмена
           </button>
@@ -139,9 +139,9 @@ function ReportCard({ report }: { report: ReportRow }) {
 export function ArchiveList({ reports }: { reports: ReportRow[] }) {
   if (reports.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-400">
+      <div className="text-center py-16 text-[#525252]">
         <p className="text-sm">Архив пуст — запустите первое исследование</p>
-        <a href="/intake" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
+        <a href="/intake" className="mt-4 inline-block text-sm text-[#1e3a8a] hover:underline">
           Создать исследование →
         </a>
       </div>

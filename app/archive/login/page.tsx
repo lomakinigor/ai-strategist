@@ -72,7 +72,7 @@ export default function ArchiveLoginPage({ searchParams }: { searchParams?: { er
 
           <form action={login} className="space-y-4">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#374151] mb-1.5">
+              <label htmlFor="password" className="block text-sm font-medium text-[#1e3a8a] mb-1.5">
                 Пароль
               </label>
               <input
@@ -82,12 +82,12 @@ export default function ArchiveLoginPage({ searchParams }: { searchParams?: { er
                 required
                 autoFocus
                 placeholder="••••••••••"
-                className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+                className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
               />
             </div>
 
             {hasError && (
-              <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+              <p className="text-sm text-[#1e3a8a] bg-[#1e3a8a]/10 border border-[#1e3a8a]/30 rounded px-3 py-2">
                 Неверный пароль. Попробуйте ещё раз.
               </p>
             )}
@@ -100,8 +100,8 @@ export default function ArchiveLoginPage({ searchParams }: { searchParams?: { er
         </div>
       </section>
 
-      <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-md mx-auto px-6 py-10 text-xs text-[#6b7280]">
+      <footer className="border-t border-black/10">
+        <div className="max-w-md mx-auto px-6 py-10 text-xs text-[#525252]">
           © {new Date().getFullYear()} AI-Стратег
         </div>
       </footer>

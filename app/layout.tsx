@@ -17,7 +17,7 @@ const DESCRIPTION =
   'Автоматизированный стратегический анализ для российских компаний: исследование бизнеса, рынка, аудитории и каналов с маркировкой достоверности данных.'
 
 export const viewport: Viewport = {
-  themeColor: '#4f46e5',
+  themeColor: '#1e3a8a',
   width: 'device-width',
   initialScale: 1,
 }

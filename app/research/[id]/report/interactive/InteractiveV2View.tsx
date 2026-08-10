@@ -10,7 +10,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Manrope, Instrument_Serif } from 'next/font/google'
 import { trackUsage } from '@/lib/usage/client'
 import { OPEN_CONTACT_ADMIN_EVENT } from '@/components/ContactAdminButton'
 import type {
@@ -22,18 +21,6 @@ import type {
   RiskRow,
 } from '@/lib/strategy/interactive-v2'
 import styles from './interactive-report.module.css'
-
-const manrope = Manrope({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-manrope',
-})
-const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  variable: '--font-instrument-serif',
-})
 
 interface Props {
   jobId: string
@@ -106,24 +93,24 @@ const RISK_LEVEL_LABEL: Record<RiskRow['probability'], string> = {
 function chartColors(theme: 'light' | 'dark') {
   return theme === 'dark'
     ? {
-        primary: '#4a9990',
-        primaryMid: '#5ab0a6',
-        danger: '#c04050',
-        warning: '#c47840',
-        success: '#5a9948',
-        text: '#cdc9c2',
-        textMuted: '#7a7770',
-        grid: 'rgba(255,255,255,0.06)',
+        primary: '#ffffff',
+        primaryMid: '#1e3a8a',
+        danger: '#fafafa',
+        warning: '#525252',
+        success: 'rgba(255, 255, 255, 0.72)',
+        text: '#fafafa',
+        textMuted: 'rgba(255, 255, 255, 0.72)',
+        grid: 'rgba(255, 255, 255,0.06)',
       }
-    : {
-        primary: '#1a5c54',
-        primaryMid: '#4a8f86',
-        danger: '#8c1f2a',
-        warning: '#9c4a1a',
-        success: '#2e6b20',
-        text: '#1e1c18',
-        textMuted: '#6b6860',
-        grid: 'rgba(30,28,24,0.07)',
+      : {
+        primary: '#1e3a8a',
+        primaryMid: '#0a0a0a',
+        danger: '#525252',
+        warning: 'rgba(30, 58, 138, 0.62)',
+        success: 'rgba(10, 10, 10, 0.62)',
+        text: '#0a0a0a',
+        textMuted: '#525252',
+        grid: 'rgba(10, 10, 10,0.07)',
       }
 }
 
@@ -332,7 +319,7 @@ export function InteractiveV2View({ jobId, companyName, industry }: Props) {
         <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">Не удалось собрать рабочий отчёт</h2>
         <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6] mb-2">{error}</p>
         <p className="text-sm text-[#525252] mt-4">
-          Нажмите «💬 Написать админу» в правом нижнем углу — мы вручную перезапустим генерацию.
+          Нажмите «Написать админу» в правом нижнем углу — мы вручную перезапустим генерацию.
         </p>
         <Link href={`/research/${jobId}/report`} className="lp-btn-ghost mt-6 inline-block">
           Открыть полный отчёт →
@@ -346,7 +333,7 @@ export function InteractiveV2View({ jobId, companyName, industry }: Props) {
       <section className="max-w-3xl mx-auto px-6 py-20 text-center">
         <p className="lp-eyebrow lp-eyebrow-warm mb-4">Рабочий отчёт</p>
         <div className="flex items-center justify-center mb-6">
-          <span aria-hidden className="inline-block w-8 h-8 rounded-full border-2 border-[#e5e5e5] border-t-[#0a0a0a] animate-spin" />
+          <span aria-hidden className="inline-block w-8 h-8 rounded-full border-2 border-black/10 border-t-[#0a0a0a] animate-spin" />
         </div>
         <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">Собираем рабочий отчёт…</h2>
         <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6]">
@@ -357,7 +344,7 @@ export function InteractiveV2View({ jobId, companyName, industry }: Props) {
   }
 
   return (
-    <div className={`${styles.themeRoot} ${manrope.variable} ${instrumentSerif.variable}`} data-theme={theme}>
+    <div className={styles.themeRoot} data-theme={theme}>
       {mobileOpen && (
         <div className={`${styles.sidebarOverlay} ${styles.sidebarOverlayVisible}`} onClick={() => setMobileOpen(false)} />
       )}

@@ -74,8 +74,8 @@ export default async function ResearchProgressPage({ params }: { params: { id: s
         initialTier={job.tier === 'paid' ? 'paid' : 'free'}
       />
 
-      <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#6b7280]">
+      <footer className="border-t border-black/10">
+        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#525252]">
           <p>© {new Date().getFullYear()} AI-Стратег</p>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">

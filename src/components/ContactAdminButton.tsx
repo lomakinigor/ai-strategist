@@ -37,7 +37,7 @@ export function ContactAdminButton() {
     return () => window.removeEventListener(OPEN_CONTACT_ADMIN_EVENT, handler)
   }, [])
 
-  // На админ-страницах кнопки клиента не показываем (включая 🔐 — там и так нав
+  // На админ-страницах кнопки клиента не показываем (включая admin — там и так нав
   // ведёт в админ-разделы, кнопка избыточна и может смутить если экран показывают
   // другому человеку).
   if (pathname?.startsWith('/admin')) {
@@ -90,10 +90,10 @@ export function ContactAdminButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="no-print fixed bottom-6 right-6 z-40 bg-[#1e3a8a] text-white rounded-full shadow-lg hover:bg-[#1e40af] transition-colors px-5 py-3 flex items-center gap-2 text-sm font-medium"
+        className="no-print fixed bottom-6 right-6 z-40 bg-[#1e3a8a] text-white rounded-full shadow-lg hover:bg-[#1e3a8a] transition-colors px-5 py-3 flex items-center gap-2 text-sm font-medium"
         aria-label="Написать админу"
       >
-        <span aria-hidden>💬</span>
+        <span aria-hidden>?</span>
         <span className="hidden sm:inline">Написать админу</span>
       </button>
 
@@ -103,11 +103,11 @@ export function ContactAdminButton() {
           у админа на любой странице. */}
       <a
         href="/admin/costs"
-        className="no-print fixed bottom-6 left-6 z-40 bg-white border border-[#e5e5e5] text-[#525252] hover:text-[#0a0a0a] hover:border-[#0a0a0a] transition-colors rounded-full shadow-sm w-10 h-10 flex items-center justify-center text-base"
+        className="no-print fixed bottom-6 left-6 z-40 bg-white border border-black/10 text-[#525252] hover:text-[#0a0a0a] hover:border-[#0a0a0a] transition-colors rounded-full shadow-sm w-10 h-10 flex items-center justify-center text-base"
         title="Админ-панель"
         aria-label="Админ-панель"
       >
-        🔐
+        A
       </a>
 
       {/* Modal */}
@@ -125,8 +125,8 @@ export function ContactAdminButton() {
           >
             {status === 'sent' ? (
               <div className="text-center py-6">
-                <p className="text-3xl mb-3" aria-hidden>
-                  ✅
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#1e3a8a] mb-3">
+                  Сообщение принято
                 </p>
                 <h2 className="text-xl font-bold mb-2 tracking-[-0.01em]">Отправлено</h2>
                 <p className="text-sm text-[#525252] leading-[1.6] mb-6">
@@ -147,7 +147,7 @@ export function ContactAdminButton() {
                   <button
                     type="button"
                     onClick={close}
-                    className="text-[#737373] hover:text-[#0a0a0a] text-xl leading-none shrink-0"
+                    className="text-[#525252] hover:text-[#0a0a0a] text-xl leading-none shrink-0"
                     aria-label="Закрыть"
                   >
                     ×
@@ -161,7 +161,7 @@ export function ContactAdminButton() {
                 <label className="block mb-4">
                   <span className="block text-sm font-medium mb-1.5">
                     Ваш контакт{' '}
-                    <span className="text-[#737373] font-normal text-xs">
+                    <span className="text-[#525252] font-normal text-xs">
                       (Telegram, телефон или email) — нужен чтобы ответить
                     </span>
                   </span>
@@ -170,14 +170,14 @@ export function ContactAdminButton() {
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
                     placeholder="@username, +7 999 123-45-67 или you@mail.ru"
-                    className="w-full px-3 py-2 border border-[#d4d4d4] rounded text-sm focus:outline-none focus:border-[#1e3a8a]"
+                    className="w-full px-3 py-2 border border-black/10 rounded text-sm focus:outline-none focus:border-[#1e3a8a]"
                     disabled={status === 'sending'}
                   />
                 </label>
 
                 <label className="block mb-2">
                   <span className="block text-sm font-medium mb-1.5">
-                    Сообщение <span className="text-[#dc2626]">*</span>
+                    Сообщение <span className="text-[#1e3a8a]">*</span>
                   </span>
                   <textarea
                     value={message}
@@ -185,13 +185,13 @@ export function ContactAdminButton() {
                     rows={5}
                     required
                     placeholder="Что хотите сказать или спросить?"
-                    className="w-full px-3 py-2 border border-[#d4d4d4] rounded text-sm focus:outline-none focus:border-[#1e3a8a] resize-y"
+                    className="w-full px-3 py-2 border border-black/10 rounded text-sm focus:outline-none focus:border-[#1e3a8a] resize-y"
                     disabled={status === 'sending'}
                   />
                 </label>
 
                 {errorMsg && (
-                  <p className="text-sm text-[#dc2626] bg-red-50 border border-red-200 rounded px-3 py-2 mb-3">
+                  <p className="text-sm text-[#1e3a8a] bg-[#1e3a8a]/10 border border-[#1e3a8a]/30 rounded px-3 py-2 mb-3">
                     {errorMsg}
                   </p>
                 )}

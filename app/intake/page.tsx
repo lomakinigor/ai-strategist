@@ -43,15 +43,15 @@ export default function IntakePage({
 
         <IntakeForm tier={tier} />
 
-        <p className="text-xs text-[#6b7280] mt-6 leading-[1.6]">
+        <p className="text-xs text-[#525252] mt-6 leading-[1.6]">
           {isPaid
             ? 'После отправки откроется страница оплаты с QR-кодом. Когда мы получим оплату — запустим параллельное исследование по 4 направлениям. Отчёт откроется в браузере на этой же странице — никуда не уйдёт.'
             : 'После отправки запустим параллельное исследование по 4 направлениям: бизнес, рынок, аудитория, конкуренты. Краткий отчёт откроется в браузере, как только будет готов — никуда не уйдёт.'}
         </p>
       </section>
 
-      <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-2xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#6b7280]">
+      <footer className="border-t border-black/10">
+        <div className="max-w-2xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#525252]">
           <p>© {new Date().getFullYear()} AI-Стратег</p>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">

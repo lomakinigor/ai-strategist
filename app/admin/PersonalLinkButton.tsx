@@ -94,7 +94,7 @@ export function PersonalLinkButton({ provider, label, className }: Props) {
               <button
                 type="button"
                 onClick={close}
-                className="text-[#737373] hover:text-[#0a0a0a] text-xl leading-none shrink-0"
+                className="text-[#525252] hover:text-[#0a0a0a] text-xl leading-none shrink-0"
                 aria-label="Закрыть"
               >
                 ×
@@ -104,7 +104,7 @@ export function PersonalLinkButton({ provider, label, className }: Props) {
               Открыть личный кабинет провайдера{' '}
               <strong className="text-[#0a0a0a]">{provider}</strong>. Введите код доступа.
               <br />
-              <span className="text-xs text-[#737373] italic">
+              <span className="text-xs text-[#525252] italic">
                 Код — отдельный от пароля админки. Просите у владельца аккаунтов.
               </span>
             </p>
@@ -118,12 +118,12 @@ export function PersonalLinkButton({ provider, label, className }: Props) {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoFocus
-                  className="w-full px-3 py-2 border border-[#d4d4d4] rounded text-sm focus:outline-none focus:border-[#1e3a8a]"
+                  className="w-full px-3 py-2 border border-black/10 rounded text-sm focus:outline-none focus:border-[#1e3a8a]"
                   disabled={submitting}
                 />
               </label>
               {error && (
-                <p className="text-sm text-[#dc2626] bg-red-50 border border-red-200 rounded px-3 py-2 mb-3">
+                <p className="text-sm text-[#1e3a8a] bg-[#1e3a8a]/10 border border-[#1e3a8a]/30 rounded px-3 py-2 mb-3">
                   {error}
                 </p>
               )}

@@ -138,11 +138,11 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
       </div>
 
       {/* Фильтры */}
-      <div className="border border-[#e5e5e5] rounded p-4 mb-6 bg-[#fafafa]">
+      <div className="border border-black/10 rounded p-4 mb-6 bg-[#fafafa]">
         <div className="flex items-center gap-4 flex-wrap">
           {/* Status filter */}
           <div className="flex items-center gap-1">
-            <span className="text-xs uppercase tracking-wider font-bold text-[#737373] mr-2">Статус:</span>
+            <span className="text-xs uppercase tracking-wider font-bold text-[#525252] mr-2">Статус:</span>
             {STATUS_OPTIONS.map((opt) => {
               const isActive = (statusFilter === opt.value) || (statusFilter === 'all' && opt.value === 'all')
               return (
@@ -150,7 +150,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
                   key={opt.value}
                   href={`/admin/leads${buildQueryString(currentParams, { status: opt.value === 'all' ? null : opt.value })}`}
                   className={`text-xs px-2 py-1 rounded ${
-                    isActive ? 'bg-[#1e3a8a] text-white font-semibold' : 'text-[#525252] hover:bg-[#e5e5e5]'
+                    isActive ? 'bg-[#1e3a8a] text-white font-semibold' : 'text-[#525252] hover:bg-[#fafafa]'
                   }`}
                 >
                   {opt.label}
@@ -161,7 +161,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
 
           {/* Type filter */}
           <div className="flex items-center gap-1">
-            <span className="text-xs uppercase tracking-wider font-bold text-[#737373] mr-2">Тип:</span>
+            <span className="text-xs uppercase tracking-wider font-bold text-[#525252] mr-2">Тип:</span>
             {TYPE_OPTIONS.map((opt) => {
               const isActive = (typeFilter === opt.value) || (typeFilter === 'all' && opt.value === 'all')
               return (
@@ -169,7 +169,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
                   key={opt.value}
                   href={`/admin/leads${buildQueryString(currentParams, { type: opt.value === 'all' ? null : opt.value })}`}
                   className={`text-xs px-2 py-1 rounded ${
-                    isActive ? 'bg-[#1e3a8a] text-white font-semibold' : 'text-[#525252] hover:bg-[#e5e5e5]'
+                    isActive ? 'bg-[#1e3a8a] text-white font-semibold' : 'text-[#525252] hover:bg-[#fafafa]'
                   }`}
                 >
                   {opt.label}
@@ -187,7 +187,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
               name="q"
               defaultValue={searchQuery}
               placeholder="Поиск по email/имени/компании"
-              className="text-sm border border-[#e5e5e5] rounded px-2 py-1 w-64"
+              className="text-sm border border-black/10 rounded px-2 py-1 w-64"
             />
             <button type="submit" className="text-xs bg-[#1e3a8a] text-white rounded px-3 py-1.5 hover:opacity-90">
               Найти
@@ -195,7 +195,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
             {searchQuery && (
               <Link
                 href={`/admin/leads${buildQueryString(currentParams, { q: null })}`}
-                className="text-xs text-[#737373] hover:text-[#0a0a0a]"
+                className="text-xs text-[#525252] hover:text-[#0a0a0a]"
               >
                 Сбросить
               </Link>
@@ -205,9 +205,9 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
       </div>
 
       {/* Таблица */}
-      <div className="border border-[#e5e5e5] rounded overflow-hidden">
+      <div className="border border-black/10 rounded overflow-hidden">
         {leadRows.length === 0 ? (
-          <div className="p-8 text-center text-sm text-[#737373]">
+          <div className="p-8 text-center text-sm text-[#525252]">
             {searchQuery || statusFilter !== 'all' || typeFilter !== 'all'
               ? 'Ничего не найдено. Сбрось фильтры.'
               : 'Ещё нет лидов. Они появятся после первой заявки с /lead/paid или /lead/retainer.'}
@@ -216,13 +216,13 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
           <table className="w-full text-sm">
             <thead className="bg-[#fafafa]">
               <tr>
-                <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Дата</th>
-                <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Тариф</th>
-                <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Имя / компания</th>
-                <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Контакты</th>
-                <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">UTM</th>
-                <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Статус</th>
-                <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Заметки</th>
+                <th className="text-left px-3 py-2 border-b border-black/10">Дата</th>
+                <th className="text-left px-3 py-2 border-b border-black/10">Тариф</th>
+                <th className="text-left px-3 py-2 border-b border-black/10">Имя / компания</th>
+                <th className="text-left px-3 py-2 border-b border-black/10">Контакты</th>
+                <th className="text-left px-3 py-2 border-b border-black/10">UTM</th>
+                <th className="text-left px-3 py-2 border-b border-black/10">Статус</th>
+                <th className="text-left px-3 py-2 border-b border-black/10">Заметки</th>
               </tr>
             </thead>
             <tbody>
@@ -234,7 +234,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
         )}
       </div>
 
-      <p className="text-xs text-[#737373] mt-4 italic">
+      <p className="text-xs text-[#525252] mt-4 italic">
         Показано {leadRows.length} из {totalCount} лидов (последние 200 при отсутствии фильтров).
         Заметки и статусы сохраняются автоматически при изменении.
       </p>
@@ -252,14 +252,14 @@ function KpiCard({
   accent: 'gray' | 'blue' | 'amber' | 'green'
 }) {
   const accentClasses = {
-    gray: 'bg-[#fafafa] border-[#e5e5e5]',
-    blue: 'bg-blue-50 border-blue-200',
-    amber: 'bg-amber-50 border-amber-200',
-    green: 'bg-green-50 border-green-200',
+    gray: 'bg-[#fafafa] border-black/10',
+    blue: 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30',
+    amber: 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30',
+    green: 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30',
   }
   return (
     <article className={`border rounded p-4 ${accentClasses[accent]}`}>
-      <p className="text-[11px] uppercase tracking-wider font-bold text-[#737373] mb-1">{label}</p>
+      <p className="text-[11px] uppercase tracking-wider font-bold text-[#525252] mb-1">{label}</p>
       <p className="text-3xl font-bold tracking-[-0.01em]">{value}</p>
     </article>
   )

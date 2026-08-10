@@ -128,40 +128,40 @@ export default async function PayPage({ params }: { params: { jobId: string } })
                 Сумма к оплате
               </p>
               <p className="text-3xl font-bold tracking-[-0.02em] mb-1">9 999 ₽</p>
-              <p className="text-xs text-[#6b7280]">Разовый платёж, СБП</p>
+              <p className="text-xs text-[#525252]">Разовый платёж, СБП</p>
             </div>
 
             <div className="lp-card p-6 mb-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#6b7280] mb-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#525252] mb-3">
                 Реквизиты (если QR не работает)
               </p>
               <dl className="space-y-2 text-sm text-[#0a0a0a]">
                 <div className="flex justify-between gap-4">
-                  <dt className="text-[#6b7280]">Способ:</dt>
+                  <dt className="text-[#525252]">Способ:</dt>
                   <dd>СБП по номеру телефона</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-[#6b7280]">Телефон:</dt>
-                  <dd className="font-mono">+7 918 520-13-72</dd>
+                  <dt className="text-[#525252]">Телефон:</dt>
+                  <dd className="font-sans tabular-nums">+7 918 520-13-72</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-[#6b7280]">Банк:</dt>
+                  <dt className="text-[#525252]">Банк:</dt>
                   <dd>Т-Банк</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-[#6b7280]">Сумма:</dt>
-                  <dd className="font-mono">9 999 ₽</dd>
+                  <dt className="text-[#525252]">Сумма:</dt>
+                  <dd className="font-sans tabular-nums">9 999 ₽</dd>
                 </div>
               </dl>
-              <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">
+              <p className="text-xs text-[#525252] mt-4 leading-[1.55]">
                 В комментарии к платежу укажите номер заявки:&nbsp;
-                <code className="font-mono text-[11px] text-[#0a0a0a]">{row.jobId.slice(0, 8)}</code>
+                <code className="font-sans tabular-nums text-[11px] text-[#0a0a0a]">{row.jobId.slice(0, 8)}</code>
                 . Имя получателя увидите в приложении банка после сканирования QR.
               </p>
             </div>
 
-            <p className="text-xs text-[#6b7280] leading-[1.6]">
-              Заявка #<code className="font-mono">{row.jobId.slice(0, 8)}</code> на компанию{' '}
+            <p className="text-xs text-[#525252] leading-[1.6]">
+              Заявка #<code className="font-sans tabular-nums">{row.jobId.slice(0, 8)}</code> на компанию{' '}
               <strong className="text-[#0a0a0a]">{row.companyName ?? 'без названия'}</strong>
               {row.industry ? ` (ниша: ${row.industry})` : ''}. Мы получили уведомление о&nbsp;запросе оплаты.
             </p>
@@ -180,7 +180,7 @@ export default async function PayPage({ params }: { params: { jobId: string } })
           </p>
         </div>
 
-        <p className="text-xs text-[#6b7280] mt-8 leading-[1.65]">
+        <p className="text-xs text-[#525252] mt-8 leading-[1.65]">
           Сохраните URL этой страницы (или вкладку в избранное) — он&nbsp;вам понадобится, если случайно
           закроете окно. По нему мы вернёмся к&nbsp;ожиданию оплаты, а&nbsp;потом — к&nbsp;готовому отчёту.
         </p>
@@ -189,22 +189,22 @@ export default async function PayPage({ params }: { params: { jobId: string } })
             Draft не очищается при submit (см. IntakeForm:344), форма
             восстановится из localStorage. После повторного submit создастся
             новая заявка, старая останется unpaid в БД. */}
-        <div className="mt-8 pt-6 border-t border-[#e5e5e5]">
+        <div className="mt-8 pt-6 border-t border-black/10">
           <p className="text-sm text-[#525252] leading-[1.6]">
             Заметили ошибку в данных?{' '}
-            <Link href="/intake" className="text-[#1e3a8a] font-medium underline hover:text-[#172554]">
+            <Link href="/intake" className="text-[#1e3a8a] font-medium underline hover:text-[#1e3a8a]">
               Вернуться к анкете и поправить →
             </Link>
             <br />
-            <span className="text-xs text-[#6b7280]">
+            <span className="text-xs text-[#525252]">
               Если уже оплатили — лучше напишите админу (кнопка справа внизу), мы вручную исправим перед запуском.
             </span>
           </p>
         </div>
       </section>
 
-      <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#6b7280]">
+      <footer className="border-t border-black/10">
+        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#525252]">
           <p>© {new Date().getFullYear()} AI-Стратег</p>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">

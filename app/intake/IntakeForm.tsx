@@ -430,7 +430,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
 
       {/* ── Сигнал о восстановленном черновике ───────────────────────────── */}
       {draftRestored && (
-        <div className="rounded-md border border-[#dbeafe] bg-[#eff6ff] px-4 py-3 flex items-start justify-between gap-3">
+        <div className="rounded-md border border-[#1e3a8a] bg-[#fafafa] px-4 py-3 flex items-start justify-between gap-3">
           <p className="text-sm text-[#1e3a8a] leading-snug">
             Восстановили данные с прошлого визита. Если хотите начать с чистого
             листа — нажмите справа.
@@ -447,7 +447,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
               }
               window.location.reload()
             }}
-            className="text-xs font-semibold text-[#1e3a8a] underline hover:text-[#172554] shrink-0 cursor-pointer"
+            className="text-xs font-semibold text-[#1e3a8a] underline hover:text-[#1e3a8a] shrink-0 cursor-pointer"
           >
             Начать заново
           </button>
@@ -461,7 +461,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
       <>
       {/* ── Context notes (AI parse) ── */}
       <div>
-        <label htmlFor="context_notes" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="context_notes" className="block text-sm font-medium text-[#525252] mb-1">
           Дополнительная информация о компании
         </label>
         <textarea
@@ -471,27 +471,27 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           value={contextNotes}
           onChange={(e) => setContextNotes(e.target.value)}
           placeholder="Вставьте любую информацию: описание продуктов, данные о клиентах, конкурентах, метрики, КП, отзывы — система сама разберёт и заполнит поля ниже."
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
         <div className="mt-2 flex items-center gap-3 flex-wrap">
           <button
             type="button"
             onClick={handleParse}
             disabled={isParsing || !contextNotes.trim()}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md bg-[#eff6ff] text-[#1e3a8a] border border-[#dbeafe] hover:bg-[#dbeafe] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md bg-[#fafafa] text-[#1e3a8a] border border-[#1e3a8a] hover:bg-[#1e3a8a] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors select-none"
           >
             {isParsing ? <Spinner /> : null}
             {isParsing ? 'Разбираю…' : 'Разобрать с помощью AI →'}
           </button>
-          {parseError && <span className="text-xs text-red-500">{parseError}</span>}
+          {parseError && <span className="text-xs text-[#1e3a8a]">{parseError}</span>}
           {!parseError && !isParsing && !aiParseRan && (
-            <span className="text-xs text-gray-400">Необязательно. Чем больше данных — тем точнее стратегия.</span>
+            <span className="text-xs text-[#525252]">Необязательно. Чем больше данных — тем точнее стратегия.</span>
           )}
         </div>
 
         {/* Видимый индикатор обработки (правило 3) */}
         {isParsing && (
-          <div className="mt-3 flex items-center gap-3 rounded-md bg-[#eff6ff] border border-[#dbeafe] px-4 py-3">
+          <div className="mt-3 flex items-center gap-3 rounded-md bg-[#fafafa] border border-[#1e3a8a] px-4 py-3">
             <Spinner />
             <p className="text-sm text-[#1e3a8a]">
               Обрабатываем информацию — это занимает 10–30 секунд. Пожалуйста, подождите…
@@ -501,12 +501,12 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
 
       </div>
 
-      <hr className="border-gray-100" />
+      <hr className="border-black/10" />
 
       {/* ── Company name ── */}
       <div>
-        <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
-          Название компании <span className="text-red-500">*</span>
+        <label htmlFor="company_name" className="block text-sm font-medium text-[#525252] mb-1">
+          Название компании <span className="text-[#1e3a8a]">*</span>
         </label>
         <input
           id="company_name"
@@ -516,29 +516,29 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
           placeholder="ООО «Ромашка»"
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
       </div>
 
       {/* ── Chain / network ── */}
       <div>
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-sm text-[#525252] cursor-pointer select-none">
           <input
             type="checkbox"
             checked={isChain}
             onChange={(e) => setIsChain(e.target.checked)}
-            className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
+            className="rounded border-black/10 text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
           />
           У компании несколько точек или филиалов (сеть или франшиза)
         </label>
-        <p className="text-xs text-gray-400 mt-1 ml-6">
+        <p className="text-xs text-[#525252] mt-1 ml-6">
           Если отметите — уточним, что анализировать: одну вашу точку (по умолчанию) или всю сеть.
         </p>
         {isChain && (
           <div className="mt-3 ml-6 space-y-2">
-            <p className="text-xs font-medium text-gray-600">Что анализировать?</p>
+            <p className="text-xs font-medium text-[#525252]">Что анализировать?</p>
             <div className="flex gap-5">
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-sm text-[#525252] cursor-pointer select-none">
                 <input
                   type="radio"
                   name="chain_scope_ui"
@@ -548,7 +548,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
                 />
                 Одну конкретную точку
               </label>
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-sm text-[#525252] cursor-pointer select-none">
                 <input
                   type="radio"
                   name="chain_scope_ui"
@@ -565,7 +565,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Город и/или адрес точки"
-                className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+                className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
               />
             )}
           </div>
@@ -574,8 +574,8 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
 
       {/* ── Industry ── */}
       <div>
-        <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
-          Отрасль / ниша <span className="text-red-500">*</span>
+        <label htmlFor="industry" className="block text-sm font-medium text-[#525252] mb-1">
+          Отрасль / ниша <span className="text-[#1e3a8a]">*</span>
         </label>
         <input
           id="industry"
@@ -585,7 +585,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           value={industry}
           onChange={(e) => setIndustry(e.target.value)}
           placeholder="например: B2B SaaS, e-commerce, строительство"
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
       </div>
       </>
@@ -598,8 +598,8 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
       <>
       {/* ── Directions ── */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Направления деятельности</label>
-        <p className="text-xs text-gray-400 mb-2">
+        <label className="block text-sm font-medium text-[#525252] mb-1">Направления деятельности</label>
+        <p className="text-xs text-[#525252] mb-2">
           Если направлений несколько и они не связаны (разные продукты / разные клиенты) — добавьте каждое
           отдельной строкой. Это не даст приложению склеить разные ниши в одну.
         </p>
@@ -615,13 +615,13 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
                 placeholder={
                   i === 0 ? 'например: производство промышленного оборудования' : 'ещё одно направление'
                 }
-                className="flex-1 border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+                className="flex-1 border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
               />
               {directions.length > 1 && (
                 <button
                   type="button"
                   onClick={() => setDirections((prev) => prev.filter((_, j) => j !== i))}
-                  className="text-gray-300 hover:text-red-500 text-xl leading-none cursor-pointer"
+                  className="text-[#525252] hover:text-[#1e3a8a] text-xl leading-none cursor-pointer"
                   aria-label="Убрать направление"
                 >
                   ×
@@ -633,17 +633,17 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
         <button
           type="button"
           onClick={() => setDirections((prev) => [...prev, ''])}
-          className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 cursor-pointer"
+          className="mt-2 text-xs text-[#1e3a8a] hover:text-[#1e3a8a] cursor-pointer"
         >
           + добавить направление
         </button>
 
         {directions.map((d) => d.trim()).filter(Boolean).length >= 2 && (
-          <div className="mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 space-y-2">
-            <p className="text-xs font-medium text-amber-800">
-              Как связаны эти направления? <span className="text-red-600">обязательно</span>
+          <div className="mt-3 rounded-md bg-[#1e3a8a]/10 border border-[#1e3a8a]/30 p-3 space-y-2">
+            <p className="text-xs font-medium text-[#1e3a8a]">
+              Как связаны эти направления? <span className="text-[#1e3a8a]">обязательно</span>
             </p>
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-sm text-[#525252] cursor-pointer select-none">
               <input
                 type="radio"
                 name="dir_rel_ui"
@@ -653,7 +653,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
               />
               Разные направления — разные клиенты / рынки (анализировать раздельно)
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-sm text-[#525252] cursor-pointer select-none">
               <input
                 type="radio"
                 name="dir_rel_ui"
@@ -669,7 +669,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
 
       {/* ── Description ── */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-[#525252] mb-1">
           Краткое описание бизнеса
         </label>
         <textarea
@@ -679,13 +679,13 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Чем занимается компания, какой продукт или услугу предлагает"
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
       </div>
 
       {/* ── Website ── */}
       <div>
-        <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="website" className="block text-sm font-medium text-[#525252] mb-1">
           Сайт компании
         </label>
         <input
@@ -695,16 +695,16 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           value={website}
           onChange={(e) => setWebsite(e.target.value)}
           placeholder="https://example.ru"
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
       </div>
 
       {/* ── Ad channels already used ── */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-[#525252] mb-1">
           Какими каналами рекламы уже пользуетесь?
         </label>
-        <p className="text-xs text-gray-400 mb-2">
+        <p className="text-xs text-[#525252] mb-2">
           Отметьте те, что реально используете. Это не даст приложению ошибочно решить, что канал не
           используется.
         </p>
@@ -713,7 +713,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
             <label
               key={c}
               className={`flex items-center gap-2 text-sm cursor-pointer select-none ${
-                adChannelsUnknown ? 'opacity-40' : 'text-gray-700'
+                adChannelsUnknown ? 'opacity-40' : 'text-[#525252]'
               }`}
             >
               <input
@@ -723,7 +723,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
                 onChange={(e) =>
                   setAdChannels((prev) => (e.target.checked ? [...prev, c] : prev.filter((x) => x !== c)))
                 }
-                className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
+                className="rounded border-black/10 text-[#1e3a8a] focus:ring-[#1e3a8a] cursor-pointer"
               />
               {c}
             </label>
@@ -735,9 +735,9 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           disabled={adChannelsUnknown}
           onChange={(e) => setAdChannelOther(e.target.value)}
           placeholder="Другое (через запятую)"
-          className="mt-2 w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] disabled:opacity-40"
+          className="mt-2 w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] disabled:opacity-40"
         />
-        <label className="mt-2 flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none">
+        <label className="mt-2 flex items-center gap-2 text-sm text-[#525252] cursor-pointer select-none">
           <input
             type="checkbox"
             checked={adChannelsUnknown}
@@ -748,7 +748,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
                 setAdChannelOther('')
               }
             }}
-            className="rounded border-[#e5e5e5] cursor-pointer"
+            className="rounded border-black/10 cursor-pointer"
           />
           пока не знаю / не уверен, какими каналами пользуемся
         </label>
@@ -756,7 +756,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
 
       {/* ── Competitors ── */}
       <div>
-        <label htmlFor="competitors" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="competitors" className="block text-sm font-medium text-[#525252] mb-1">
           Конкуренты
         </label>
         <input
@@ -766,9 +766,9 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           value={competitors}
           onChange={(e) => setCompetitors(e.target.value)}
           placeholder="Компания А, Компания Б, бренд В"
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
         />
-        <p className="mt-1 text-xs text-gray-400">Через запятую. Желательно указать ссылку на сайт рядом с названием: «Компания А (company-a.ru), Компания Б».</p>
+        <p className="mt-1 text-xs text-[#525252]">Через запятую. Желательно указать ссылку на сайт рядом с названием: «Компания А (company-a.ru), Компания Б».</p>
       </div>
       </>
       )}
@@ -780,8 +780,8 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
       <>
       {/* ── Research goal ── */}
       <div>
-        <label htmlFor="research_goal" className="block text-sm font-medium text-gray-700 mb-1">
-          Цель исследования <span className="text-[#dc2626]">*</span>
+        <label htmlFor="research_goal" className="block text-sm font-medium text-[#525252] mb-1">
+          Цель исследования <span className="text-[#1e3a8a]">*</span>
         </label>
         <textarea
           id="research_goal"
@@ -791,7 +791,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
           value={goals}
           onChange={(e) => setGoals(e.target.value)}
           placeholder="Что хотите понять или получить от исследования — без этого пункта отчёт не запустится"
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
       </div>
 
@@ -801,15 +801,15 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
         <div
           className={`rounded-md border px-4 py-3 ${
             parseConfirmed
-              ? 'bg-green-50 border-green-200'
+              ? 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30'
               : aiParseRan
-                ? 'bg-amber-50 border-amber-200'
-                : 'bg-[#eff6ff] border-[#dbeafe]'
+                ? 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30'
+                : 'bg-[#fafafa] border-[#1e3a8a]'
           }`}
         >
           <p
             className={`text-sm mb-2 ${
-              parseConfirmed ? 'text-green-800' : aiParseRan ? 'text-amber-900' : 'text-[#1e3a8a]'
+              parseConfirmed ? 'text-[#1e3a8a]' : aiParseRan ? 'text-[#1e3a8a]' : 'text-[#1e3a8a]'
             }`}
           >
             {aiParseRan ? (
@@ -835,14 +835,14 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
                 setParseConfirmed(e.target.checked)
                 if (e.target.checked) setSubmitError(null)
               }}
-              className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer"
+              className="rounded border-black/10 text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer"
             />
             <span
               className={
                 parseConfirmed
-                  ? 'text-green-900'
+                  ? 'text-[#1e3a8a]'
                   : aiParseRan
-                    ? 'text-amber-900 font-medium'
+                    ? 'text-[#1e3a8a] font-medium'
                     : 'text-[#1e3a8a] font-medium'
               }
             >
@@ -856,7 +856,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
 
       {/* 152-ФЗ: согласие на обработку перс. данных и принятие оферты.
           Чекбокс НЕ предзаполнен — требование закона. */}
-      <div className="rounded-md border border-[#e5e5e5] bg-[#fafafa] px-4 py-3">
+      <div className="rounded-md border border-black/10 bg-[#fafafa] px-4 py-3">
         <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
           <input
             type="checkbox"
@@ -865,15 +865,15 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
               setDataConsent(e.target.checked)
               if (e.target.checked) setSubmitError(null)
             }}
-            className="rounded border-[#e5e5e5] text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer shrink-0"
+            className="rounded border-black/10 text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer shrink-0"
           />
-          <span className="text-gray-700 leading-snug">
+          <span className="text-[#525252] leading-snug">
             Я согласен на обработку моих персональных данных в соответствии с{' '}
             <a
               href="/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#1e3a8a] underline hover:text-[#172554]"
+              className="text-[#1e3a8a] underline hover:text-[#1e3a8a]"
             >
               Политикой обработки персональных данных
             </a>{' '}
@@ -882,7 +882,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
               href="/offer"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#1e3a8a] underline hover:text-[#172554]"
+              className="text-[#1e3a8a] underline hover:text-[#1e3a8a]"
             >
               публичной оферты
             </a>
@@ -906,7 +906,7 @@ export default function IntakeForm({ tier }: IntakeFormProps) {
 
       {/* ── Ошибка submit + ошибка navigation ─────────────────────────────── */}
       {submitError && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+        <p className="text-sm text-[#1e3a8a] bg-[#1e3a8a]/10 border border-[#1e3a8a]/30 rounded px-3 py-2">
           {submitError}
         </p>
       )}
@@ -964,7 +964,7 @@ function StepProgress({ current }: { current: 1 | 2 | 3 }) {
           <div key={s.n} className="flex items-center gap-2 flex-1">
             <div
               className={`flex items-center gap-2 ${
-                isActive ? 'text-[#1e3a8a]' : isDone ? 'text-[#0a0a0a]' : 'text-[#6b7280]'
+                isActive ? 'text-[#1e3a8a]' : isDone ? 'text-[#0a0a0a]' : 'text-[#525252]'
               }`}
             >
               <span
@@ -973,7 +973,7 @@ function StepProgress({ current }: { current: 1 | 2 | 3 }) {
                     ? 'bg-[#1e3a8a] text-white'
                     : isDone
                       ? 'bg-[#0a0a0a] text-white'
-                      : 'bg-[#e5e5e5] text-[#6b7280]'
+                      : 'bg-[#fafafa] text-[#525252]'
                 }`}
               >
                 {isDone ? '✓' : s.n}
@@ -985,7 +985,7 @@ function StepProgress({ current }: { current: 1 | 2 | 3 }) {
             {i < steps.length - 1 && (
               <div
                 className={`flex-1 h-0.5 ${
-                  current > s.n ? 'bg-[#0a0a0a]' : 'bg-[#e5e5e5]'
+                  current > s.n ? 'bg-[#0a0a0a]' : 'bg-[#fafafa]'
                 }`}
               />
             )}

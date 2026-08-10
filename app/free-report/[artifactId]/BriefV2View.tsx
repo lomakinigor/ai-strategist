@@ -169,7 +169,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
           {error}
         </p>
         <p className="text-sm text-[#525252] mt-4">
-          Нажмите «💬 Написать админу» в правом нижнем углу — мы вручную
+          Нажмите «Написать админу» в правом нижнем углу — мы вручную
           перезапустим генерацию.
         </p>
       </section>
@@ -183,7 +183,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         <div className="flex items-center justify-center mb-6">
           <span
             aria-hidden
-            className="inline-block w-8 h-8 rounded-full border-2 border-[#e5e5e5] border-t-[#0a0a0a] animate-spin"
+            className="inline-block w-8 h-8 rounded-full border-2 border-black/10 border-t-[#0a0a0a] animate-spin"
           />
         </div>
         <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">
@@ -225,7 +225,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </div>
       </section>
 
-      <div className="border-t border-[#e5e5e5]" />
+      <div className="border-t border-black/10" />
 
       {/* ── 2. INTAKE-ЗАПРОС КЛИЕНТА (второй экран) ─────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14">
@@ -235,12 +235,12 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
             «{brief.intake_quote}»
           </p>
         </blockquote>
-        <p className="text-sm text-[#6b7280] leading-[1.6]">
+        <p className="text-sm text-[#525252] leading-[1.6]">
           Все выводы ниже отталкиваются от вашего запроса.
         </p>
       </section>
 
-      <div className="border-t border-[#e5e5e5]" />
+      <div className="border-t border-black/10" />
 
       {/* ── 3. EXECUTIVE PREVIEW ─────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14 bg-[#fafafa]">
@@ -260,7 +260,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </ul>
       </section>
 
-      <div className="border-t border-[#e5e5e5]" />
+      <div className="border-t border-black/10" />
 
       {/* ── 4–7. NAVIGATOR-КАРТОЧКИ ПО ЧАСТЯМ A/B/C/D ──────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14">
@@ -286,7 +286,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
             artifactId={artifactId}
           />
           <NavigatorCard
-            badge="📊 Часть C"
+            badge="Часть C"
             title="Что Global даёт российскому рынку"
             theses={brief.part_c_theses}
             subtopics={PART_C_SUBTOPICS}
@@ -304,11 +304,11 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </div>
       </section>
 
-      <div className="border-t border-[#e5e5e5]" />
+      <div className="border-t border-black/10" />
 
       {/* ── 8. AI-АВТОМАТИЗАЦИЯ ─────────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-6 py-14 bg-[#f0fdf4]">
-        <p className="lp-eyebrow mb-4" style={{ color: '#15803d' }}>
+      <section className="max-w-4xl mx-auto px-6 py-14 bg-[#fafafa]">
+        <p className="lp-eyebrow mb-4" style={{ color: '#1e3a8a' }}>
           AI-автоматизация
         </p>
         <h2 className="text-2xl font-bold tracking-[-0.02em] mb-2">
@@ -337,7 +337,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </div>
       </section>
 
-      <div className="border-t border-[#e5e5e5]" />
+      <div className="border-t border-black/10" />
 
       {/* ── 9. ЧТО МЫ ДЕЛАЕМ ПОД КЛЮЧ (Level 2 hub) ────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14" id="level2-hub">
@@ -379,7 +379,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
         </Link>
       </section>
 
-      <div className="border-t border-[#e5e5e5]" />
+      <div className="border-t border-black/10" />
 
       {/* ── 10. БЕСПЛАТНО vs ПЛАТНО (таблица) ──────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 py-14 bg-[#fafafa]">
@@ -388,16 +388,16 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
           Бесплатный пробник vs Полный отчёт
         </h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border border-[#e5e5e5] bg-white">
-            <thead className="bg-[#f5f5f4]">
+          <table className="w-full text-sm border border-black/10 bg-white">
+            <thead className="bg-[#fafafa]">
               <tr>
-                <th className="text-left px-4 py-3 font-semibold text-[#0a0a0a] border-b border-[#e5e5e5] w-1/2">
+                <th className="text-left px-4 py-3 font-semibold text-[#0a0a0a] border-b border-black/10 w-1/2">
                   Тема
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-[#6b7280] border-b border-[#e5e5e5]">
+                <th className="text-left px-4 py-3 font-semibold text-[#525252] border-b border-black/10">
                   В пробнике
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-[#0a0a0a] border-b border-[#e5e5e5]">
+                <th className="text-left px-4 py-3 font-semibold text-[#0a0a0a] border-b border-black/10">
                   В полном
                 </th>
               </tr>
@@ -406,12 +406,12 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
               {[
                 { topic: '🇷🇺 Часть A — Анализ российского рынка', brief: 'обозначение тем', full: 'Porter 5F · PESTEL · JTBD · SWOT-TOWS · Blue Ocean' },
                 { topic: '🌍 Часть B — Зарубежный опыт за 2 года', brief: 'обзорные тезисы', full: '2–3 страны · топ-инновации · ключевые игроки' },
-                { topic: '📊 Часть C — Сравнение РФ vs Global', brief: 'один тезис', full: 'таблица 8–10 параметров · opportunity gaps · что не повторять' },
+                { topic: 'Часть C — Сравнение РФ vs Global', brief: 'один тезис', full: 'таблица 8–10 параметров · opportunity gaps · что не повторять' },
                 { topic: '📋 Часть D — Стратегия и Roadmap 6–12 мес', brief: '1–2 тезиса', full: 'McKinsey 3H · KPI · 3–7 гипотез с pass/fail' },
               ].map((row) => (
-                <tr key={row.topic} className="border-b border-[#e5e5e5]">
+                <tr key={row.topic} className="border-b border-black/10">
                   <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.topic}</td>
-                  <td className="px-4 py-3 text-[#6b7280] align-top">{row.brief}</td>
+                  <td className="px-4 py-3 text-[#525252] align-top">{row.brief}</td>
                   <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.full}</td>
                 </tr>
               ))}
@@ -420,9 +420,9 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
                 { topic: '🤖 8.2 AI-автоматизация маркетинга', brief: 'направления', full: 'roadmap · инструменты · сетка по каналам клиента' },
                 { topic: '🤖 8.3 Нишевые AI-автоматизации', brief: '1–2 паттерна', full: 'полный список + интеграционные схемы' },
               ].map((row) => (
-                <tr key={row.topic} className="border-b border-[#e5e5e5] bg-[#f0fdf4]">
+                <tr key={row.topic} className="border-b border-black/10 bg-[#fafafa]">
                   <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.topic}</td>
-                  <td className="px-4 py-3 text-[#6b7280] align-top">{row.brief}</td>
+                  <td className="px-4 py-3 text-[#525252] align-top">{row.brief}</td>
                   <td className="px-4 py-3 text-[#0a0a0a] align-top">{row.full}</td>
                 </tr>
               ))}
@@ -432,7 +432,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
       </section>
 
       {/* ── 11. CTA-БЛОК Level 1 ─────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="border-t border-black/10">
         <div className="max-w-3xl mx-auto px-6 py-20 text-center">
           <p className="lp-eyebrow mb-4">Полный отчёт</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-10">
@@ -461,7 +461,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
             </li>
             <li className="flex gap-3">
               <span className="text-[#1e3a8a] font-bold shrink-0 mt-0.5">✓</span>
-              <span>Источники с RS-маркировкой 🟢🟡🟠🔴 и список открытых вопросов</span>
+              <span>Источники с RS-маркировкой RS5 / RS3 / RS2 / RS1 и список открытых вопросов</span>
             </li>
           </ul>
           <Link
@@ -471,14 +471,14 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
             Получить полный анализ
             <span aria-hidden>→</span>
           </Link>
-          <p className="text-sm text-[#6b7280] mt-5">
+          <p className="text-sm text-[#525252] mt-5">
             9 999 ₽ через СБП. Отчёт откроется в браузере сразу после подтверждения оплаты.
           </p>
         </div>
       </section>
 
       {/* ── 12. FOOTER-CTA Level 2 ───────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5] bg-[#fafafa] no-print">
+      <section className="border-t border-black/10 bg-[#fafafa] no-print">
         <div className="max-w-3xl mx-auto px-6 py-10 text-center">
           <p className="text-sm text-[#525252] leading-[1.6]">
             Хотите сразу к реализации? <a href="#level2-hub" className="text-[#1e3a8a] underline">Обсудим ваш проект →</a>
@@ -487,7 +487,7 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
       </section>
 
       {/* ── 12.5 ФИНАЛЬНАЯ КНОПКА Save PDF ──────────────────────────── */}
-      <section className="border-t border-[#e5e5e5] no-print">
+      <section className="border-t border-black/10 no-print">
         <div className="max-w-3xl mx-auto px-6 py-12 text-center">
           <p className="text-sm text-[#525252] leading-[1.6] mb-5">
             Сохраните разбор себе — в браузере вкладку можно случайно закрыть.
@@ -510,17 +510,17 @@ export function BriefV2View({ artifactId, companyName, industry }: Props) {
       </section>
 
       {/* ── 13. METHODOLOGY DISCLAIMER ──────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="border-t border-black/10">
         <div className="max-w-3xl mx-auto px-6 py-10">
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280] mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#525252] mb-2">
             О методологии
           </p>
-          <p className="text-xs text-[#6b7280] leading-[1.65]">
+          <p className="text-xs text-[#525252] leading-[1.65]">
             Анализ построен на бесплатных открытых источниках: Wordstat и Я.Тренды,
             публичные данные Я.Карт/2ГИС, открытые статистики ТГ-каналов и ВК,
             Lighthouse и PageSpeed Insights, открытое наблюдение SERP, публичные
             данные Rusprofile. Каждый факт сопровождается RS-маркировкой
-            (🟢 Официальный / 🟡 Оценочный / 🟠 Экспертный / 🔴 Неверифицируемый).
+            (RS5 Официальный / RS3 Оценочный / RS2 Экспертный / RS1 Неверифицируемый).
             Платные SaaS-аналитики и доступы клиента (GSC, Я.Метрика, CMS) не
             используются — отчёт строится на тех же публичных данных, по которым
             анализируются конкуренты.
@@ -551,7 +551,7 @@ function NavigatorCard({
   return (
     <article className="lp-card p-7 page-break-inside-avoid">
       <div className="flex items-start gap-3 mb-4 flex-wrap">
-        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] bg-[#dbeafe] rounded px-2 py-1 whitespace-nowrap">
+        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] bg-[#1e3a8a] rounded px-2 py-1 whitespace-nowrap">
           {badge}
         </span>
         <h3 className="text-xl font-bold tracking-[-0.01em] leading-snug flex-1 min-w-0">
@@ -568,13 +568,13 @@ function NavigatorCard({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-[#6b7280] italic mb-6">
+        <p className="text-sm text-[#525252] italic mb-6">
           Тезисы готовятся — подробности в полном отчёте.
         </p>
       )}
 
-      <div className="border-t border-[#e5e5e5] pt-5">
-        <p className="text-xs font-bold text-[#6b7280] uppercase tracking-[0.12em] mb-3">
+      <div className="border-t border-black/10 pt-5">
+        <p className="text-xs font-bold text-[#525252] uppercase tracking-[0.12em] mb-3">
           В полном отчёте по этой теме
         </p>
         <ul className="space-y-2">
@@ -590,8 +590,8 @@ function NavigatorCard({
       </div>
 
       {implementationL2 && (
-        <div className="mt-5 rounded-md border border-[#fbbf24]/40 bg-[#fef3c7]/40 px-4 py-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#92400e] mb-1">
+        <div className="mt-5 rounded-md border border-[#1e3a8a]/40 bg-[#1e3a8a]/40 px-4 py-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] mb-1">
             Реализация под ключ
           </p>
           <p className="text-sm text-[#0a0a0a] leading-[1.55]">{implementationL2}</p>
@@ -620,9 +620,9 @@ function AutomationCard({
   block: AutomationBlockV2
 }) {
   return (
-    <article className="bg-white border border-[#bbf7d0] rounded-lg p-7 page-break-inside-avoid">
+    <article className="bg-white border border-[#1e3a8a] rounded-lg p-7 page-break-inside-avoid">
       <div className="flex items-start gap-3 mb-3">
-        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#15803d] bg-[#dcfce7] rounded px-2 py-1">
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] bg-[#1e3a8a] rounded px-2 py-1">
           {label}
         </span>
         <h3 className="text-lg font-bold tracking-[-0.01em] leading-snug flex-1">
@@ -639,7 +639,7 @@ function AutomationCard({
       {block.found_points.length > 0 && (
         <div className="space-y-3 mb-4">
           {block.found_points.map((p, i) => (
-            <div key={i} className="border-l-2 border-[#15803d] pl-3">
+            <div key={i} className="border-l-2 border-[#1e3a8a] pl-3">
               <p className="text-sm font-semibold text-[#0a0a0a] mb-0.5">{p.title}</p>
               <p className="text-sm text-[#525252] leading-[1.55]">{p.description}</p>
             </div>
@@ -648,14 +648,14 @@ function AutomationCard({
       )}
 
       {block.in_full && (
-        <p className="text-xs text-[#6b7280] leading-[1.55] mb-4">
+        <p className="text-xs text-[#525252] leading-[1.55] mb-4">
           <span className="font-bold uppercase tracking-[0.1em]">В полном:</span> {block.in_full}
         </p>
       )}
 
       {block.implementation_l2 && (
-        <div className="rounded-md border border-[#fbbf24]/40 bg-[#fef3c7]/40 px-4 py-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#92400e] mb-1">
+        <div className="rounded-md border border-[#1e3a8a]/40 bg-[#1e3a8a]/40 px-4 py-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] mb-1">
             Реализация под ключ
           </p>
           <p className="text-sm text-[#0a0a0a] leading-[1.55]">{block.implementation_l2}</p>

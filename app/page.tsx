@@ -574,25 +574,25 @@ export default function Home() {
             </p>
             <ul className="space-y-4">
               <li className="flex gap-3">
-                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#1e3a8a] font-bold shrink-0">✓</span>
                 <span className="text-[#0a0a0a] text-sm leading-[1.6]">
                   <strong>Каждая ссылка получена через web_search</strong>, не из памяти LLM
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#1e3a8a] font-bold shrink-0">✓</span>
                 <span className="text-[#0a0a0a] text-sm leading-[1.6]">
                   <strong>Каждый факт подтверждён URL</strong> с зафиксированной датой доступа
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#1e3a8a] font-bold shrink-0">✓</span>
                 <span className="text-[#0a0a0a] text-sm leading-[1.6]">
                   <strong>Запрещено выдумывать DOI, год публикации, имена авторов</strong> — это правило прошито в системный промпт генератора отчётов
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span className="text-[#1e3a8a] font-bold shrink-0">✓</span>
                 <span className="text-[#0a0a0a] text-sm leading-[1.6]">
                   <strong>Hard-stop:</strong> больше 5% мёртвых ссылок — отчёт не выпускается клиенту
                 </span>

@@ -6,10 +6,11 @@ const root = process.cwd()
 const css = readFileSync(resolve(root, 'app/demo/demo.module.css'), 'utf8')
 const component = readFileSync(resolve(root, 'app/demo/DemoExperience.tsx'), 'utf8')
 
-describe('Innорdor design contract', () => {
-  it('использует согласованные токены и размеры Innodor', () => {
-    expect(css).toContain('--color-bg: #f8f7f4')
-    expect(css).toContain('--color-primary: #1a5c54')
+describe('Demo report design contract', () => {
+  it('использует Pomelli tokens и сохраняет размеры рабочего отчёта', () => {
+    expect(css).toContain('--color-bg: #fafafa')
+    expect(css).toContain('--color-primary: #1e3a8a')
+    expect(css).toContain('font-family: var(--font-inter)')
     expect(css).toContain('--sidebar-w: 240px')
     expect(css).toContain('--content-max: 860px')
     expect(css).toContain("[data-theme='dark']")

@@ -56,6 +56,19 @@ Minimalist · Modern · Corporate · Sophisticated · Transparent.
 - Не использовать жёлтый, оранжевый, cyan или дополнительные синие hex-оттенки.
 - Проверять контраст текста и focus-state; на тёмном фоне использовать Pure White.
 
+### Тёмные экраны
+
+- Jet Black — основной background, Pure/Snow White — основной текст.
+- Twilight Blue на Jet Black не использовать для body/headline text из-за недостаточного контраста.
+- Twilight Blue сохраняется как background CTA, structural accent, border или chart series; текст CTA — Pure White.
+- Graphite Gray допустим только для второстепенных элементов достаточного размера; для основного текста использовать белый с opacity.
+
+### Semantic states и data visualization
+
+- Success/warning/error/reliability не вводят красный, зелёный или жёлтый.
+- Состояния различаются обязательными label/RS-code, icon/mark, font weight и solid/dashed border; цвет не является единственным сигналом.
+- Для charts использовать комбинации Pure White, Twilight Blue, Jet Black, Graphite Gray и opacity-варианты с разными line styles/labels.
+
 ## UI patterns
 
 - **Primary CTA:** Twilight Blue background, Pure White text, сдержанный hover через opacity/Jet Black.
@@ -64,6 +77,9 @@ Minimalist · Modern · Corporate · Sophisticated · Transparent.
 - **Dark statement:** Jet Black фон, Pure White текст; акцент создаётся весом и композицией, а не новым цветом.
 - **Focus:** видимое кольцо из Twilight Blue и Pure White, различимое на светлом и тёмном фоне.
 - **Motion:** мягкое появление; обязательно учитывать `prefers-reduced-motion`.
+- **Dialogs/popovers:** overlay из Jet Black с opacity, Pure/Snow White surface, Twilight Blue primary action, явная кнопка закрытия и keyboard focus.
+- **Admin/data tables:** более высокая плотность допустима, но tokens, типографика, status labels и focus остаются общими.
+- **Print/OpenGraph:** те же canonical colors и Inter; декоративные эффекты упрощаются ради читаемости.
 
 ## Checklist перед merge
 
@@ -72,3 +88,4 @@ Minimalist · Modern · Corporate · Sophisticated · Transparent.
 - [ ] Tone of voice профессиональный, аналитический и конкретный.
 - [ ] CTA сообщает практическую ценность и не создаёт неподтверждённых обещаний.
 - [ ] Контраст, keyboard focus, mobile layout и reduced motion проверены.
+- [ ] Dialogs, loading/error/empty states, dark theme и print не выпали из brand contract.

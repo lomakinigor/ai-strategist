@@ -40,8 +40,8 @@ export function FactToggleButton({ jobId, factId, isActive }: Props) {
       title={optimistic ? 'Отключить факт' : 'Включить факт'}
       className={`w-5 h-5 rounded border-2 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer disabled:cursor-wait ${
         optimistic
-          ? 'bg-blue-600 border-blue-600 text-white'
-          : 'bg-white border-gray-300 hover:border-blue-400'
+          ? 'bg-[#1e3a8a] border-[#1e3a8a]/30 text-white'
+          : 'bg-white border-black/10 hover:border-[#1e3a8a]/30'
       }`}
     >
       {isPending ? (

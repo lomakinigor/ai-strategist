@@ -108,7 +108,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
       />
 
       <div>
-        <label className="block text-sm font-medium text-[#374151] mb-1.5">
+        <label className="block text-sm font-medium text-[#1e3a8a] mb-1.5">
           {type === 'retainer' ? 'Кратко о бизнесе и целях' : 'Комментарий (необязательно)'}
         </label>
         <textarea
@@ -120,20 +120,20 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
               ? 'Чем занимаетесь, ключевые цели на ближайшие 6 месяцев, что уже пробовали'
               : 'Если есть вопросы или особые условия'
           }
-          className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
+          className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] resize-none"
         />
       </div>
 
       {/* 152-ФЗ согласие — обязательно */}
-      <div className="rounded-md border border-[#e5e5e5] bg-[#fafafa] px-4 py-3">
+      <div className="rounded-md border border-black/10 bg-[#fafafa] px-4 py-3">
         <label className="flex items-start gap-2 text-sm cursor-pointer select-none">
           <input
             type="checkbox"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="rounded border-gray-300 text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer shrink-0"
+            className="rounded border-black/10 text-[#1e3a8a] focus:ring-[#1e3a8a] mt-0.5 cursor-pointer shrink-0"
           />
-          <span className="text-[#374151] leading-snug">
+          <span className="text-[#1e3a8a] leading-snug">
             Согласен на обработку персональных данных в соответствии с{' '}
             <a
               href="/privacy"
@@ -159,7 +159,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
 
       {/* Turnstile placeholder — рендерится только когда задан site-key */}
       {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
-        <div className="text-xs text-[#6b7280]">
+        <div className="text-xs text-[#525252]">
           Антибот-защита Cloudflare Turnstile (в разработке).
         </div>
       )}
@@ -174,7 +174,7 @@ export default function LeadForm({ type, successTitle, successBody }: LeadFormPr
       </button>
 
       {status === 'error' && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+        <p className="text-sm text-[#1e3a8a] bg-[#1e3a8a]/10 border border-[#1e3a8a]/30 rounded px-3 py-2">
           Не удалось отправить: {errorMsg}. Попробуйте ещё раз или напишите нам напрямую.
         </p>
       )}
@@ -199,9 +199,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[#374151] mb-1.5">
+      <label className="block text-sm font-medium text-[#1e3a8a] mb-1.5">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="text-[#1e3a8a] ml-1">*</span>}
       </label>
       <input
         type={type}
@@ -209,7 +209,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-[#e5e5e5] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
+        className="w-full border border-black/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"
       />
     </div>
   )

@@ -169,11 +169,11 @@ function writeCache(jobId: string, full: FullV2): void {
   }
 }
 
-const RS_BADGE: Record<RsLevel, { emoji: string; label: string; classes: string }> = {
-  green: { emoji: '🟢', label: 'Официальный', classes: 'bg-green-50 text-green-800 border-green-200' },
-  yellow: { emoji: '🟡', label: 'Оценочный', classes: 'bg-yellow-50 text-yellow-800 border-yellow-200' },
-  orange: { emoji: '🟠', label: 'Экспертный', classes: 'bg-orange-50 text-orange-800 border-orange-200' },
-  red: { emoji: '🔴', label: 'Неверифицируемый', classes: 'bg-red-50 text-red-800 border-red-200' },
+const RS_BADGE: Record<RsLevel, { mark: string; label: string; classes: string }> = {
+  green: { mark: 'RS5', label: 'Официальный', classes: 'bg-[#1e3a8a]/10 text-[#1e3a8a] border-[#1e3a8a]/30' },
+  yellow: { mark: 'RS3', label: 'Оценочный', classes: 'bg-[#fafafa] text-[#0a0a0a] border-[#1e3a8a]/30' },
+  orange: { mark: 'RS2', label: 'Экспертный', classes: 'bg-white text-[#0a0a0a] border-black/10' },
+  red: { mark: 'RS1', label: 'Неверифицируемый', classes: 'bg-white text-[#525252] border-dashed border-black/10' },
 }
 
 export function FullV2View({ jobId, companyName, industry }: Props) {
@@ -236,7 +236,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         </h2>
         <p className="text-base text-[#525252] max-w-md mx-auto leading-[1.6] mb-2">{error}</p>
         <p className="text-sm text-[#525252] mt-4">
-          Нажмите «💬 Написать админу» в правом нижнем углу — мы вручную перезапустим
+          Нажмите «Написать админу» в правом нижнем углу — мы вручную перезапустим
           генерацию или вернём деньги.
         </p>
       </section>
@@ -250,7 +250,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         <div className="flex items-center justify-center mb-6">
           <span
             aria-hidden
-            className="inline-block w-8 h-8 rounded-full border-2 border-[#e5e5e5] border-t-[#0a0a0a] animate-spin"
+            className="inline-block w-8 h-8 rounded-full border-2 border-black/10 border-t-[#0a0a0a] animate-spin"
           />
         </div>
         <h2 className="text-2xl font-bold mb-3 tracking-[-0.02em]">Формируем полный отчёт…</h2>
@@ -296,13 +296,13 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
           </h1>
           <p className="text-sm text-[#525252] leading-[1.6]">
             {new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })}
-            {' · '}Методология RS 1–5 (🟢🟡🟠🔴)
+            {' · '}Методология RS 1–5 (RS5 / RS3 / RS2 / RS1)
             {industry ? ` · ${industry}` : ''}
           </p>
         </header>
 
         {/* TABLE OF CONTENTS — only print */}
-        <nav className="print-only mb-8 border-t border-b border-[#e5e5e5] py-4">
+        <nav className="print-only mb-8 border-t border-b border-black/10 py-4">
           <p className="text-xs uppercase tracking-wider font-bold mb-2">Содержание</p>
           <ol className="text-sm space-y-1 list-decimal pl-5">
             <li>Часть 0 — Executive Summary</li>
@@ -359,7 +359,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
             <p className="lp-eyebrow mt-6 mb-3">5 сил Портера (оценка 1–5)</p>
             <div className="space-y-3 mb-6">
               {(full.part_a.a1.porter_forces ?? []).map((f, i) => (
-                <div key={i} className="border border-[#e5e5e5] rounded p-4">
+                <div key={i} className="border border-black/10 rounded p-4">
                   <div className="flex items-center justify-between gap-3 mb-1">
                     <span className="font-semibold text-[15px]">{f.name}</span>
                     <span className="text-sm font-bold text-[#1e3a8a]">
@@ -374,7 +374,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
             <p className="lp-eyebrow mb-3">PESTEL — 6 осей</p>
             <div className="grid gap-3 md:grid-cols-2 mb-6">
               {(full.part_a.a1.pestel ?? []).map((p, i) => (
-                <div key={i} className="border border-[#e5e5e5] rounded p-4">
+                <div key={i} className="border border-black/10 rounded p-4">
                   <p className="text-xs uppercase tracking-wider font-bold text-[#1e3a8a] mb-2">
                     {p.axis}
                   </p>
@@ -396,10 +396,10 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
                   <span
                     className={`text-[10px] uppercase font-bold tracking-wide px-2 py-0.5 rounded shrink-0 ${
                       j.priority === 'high'
-                        ? 'bg-red-50 text-red-800'
+                        ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
                         : j.priority === 'medium'
-                          ? 'bg-yellow-50 text-yellow-800'
-                          : 'bg-gray-50 text-gray-700'
+                          ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
+                          : 'bg-[#fafafa] text-[#525252]'
                     }`}
                   >
                     {j.priority}
@@ -415,7 +415,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
                 <BulletList items={full.part_a.a2.pains_top} compact />
               </div>
               <div>
-                <p className="lp-eyebrow mb-2" style={{ color: '#15803d' }}>
+                <p className="lp-eyebrow mb-2" style={{ color: '#1e3a8a' }}>
                   Top gains
                 </p>
                 <BulletList items={full.part_a.a2.gains_top} compact />
@@ -427,7 +427,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
                 {(full.part_a.a2.voice_of_customer ?? []).map((v, i) => (
                   <blockquote
                     key={i}
-                    className="border-l-2 border-[#a3a3a3] pl-3 text-sm italic text-[#525252] leading-[1.55]"
+                    className="border-l-2 border-[#525252] pl-3 text-sm italic text-[#525252] leading-[1.55]"
                   >
                     «{v}»
                   </blockquote>
@@ -452,12 +452,12 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
             <p className="lp-eyebrow mt-5 mb-2">Top-5 конкурентов</p>
             <div className="space-y-3 mb-5">
               {(full.part_a.a3.competitors_lighthouse ?? []).map((c, i) => (
-                <div key={i} className="border border-[#e5e5e5] rounded p-3 text-sm">
+                <div key={i} className="border border-black/10 rounded p-3 text-sm">
                   <p className="font-semibold mb-1">{c.url}</p>
                   <p className="text-[#525252]">
                     Performance: {c.performance} · SEO: {c.seo}
                   </p>
-                  {c.notes && <p className="text-[#737373] text-xs mt-1">{c.notes}</p>}
+                  {c.notes && <p className="text-[#525252] text-xs mt-1">{c.notes}</p>}
                 </div>
               ))}
             </div>
@@ -468,7 +468,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
             <SubSection title="Открытое наблюдение SERP">
               <p className="text-sm leading-[1.6]">{full.part_a.a3.serp_observation}</p>
             </SubSection>
-            <p className="text-xs text-[#737373] italic mt-3">
+            <p className="text-xs text-[#525252] italic mt-3">
               {full.part_a.a3.data_limitation_note}
             </p>
           </SubSection>
@@ -540,16 +540,16 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
           <SubSection title="B2. Global Trends & Innovations">
             <div className="space-y-3">
               {(full.part_b.b2_trends ?? []).map((t, i) => (
-                <div key={i} className="border border-[#e5e5e5] rounded p-3">
+                <div key={i} className="border border-black/10 rounded p-3">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <p className="text-sm font-semibold flex-1">{t.trend}</p>
                     <span
                       className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded shrink-0 ${
                         t.rf_arrival === 'already_here'
-                          ? 'bg-green-50 text-green-800'
+                          ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
                           : t.rf_arrival === 'in_12m'
-                            ? 'bg-yellow-50 text-yellow-800'
-                            : 'bg-gray-50 text-gray-700'
+                            ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
+                            : 'bg-[#fafafa] text-[#525252]'
                       }`}
                     >
                       {t.rf_arrival === 'already_here'
@@ -568,7 +568,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
           <SubSection title="B3. Global Top Players (не дублируя РФ)">
             <div className="space-y-3">
               {(full.part_b.b3_top_global_players ?? []).map((p, i) => (
-                <div key={i} className="border border-[#e5e5e5] rounded p-3">
+                <div key={i} className="border border-black/10 rounded p-3">
                   <p className="text-sm font-semibold mb-1">{p.name}</p>
                   <p className="text-sm text-[#525252] leading-[1.55]">{p.why_different_from_rf}</p>
                 </div>
@@ -578,22 +578,22 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         </Part>
 
         {/* PART C — Сравнение РФ vs Global */}
-        <Part title="Часть C — РФ vs Global Comparison" badge="📊" id="part-c">
+        <Part title="Часть C — РФ vs Global Comparison" badge="C" id="part-c">
           <SubSection title="C1. Сравнительная таблица 8–10 параметров">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm border border-[#e5e5e5]">
+              <table className="w-full text-sm border border-black/10">
                 <thead className="bg-[#fafafa]">
                   <tr>
-                    <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Параметр</th>
-                    <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">РФ</th>
-                    <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Global</th>
-                    <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Разница</th>
-                    <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Следствие</th>
+                    <th className="text-left px-3 py-2 border-b border-black/10">Параметр</th>
+                    <th className="text-left px-3 py-2 border-b border-black/10">РФ</th>
+                    <th className="text-left px-3 py-2 border-b border-black/10">Global</th>
+                    <th className="text-left px-3 py-2 border-b border-black/10">Разница</th>
+                    <th className="text-left px-3 py-2 border-b border-black/10">Следствие</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(full.part_c.c1_comparison_table ?? []).map((row, i) => (
-                    <tr key={i} className="border-b border-[#e5e5e5]">
+                    <tr key={i} className="border-b border-black/10">
                       <td className="px-3 py-2 font-medium align-top">{row.parameter}</td>
                       <td className="px-3 py-2 align-top">{row.rf}</td>
                       <td className="px-3 py-2 align-top">{row.global}</td>
@@ -609,16 +609,16 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
           <SubSection title="C2. Opportunity Gaps — что копировать из Global">
             <div className="space-y-3">
               {(full.part_c.c2_opportunity_gaps ?? []).map((g, i) => (
-                <div key={i} className="border border-green-200 bg-green-50 rounded p-4">
+                <div key={i} className="border border-[#1e3a8a]/30 bg-[#1e3a8a]/10 rounded p-4">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <p className="text-sm font-semibold flex-1">{g.gap}</p>
                     <span
                       className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded shrink-0 ${
                         g.complexity === 'low'
-                          ? 'bg-white text-green-800'
+                          ? 'bg-white text-[#1e3a8a]'
                           : g.complexity === 'medium'
-                            ? 'bg-yellow-50 text-yellow-800'
-                            : 'bg-red-50 text-red-800'
+                            ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
+                            : 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
                       }`}
                     >
                       {g.complexity}
@@ -633,7 +633,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
           <SubSection title="C3. Что НЕ повторять из Global">
             <div className="space-y-3">
               {(full.part_c.c3_what_not_to_repeat ?? []).map((l, i) => (
-                <div key={i} className="border border-red-200 bg-red-50 rounded p-4">
+                <div key={i} className="border border-[#1e3a8a]/30 bg-[#1e3a8a]/10 rounded p-4">
                   <p className="text-sm font-semibold mb-1">{l.attempt}</p>
                   <p className="text-sm text-[#525252] leading-[1.55] mb-1">
                     <strong>Почему провалили:</strong> {l.why_failed}
@@ -657,16 +657,16 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
 
           <SubSection title="D2. KPI и метрики успеха (6 мес)">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm border border-[#e5e5e5]">
+              <table className="w-full text-sm border border-black/10">
                 <thead className="bg-[#fafafa]">
                   <tr>
-                    <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Метрика</th>
-                    <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Цель через 6 мес</th>
+                    <th className="text-left px-3 py-2 border-b border-black/10">Метрика</th>
+                    <th className="text-left px-3 py-2 border-b border-black/10">Цель через 6 мес</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(full.part_d.d2_kpis ?? []).map((k, i) => (
-                    <tr key={i} className="border-b border-[#e5e5e5]">
+                    <tr key={i} className="border-b border-black/10">
                       <td className="px-3 py-2 font-medium">{k.name}</td>
                       <td className="px-3 py-2">{k.target_6m}</td>
                     </tr>
@@ -679,7 +679,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
           <SubSection title="D3. Гипотезы для тестирования">
             <div className="space-y-3">
               {(full.part_d.d3_hypotheses ?? []).map((h, i) => (
-                <div key={i} className="border border-[#e5e5e5] rounded p-4">
+                <div key={i} className="border border-black/10 rounded p-4">
                   <p className="text-sm font-semibold mb-2">{h.statement}</p>
                   <div className="text-sm space-y-1">
                     <p>
@@ -754,7 +754,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
                     key={i}
                     className={`border rounded px-3 py-2 text-sm flex gap-3 items-start ${badge.classes}`}
                   >
-                    <span className="font-bold text-base shrink-0">{badge.emoji}</span>
+                    <span className="font-bold text-xs shrink-0">{badge.mark}</span>
                     <div className="flex-1">
                       <p className="leading-[1.5]">{s.description}</p>
                       {s.url && (
@@ -791,7 +791,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         </Part>
 
         {/* PART H — Compliance (static) */}
-        <Part title="Часть H — Compliance Disclaimer" badge="⚖️" id="part-h">
+        <Part title="Часть H — Compliance Disclaimer" badge="H" id="part-h">
           <ul className="space-y-3 text-sm leading-[1.65]">
             <li>
               <strong>152-ФЗ (персональные данные):</strong> в отчёте использованы только
@@ -821,7 +821,7 @@ export function FullV2View({ jobId, companyName, industry }: Props) {
         </Part>
 
         {/* Конечная кнопка Save PDF — дублирует шапку для длинных отчётов */}
-        <div className="no-print flex flex-col items-center gap-4 py-12 border-t border-[#e5e5e5] mt-8">
+        <div className="no-print flex flex-col items-center gap-4 py-12 border-t border-black/10 mt-8">
           <p className="text-sm text-[#525252] text-center max-w-md leading-[1.6]">
             Сохраните отчёт себе — в браузере вкладку можно случайно закрыть.
           </p>
@@ -882,7 +882,7 @@ function SubSection({ title, children }: { title: string; children: React.ReactN
 
 function BulletList({ items, compact = false }: { items?: string[]; compact?: boolean }) {
   if (!items || items.length === 0)
-    return <p className="text-sm text-[#737373] italic">—</p>
+    return <p className="text-sm text-[#525252] italic">—</p>
   return (
     <ul className={compact ? 'space-y-1' : 'space-y-2'}>
       {items.map((item, i) => (
@@ -897,7 +897,7 @@ function BulletList({ items, compact = false }: { items?: string[]; compact?: bo
 
 function KV({ children }: { children: React.ReactNode }) {
   return (
-    <dl className="grid gap-1.5 text-sm border border-[#e5e5e5] rounded p-3 bg-[#fafafa]">
+    <dl className="grid gap-1.5 text-sm border border-black/10 rounded p-3 bg-[#fafafa]">
       {children}
     </dl>
   )
@@ -906,7 +906,7 @@ function KV({ children }: { children: React.ReactNode }) {
 function KVRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-2">
-      <dt className="text-[#737373] shrink-0 min-w-[140px]">{label}:</dt>
+      <dt className="text-[#525252] shrink-0 min-w-[140px]">{label}:</dt>
       <dd className="flex-1">{children}</dd>
     </div>
   )
@@ -920,7 +920,7 @@ function CompetitorCard({
   index: number
 }) {
   return (
-    <article className="border border-[#e5e5e5] rounded-lg p-5 page-break-inside-avoid">
+    <article className="border border-black/10 rounded-lg p-5 page-break-inside-avoid">
       <div className="flex items-start gap-3 mb-3">
         <span className="text-[#1e3a8a] font-bold text-xl">{String(index).padStart(2, '0')}</span>
         <h4 className="text-lg font-bold tracking-[-0.01em] flex-1">{profile.name}</h4>
@@ -942,9 +942,9 @@ function CompetitorCard({
           <p className="lp-eyebrow mb-2">Скоринг 0–10</p>
           <div className="grid grid-cols-5 gap-2 text-center text-xs">
             {(['offer', 'audience', 'proof', 'creative', 'landing'] as const).map((k) => (
-              <div key={k} className="border border-[#e5e5e5] rounded py-2">
+              <div key={k} className="border border-black/10 rounded py-2">
                 <p className="font-bold text-base">{profile.scoring?.[k] ?? '—'}</p>
-                <p className="text-[#737373] uppercase tracking-wider text-[10px]">{k}</p>
+                <p className="text-[#525252] uppercase tracking-wider text-[10px]">{k}</p>
               </div>
             ))}
           </div>
@@ -953,7 +953,7 @@ function CompetitorCard({
 
       <div className="grid gap-3 md:grid-cols-2 mt-4">
         <div>
-          <p className="lp-eyebrow mb-1" style={{ color: '#15803d' }}>
+          <p className="lp-eyebrow mb-1" style={{ color: '#1e3a8a' }}>
             3 силы
           </p>
           <BulletList items={profile.strengths} compact />
@@ -983,10 +983,10 @@ function SwotQuadrant({
   color: 'green' | 'red' | 'blue' | 'amber'
 }) {
   const colorClasses = {
-    green: 'border-green-200 bg-green-50',
-    red: 'border-red-200 bg-red-50',
-    blue: 'border-blue-200 bg-blue-50',
-    amber: 'border-amber-200 bg-amber-50',
+    green: 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10',
+    red: 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10',
+    blue: 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10',
+    amber: 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10',
   }
   return (
     <div className={`border rounded p-4 page-break-inside-avoid ${colorClasses[color]}`}>
@@ -998,7 +998,7 @@ function SwotQuadrant({
 
 function BlueOceanAction({ label, items }: { label: string; items?: string[] }) {
   return (
-    <div className="border border-[#1e3a8a]/30 bg-blue-50 rounded p-4 page-break-inside-avoid">
+    <div className="border border-[#1e3a8a]/30 bg-[#1e3a8a]/10 rounded p-4 page-break-inside-avoid">
       <p className="text-xs uppercase tracking-wider font-bold text-[#1e3a8a] mb-2">{label}</p>
       <BulletList items={items} compact />
     </div>
@@ -1015,16 +1015,16 @@ function HorizonBlock({
   color: 'rose' | 'amber' | 'green'
 }) {
   const colorClasses = {
-    rose: 'border-rose-200 bg-rose-50',
-    amber: 'border-amber-200 bg-amber-50',
-    green: 'border-green-200 bg-green-50',
+    rose: 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10',
+    amber: 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10',
+    green: 'border-[#1e3a8a]/30 bg-[#1e3a8a]/10',
   }
   return (
     <div className={`border rounded-lg p-4 mb-4 page-break-inside-avoid ${colorClasses[color]}`}>
       <h4 className="text-sm font-bold uppercase tracking-wider mb-3">{title}</h4>
       <div className="space-y-3">
         {(items ?? []).map((item, i) => (
-          <div key={i} className="bg-white border border-[#e5e5e5] rounded p-3">
+          <div key={i} className="bg-white border border-black/10 rounded p-3">
             <p className="font-semibold text-sm mb-1">{item.action}</p>
             <p className="text-sm text-[#525252] leading-[1.55] mb-1">
               <strong>Зачем:</strong> {item.why}
@@ -1047,9 +1047,9 @@ function AutomationBlock({
   data: FullV2['part_e']['e1_business_process']
 }) {
   return (
-    <article className="bg-white border border-[#bbf7d0] rounded-lg p-6 mb-6 page-break-inside-avoid">
+    <article className="bg-white border border-[#1e3a8a] rounded-lg p-6 mb-6 page-break-inside-avoid">
       <div className="flex items-start gap-3 mb-3">
-        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#15803d] bg-[#dcfce7] rounded px-2 py-1">
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] bg-[#1e3a8a] rounded px-2 py-1">
           {label}
         </span>
         <h3 className="text-lg font-bold tracking-[-0.01em] flex-1">{data?.title}</h3>
@@ -1070,8 +1070,8 @@ function AutomationBlock({
       )}
 
       {data?.implementation_l2 && (
-        <div className="rounded-md border border-[#fbbf24]/40 bg-[#fef3c7]/40 px-4 py-3 mt-4">
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#92400e] mb-1">
+        <div className="rounded-md border border-[#1e3a8a]/40 bg-[#1e3a8a]/40 px-4 py-3 mt-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#1e3a8a] mb-1">
             Реализация под ключ
           </p>
           <p className="text-sm leading-[1.55]">{data.implementation_l2}</p>

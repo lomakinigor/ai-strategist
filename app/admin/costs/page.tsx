@@ -41,28 +41,28 @@ const PROVIDER_CONFIG: Record<string, ProviderConfig> = {
   openrouter: {
     label: 'OpenRouter',
     dashboardUrl: 'https://openrouter.ai/credits',
-    emoji: '🟦',
+    emoji: 'OR',
     hasBalanceApi: true,
   },
   openai: {
     label: 'OpenAI',
     dashboardUrl: 'https://platform.openai.com/usage',
-    emoji: '🟢',
+    emoji: 'OA',
   },
   anthropic: {
     label: 'Anthropic (direct)',
     dashboardUrl: 'https://console.anthropic.com/settings/billing',
-    emoji: '🟧',
+    emoji: 'AN',
   },
   deepseek: {
     label: 'DeepSeek (direct)',
     dashboardUrl: 'https://platform.deepseek.com/usage',
-    emoji: '🐋',
+    emoji: 'DS',
   },
   yookassa: {
     label: 'YooKassa (платежи)',
     dashboardUrl: 'https://yookassa.ru/my',
-    emoji: '💳',
+    emoji: '₽',
   },
 }
 
@@ -109,7 +109,7 @@ function PersonalLink({ href, label }: { href: string; label: string }) {
     >
       <span aria-hidden>🔒</span>
       <span>{label}</span>
-      <span aria-hidden className="text-[#737373]">↗</span>
+      <span aria-hidden className="text-[#525252]">↗</span>
     </a>
   )
 }
@@ -159,7 +159,7 @@ export default async function AdminCostsPage() {
           <p className="lp-eyebrow lp-eyebrow-warm mb-2">Этап 1.1 admin-панели</p>
           <h1 className="text-3xl font-bold tracking-[-0.02em]">Стоимость pipeline</h1>
         </div>
-        <div className="text-xs text-[#737373] text-right">
+        <div className="text-xs text-[#525252] text-right">
           <p>
             Курс ЦБ: <strong className="text-[#0a0a0a]">1 $ = {usdRubRate.toFixed(2)} ₽</strong>
           </p>
@@ -197,22 +197,22 @@ export default async function AdminCostsPage() {
       <section className="mb-10">
         <h2 className="text-xl font-bold mb-4">Разбивка по этапам (всё время)</h2>
         {stageBreakdown.length === 0 ? (
-          <p className="text-sm text-[#737373] italic">Пока нет записей. Запусти любой intake — данные появятся.</p>
+          <p className="text-sm text-[#525252] italic">Пока нет записей. Запусти любой intake — данные появятся.</p>
         ) : (
-          <div className="overflow-x-auto border border-[#e5e5e5] rounded">
+          <div className="overflow-x-auto border border-black/10 rounded">
             <table className="w-full text-sm">
               <thead className="bg-[#fafafa]">
                 <tr>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Этап</th>
-                  <th className="text-right px-3 py-2 border-b border-[#e5e5e5]">Вызовов</th>
-                  <th className="text-right px-3 py-2 border-b border-[#e5e5e5]">Токены (in / out)</th>
-                  <th className="text-right px-3 py-2 border-b border-[#e5e5e5]">USD</th>
-                  <th className="text-right px-3 py-2 border-b border-[#e5e5e5]">₽</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Этап</th>
+                  <th className="text-right px-3 py-2 border-b border-black/10">Вызовов</th>
+                  <th className="text-right px-3 py-2 border-b border-black/10">Токены (in / out)</th>
+                  <th className="text-right px-3 py-2 border-b border-black/10">USD</th>
+                  <th className="text-right px-3 py-2 border-b border-black/10">₽</th>
                 </tr>
               </thead>
               <tbody>
                 {stageBreakdown.map((s: StageBreakdown) => (
-                  <tr key={s.stage} className="border-b border-[#f1f5f9]">
+                  <tr key={s.stage} className="border-b border-black/10">
                     <td className="px-3 py-2 font-medium">{stageLabel(s.stage)}</td>
                     <td className="px-3 py-2 text-right">{s.callsCount}</td>
                     <td className="px-3 py-2 text-right text-[#525252]">
@@ -232,40 +232,40 @@ export default async function AdminCostsPage() {
       <section>
         <h2 className="text-xl font-bold mb-4">Последние {jobsBreakdown.length} research-jobs</h2>
         {jobsBreakdown.length === 0 ? (
-          <p className="text-sm text-[#737373] italic">
+          <p className="text-sm text-[#525252] italic">
             Пока нет jobs с зарегистрированными вызовами. (Вызовы intake_parse без research_job не показываются здесь —
             их видно в «Разбивке по этапам» выше.)
           </p>
         ) : (
-          <div className="overflow-x-auto border border-[#e5e5e5] rounded">
+          <div className="overflow-x-auto border border-black/10 rounded">
             <table className="w-full text-sm">
               <thead className="bg-[#fafafa]">
                 <tr>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Дата</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Компания</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Tier</th>
-                  <th className="text-right px-3 py-2 border-b border-[#e5e5e5]">Вызовов</th>
-                  <th className="text-right px-3 py-2 border-b border-[#e5e5e5]">USD</th>
-                  <th className="text-right px-3 py-2 border-b border-[#e5e5e5]">₽</th>
-                  <th className="text-left px-3 py-2 border-b border-[#e5e5e5]">Job ID</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Дата</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Компания</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Tier</th>
+                  <th className="text-right px-3 py-2 border-b border-black/10">Вызовов</th>
+                  <th className="text-right px-3 py-2 border-b border-black/10">USD</th>
+                  <th className="text-right px-3 py-2 border-b border-black/10">₽</th>
+                  <th className="text-left px-3 py-2 border-b border-black/10">Job ID</th>
                 </tr>
               </thead>
               <tbody>
                 {jobsBreakdown.map((j: JobBreakdown) => (
-                  <tr key={j.researchJobId} className="border-b border-[#f1f5f9]">
+                  <tr key={j.researchJobId} className="border-b border-black/10">
                     <td className="px-3 py-2 whitespace-nowrap">{fmtDate(j.firstCallAt)}</td>
                     <td className="px-3 py-2">
                       <div className="font-medium">{j.companyName ?? '—'}</div>
-                      <div className="text-xs text-[#737373]">{j.industry ?? ''}</div>
+                      <div className="text-xs text-[#525252]">{j.industry ?? ''}</div>
                     </td>
                     <td className="px-3 py-2">
                       <span
                         className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
                           j.tier === 'paid'
-                            ? 'bg-green-50 text-green-800'
+                            ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
                             : j.tier === 'retainer'
-                              ? 'bg-purple-50 text-purple-800'
-                              : 'bg-gray-50 text-gray-700'
+                              ? 'bg-[#1e3a8a]/10 text-[#1e3a8a]'
+                              : 'bg-[#fafafa] text-[#525252]'
                         }`}
                       >
                         {j.tier ?? 'free'}
@@ -277,7 +277,7 @@ export default async function AdminCostsPage() {
                     <td className="px-3 py-2">
                       <Link
                         href={`/research/${j.researchJobId}/report?version=v2`}
-                        className="text-xs text-[#1e3a8a] hover:underline font-mono"
+                        className="text-xs text-[#1e3a8a] hover:underline font-sans tabular-nums"
                       >
                         {j.researchJobId.slice(0, 8)}…
                       </Link>
@@ -290,7 +290,7 @@ export default async function AdminCostsPage() {
         )}
       </section>
 
-      <p className="text-xs text-[#737373] mt-8 italic">
+      <p className="text-xs text-[#525252] mt-8 italic">
         Стоимости берутся из ответа OpenRouter (usage.cost) когда доступно, иначе считаются по pricing.ts на основе токенов и модели.
         OpenAI direct (research) — расчёт по pricing.ts (нет публичного credits API через secret key).
       </p>
@@ -300,13 +300,13 @@ export default async function AdminCostsPage() {
 
 function KpiCard({ label, totals }: { label: string; totals: PeriodTotals }) {
   return (
-    <article className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
-      <p className="text-[11px] uppercase tracking-wider font-bold text-[#737373] mb-1">{label}</p>
+    <article className="border border-black/10 rounded p-4 bg-[#fafafa]">
+      <p className="text-[11px] uppercase tracking-wider font-bold text-[#525252] mb-1">{label}</p>
       <p className="text-2xl font-bold tracking-[-0.01em]">{fmtRub(totals.totalRub)}</p>
       <p className="text-xs text-[#525252] mt-1">
         {fmtUsd(totals.totalUsd)} · {totals.callsCount} вызовов
       </p>
-      <p className="text-[10px] text-[#737373] mt-1">
+      <p className="text-[10px] text-[#525252] mt-1">
         {fmtTokens(totals.totalPromptTokens)} in / {fmtTokens(totals.totalCompletionTokens)} out
       </p>
     </article>
@@ -329,7 +329,7 @@ function BalanceWidget({
 
   if (!balance) {
     return (
-      <div className="border border-yellow-200 bg-yellow-50 rounded p-4 text-sm">
+      <div className="border border-[#1e3a8a]/30 bg-[#1e3a8a]/10 rounded p-4 text-sm">
         <p className="text-[11px] uppercase tracking-wider font-bold mb-1">{label}</p>
         <p className="mb-2">Баланс недоступен (нет ключа или сеть). Проверь личный кабинет:</p>
         <PersonalLink href={dashboardUrl} label={`Открыть ${label}`} />
@@ -339,15 +339,15 @@ function BalanceWidget({
 
   const isLow = balance.remaining < 5
   const isCritical = balance.remaining < 1
-  const bg = isCritical ? 'bg-red-50 border-red-200' : isLow ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'
-  const stateEmoji = isCritical ? '🔴' : isLow ? '🟡' : '🟢'
+  const bg = isCritical ? 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30' : isLow ? 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30' : 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30'
+  const stateLabel = isCritical ? 'Критично' : isLow ? 'Низкий' : 'Норма'
 
   return (
     <div className={`border rounded p-4 ${bg}`}>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[11px] uppercase tracking-wider font-bold mb-1">
-            Баланс {label} {stateEmoji}
+            Баланс {label} · {stateLabel}
           </p>
           <p className="text-xl font-bold">
             ${balance.remaining.toFixed(2)} осталось из ${balance.totalCredits.toFixed(2)}
@@ -383,13 +383,13 @@ function ProviderUsageWidget({
   providerKey: string
 }) {
   const label = config?.label ?? providerKey
-  const emoji = config?.emoji ?? '⚙️'
+  const emoji = config?.emoji ?? 'API'
   const dashboardUrl = config?.dashboardUrl
 
   // Нет вызовов вообще (заглушка для известных провайдеров до первого использования)
   if (!usage || usage.callsCount === 0) {
     return (
-      <div className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
+      <div className="border border-black/10 rounded p-4 bg-[#fafafa]">
         <p className="text-[11px] uppercase tracking-wider font-bold mb-1">{label} {emoji}</p>
         <p className="text-sm text-[#525252]">
           Ещё нет вызовов. Появятся после первого использования провайдера.
@@ -404,7 +404,7 @@ function ProviderUsageWidget({
   }
 
   return (
-    <div className="border border-[#e5e5e5] rounded p-4 bg-[#fafafa]">
+    <div className="border border-black/10 rounded p-4 bg-[#fafafa]">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[11px] uppercase tracking-wider font-bold mb-1">
@@ -419,20 +419,20 @@ function ProviderUsageWidget({
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div>
-          <p className="text-[#737373]">За 24ч</p>
+          <p className="text-[#525252]">За 24ч</p>
           <p className="font-semibold">${usage.todayUsd.toFixed(4)}</p>
         </div>
         <div>
-          <p className="text-[#737373]">За 7д</p>
+          <p className="text-[#525252]">За 7д</p>
           <p className="font-semibold">${usage.weekUsd.toFixed(4)}</p>
         </div>
         <div>
-          <p className="text-[#737373]">За 30д</p>
+          <p className="text-[#525252]">За 30д</p>
           <p className="font-semibold">${usage.monthUsd.toFixed(4)}</p>
         </div>
       </div>
       {!config && (
-        <p className="text-[10px] text-amber-700 mt-2 italic">
+        <p className="text-[10px] text-[#1e3a8a] mt-2 italic">
           Провайдер «{providerKey}» не зарегистрирован в PROVIDER_CONFIG —
           добавь конфиг в app/admin/costs/page.tsx для красивого названия и ссылки на dashboard.
         </p>

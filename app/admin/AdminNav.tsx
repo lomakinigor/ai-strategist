@@ -17,12 +17,12 @@ const TABS = [
 export function AdminNav() {
   const pathname = usePathname()
   return (
-    <nav className="border-b border-[#e5e5e5] bg-white">
+    <nav className="border-b border-black/10 bg-white">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="text-xs font-medium text-[#525252] hover:text-[#0a0a0a] flex items-center gap-1 border border-[#e5e5e5] rounded px-2 py-1 hover:border-[#0a0a0a] transition-colors"
+            className="text-xs font-medium text-[#525252] hover:text-[#0a0a0a] flex items-center gap-1 border border-black/10 rounded px-2 py-1 hover:border-[#0a0a0a] transition-colors"
             title="Вернуться на основной сайт"
           >
             <span aria-hidden>←</span>
@@ -43,7 +43,7 @@ export function AdminNav() {
                 href={tab.href}
                 className={
                   isActive
-                    ? 'text-[#1e3a8a] font-bold bg-[#eff6ff] px-3 py-1.5 rounded transition-colors'
+                    ? 'text-[#1e3a8a] font-bold bg-[#fafafa] px-3 py-1.5 rounded transition-colors'
                     : 'text-[#525252] hover:text-[#0a0a0a] px-3 py-1.5 rounded hover:bg-[#fafafa] transition-colors'
                 }
                 aria-current={isActive ? 'page' : undefined}

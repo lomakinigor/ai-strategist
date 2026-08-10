@@ -159,7 +159,7 @@ export function ResearchProgress({
             Компания: <strong>{companyName}</strong>
             {industry ? ` · ${industry}` : ''}
           </p>
-          <p className="text-sm text-[#6b7280] mb-10">
+          <p className="text-sm text-[#525252] mb-10">
             Среднее время — 2–3 минуты. Сейчас прошло {formatTime(elapsed)}. Не закрывай вкладку — отчёт откроется автоматически.
           </p>
 
@@ -172,7 +172,7 @@ export function ResearchProgress({
                 <div
                   key={i}
                   className={`lp-card p-5 flex items-start gap-4 transition-all ${
-                    active ? 'border-2 border-[#1e3a8a] bg-[#eff6ff]' : done ? 'bg-white' : 'bg-[#fafafa] opacity-60'
+                    active ? 'border-2 border-[#1e3a8a] bg-[#fafafa]' : done ? 'bg-white' : 'bg-[#fafafa] opacity-60'
                   }`}
                 >
                   <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5">
@@ -183,13 +183,13 @@ export function ResearchProgress({
                     ) : active ? (
                       <Spinner />
                     ) : (
-                      <span className="w-8 h-8 rounded-full bg-[#e5e5e5] text-[#6b7280] flex items-center justify-center text-sm font-bold">
+                      <span className="w-8 h-8 rounded-full bg-[#fafafa] text-[#525252] flex items-center justify-center text-sm font-bold">
                         {i + 1}
                       </span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-base font-semibold ${active ? 'text-[#1e3a8a]' : done ? 'text-[#0a0a0a]' : 'text-[#6b7280]'}`}>
+                    <p className={`text-base font-semibold ${active ? 'text-[#1e3a8a]' : done ? 'text-[#0a0a0a]' : 'text-[#525252]'}`}>
                       {step.label}
                     </p>
                     {active && step.substreams && status && (
@@ -205,10 +205,10 @@ export function ResearchProgress({
                             >
                               <span
                                 className={`inline-block w-1.5 h-1.5 rounded-full ${
-                                  ok ? 'bg-green-500' : inProgress ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'
+                                  ok ? 'bg-[#1e3a8a]' : inProgress ? 'bg-[#1e3a8a] animate-pulse' : 'bg-[#fafafa]'
                                 }`}
                               />
-                              <span className={ok ? 'text-[#0a0a0a]' : inProgress ? 'text-[#1e3a8a]' : 'text-[#6b7280]'}>
+                              <span className={ok ? 'text-[#0a0a0a]' : inProgress ? 'text-[#1e3a8a]' : 'text-[#525252]'}>
                                 {STREAM_LABELS[s]}
                                 {ok ? ' — готово' : inProgress ? '…' : ''}
                               </span>
@@ -229,8 +229,8 @@ export function ResearchProgress({
               целевую аудиторию и 4–6 конкурентов параллельно из публичных источников. Каждый факт —
               с маркировкой надёжности и ссылкой на источник.
             </p>
-            <p className="text-xs text-[#6b7280] mt-3">
-              Опросов сделано: {pollCount} · jobId: <code className="font-mono text-[10px]">{jobId.slice(0, 8)}</code>
+            <p className="text-xs text-[#525252] mt-3">
+              Опросов сделано: {pollCount} · jobId: <code className="font-sans tabular-nums text-[10px]">{jobId.slice(0, 8)}</code>
             </p>
           </div>
         </>
@@ -285,10 +285,10 @@ function ErrorState({
       <div className="lp-card p-6 bg-[#fafafa]">
         <p className="text-xs font-bold text-[#0a0a0a] uppercase tracking-[0.12em] mb-3">Технические детали</p>
         <p className="text-sm text-[#525252] leading-[1.6] mb-2">
-          jobId: <code className="font-mono text-xs">{jobId}</code>
+          jobId: <code className="font-sans tabular-nums text-xs">{jobId}</code>
         </p>
         {message && (
-          <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2 mt-3">
+          <p className="text-sm text-[#1e3a8a] bg-[#1e3a8a]/10 border border-[#1e3a8a]/30 rounded px-3 py-2 mt-3">
             {message}
           </p>
         )}

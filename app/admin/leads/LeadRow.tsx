@@ -23,14 +23,14 @@ export interface LeadRowData {
 }
 
 const STATUS_META: Record<LeadRowData['status'], { label: string; classes: string }> = {
-  new: { label: 'Новый', classes: 'bg-blue-50 border-blue-200 text-blue-800' },
-  in_progress: { label: 'В работе', classes: 'bg-amber-50 border-amber-200 text-amber-800' },
-  closed: { label: 'Закрыт', classes: 'bg-gray-100 border-gray-300 text-gray-600' },
+  new: { label: 'Новый', classes: 'bg-[#1e3a8a]/10 border-[#1e3a8a]/30 text-[#1e3a8a]' },
+  in_progress: { label: 'В работе', classes: 'bg-[#fafafa] border-[#1e3a8a]/30 text-[#0a0a0a]' },
+  closed: { label: 'Закрыт', classes: 'bg-white border-dashed border-black/10 text-[#525252]' },
 }
 
 const TYPE_META: Record<LeadRowData['leadType'], { label: string; classes: string }> = {
-  paid: { label: '9 999 ₽', classes: 'bg-green-50 text-green-800' },
-  retainer: { label: 'Сопровождение', classes: 'bg-purple-50 text-purple-800' },
+  paid: { label: '9 999 ₽', classes: 'bg-[#1e3a8a]/10 text-[#1e3a8a]' },
+  retainer: { label: 'Сопровождение', classes: 'bg-[#1e3a8a]/10 text-[#1e3a8a]' },
 }
 
 function fmtDate(d: Date): string {
@@ -76,7 +76,7 @@ export function LeadRow({ lead }: { lead: LeadRowData }) {
 
   return (
     <>
-      <tr className="border-b border-[#f1f5f9]">
+      <tr className="border-b border-black/10">
         <td className="px-3 py-2 whitespace-nowrap text-xs text-[#525252]">{fmtDate(lead.createdAt)}</td>
         <td className="px-3 py-2">
           <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${typeMeta.classes}`}>
@@ -85,7 +85,7 @@ export function LeadRow({ lead }: { lead: LeadRowData }) {
         </td>
         <td className="px-3 py-2">
           <div className="font-medium text-sm">{lead.name}</div>
-          {lead.company && <div className="text-xs text-[#737373]">{lead.company}</div>}
+          {lead.company && <div className="text-xs text-[#525252]">{lead.company}</div>}
         </td>
         <td className="px-3 py-2 text-sm">
           <a href={`mailto:${lead.email}`} className="text-[#1e3a8a] hover:underline">
@@ -123,11 +123,11 @@ export function LeadRow({ lead }: { lead: LeadRowData }) {
         </td>
       </tr>
       {(notesOpen || lead.message) && (
-        <tr className="border-b border-[#f1f5f9] bg-[#fafafa]">
+        <tr className="border-b border-black/10 bg-[#fafafa]">
           <td colSpan={7} className="px-3 py-3">
             {lead.message && (
               <div className="mb-3">
-                <p className="text-[10px] uppercase tracking-wider font-bold text-[#737373] mb-1">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-[#525252] mb-1">
                   Сообщение клиента:
                 </p>
                 <p className="text-sm whitespace-pre-wrap">{lead.message}</p>
@@ -135,14 +135,14 @@ export function LeadRow({ lead }: { lead: LeadRowData }) {
             )}
             {notesOpen && (
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-bold text-[#737373] mb-1">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-[#525252] mb-1">
                   Заметки оператора:
                 </p>
                 <textarea
                   value={notesDraft}
                   onChange={(e) => setNotesDraft(e.target.value)}
                   rows={3}
-                  className="w-full border border-[#e5e5e5] rounded p-2 text-sm font-mono"
+                  className="w-full border border-black/10 rounded p-2 text-sm font-sans tabular-nums"
                   placeholder="Что обсудили, когда перезвонить, статус оплаты..."
                 />
                 <div className="mt-2 flex items-center gap-3">
@@ -161,8 +161,8 @@ export function LeadRow({ lead }: { lead: LeadRowData }) {
                   >
                     Скрыть
                   </button>
-                  {notesStatus === 'saved' && <span className="text-xs text-green-700">✓ Сохранено</span>}
-                  {notesStatus === 'error' && <span className="text-xs text-red-700">Ошибка сохранения</span>}
+                  {notesStatus === 'saved' && <span className="text-xs text-[#1e3a8a]">✓ Сохранено</span>}
+                  {notesStatus === 'error' && <span className="text-xs text-[#1e3a8a]">Ошибка сохранения</span>}
                 </div>
               </div>
             )}

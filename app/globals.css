@@ -1,22 +1,51 @@
 @import "tailwindcss";
 
-/* ════════════════════════════════════════════════════════════════════════════
- * MINIMAL — чистая минималистичная тема лендинга.
- * Префикс lp-, без курсива, без декора, только типографика и воздух.
- * Палитра: white · near-black #0a0a0a · zinc-600 #525252 · zinc-100 #f4f4f5.
- * ════════════════════════════════════════════════════════════════════════════ */
+/* AI-Стратег — project-wide Pomelli brand system. */
 :root {
-  --lp-bg: #ffffff;
-  --lp-bg-soft: #fafafa;
-  --lp-text: #0a0a0a;
-  --lp-text-muted: #525252;
-  --lp-text-faint: #6b7280;
-  --lp-border: #e5e5e5;
-  --lp-accent: #1e3a8a;
-  --lp-accent-hover: #172554;
-  --lp-accent-soft: #eff6ff;
-  --lp-accent-warm: #b45309;
-  --lp-accent-warm-soft: #fef3c7;
+  --brand-white: #ffffff;
+  --brand-blue: #1e3a8a;
+  --brand-black: #0a0a0a;
+  --brand-gray: #525252;
+  --brand-snow: #fafafa;
+
+  --background: var(--brand-white);
+  --foreground: var(--brand-black);
+  --card: var(--brand-white);
+  --card-foreground: var(--brand-black);
+  --primary: var(--brand-blue);
+  --primary-foreground: var(--brand-white);
+  --secondary: var(--brand-snow);
+  --secondary-foreground: var(--brand-black);
+  --muted: var(--brand-snow);
+  --muted-foreground: var(--brand-gray);
+  --accent: var(--brand-blue);
+  --accent-foreground: var(--brand-white);
+  --border: rgba(10, 10, 10, 0.1);
+  --input: rgba(10, 10, 10, 0.16);
+  --ring: var(--brand-blue);
+  --overlay: rgba(10, 10, 10, 0.56);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(10, 10, 10, 0.06);
+  --shadow-md: 0 8px 24px rgba(10, 10, 10, 0.1);
+  --shadow-lg: 0 18px 48px rgba(10, 10, 10, 0.16);
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Backward-compatible aliases used by existing UI. */
+  --lp-bg: var(--background);
+  --lp-bg-soft: var(--muted);
+  --lp-text: var(--foreground);
+  --lp-text-muted: var(--muted-foreground);
+  --lp-text-faint: var(--muted-foreground);
+  --lp-border: var(--border);
+  --lp-accent: var(--primary);
+  --lp-accent-hover: var(--brand-black);
+  --lp-accent-soft: rgba(30, 58, 138, 0.08);
+  --lp-accent-warm: var(--primary);
+  --lp-accent-warm-soft: rgba(30, 58, 138, 0.08);
 }
 
 /* Один шрифт на всю страницу — Inter */
@@ -25,6 +54,26 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--lp-bg);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: rgba(30, 58, 138, 0.18);
+  color: var(--foreground);
+}
+
+:where(a, button, input, textarea, select, summary, [role='button'], [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+:where(button, a, summary, [role='button']) {
+  transition-duration: var(--transition-base);
 }
 
 /* Eyebrow — короткая uppercase-метка в акцентном цвете */
@@ -166,11 +215,7 @@ html {
   line-height: 1;
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
- * NEON-REPORT — тёмная neon-cyberpunk тема краткого отчёта (.neon-report).
- * Все классы с префиксом nr- скоупятся к странице брифа. Палитра:
- * green #00d4aa · amber #f5a623 · red #ff6b6b · blue #5b9cf6 · purple #c084fc.
- * ════════════════════════════════════════════════════════════════════════════ */
+/* Branded analytical report. Legacy nr-* names are retained to avoid UI churn. */
 
 /* ── Фон и декор ───────────────────────────────────────────────────────────── */
 .nr-bg-grid {
@@ -179,8 +224,8 @@ html {
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(0, 212, 170, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 170, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(30, 58, 138, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 58, 138, 0.025) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 .nr-scanline {
@@ -191,32 +236,20 @@ html {
   height: 3px;
   z-index: 50;
   pointer-events: none;
-  opacity: 0.5;
-  background: linear-gradient(90deg, transparent, #00d4aa, transparent);
-  animation: nr-scan 3.5s linear infinite;
-}
-@keyframes nr-scan {
-  0% { top: -3px; }
-  100% { top: 100vh; }
+  opacity: 0.85;
+  background: #1e3a8a;
 }
 .nr-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #00d4aa;
+  background: #1e3a8a;
   display: inline-block;
-  animation: nr-blink 1.4s infinite;
-}
-@keyframes nr-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
 }
 .nr-grad {
-  background: linear-gradient(120deg, #00d4aa 0%, #5b9cf6 55%, #c084fc 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  background: none;
+  -webkit-text-fill-color: #ffffff;
+  color: #ffffff;
 }
 
 /* ── Типографика ───────────────────────────────────────────────────────────── */
@@ -224,16 +257,17 @@ html {
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8888a0;
+  color: rgba(255, 255, 255, 0.72);
 }
 .nr-mono {
-  font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-inter);
+  font-feature-settings: "tnum";
   font-weight: 700;
 }
 
 /* ── Карточки ──────────────────────────────────────────────────────────────── */
 .nr-card {
-  background: #111115;
+  background: #0a0a0a;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -241,7 +275,7 @@ html {
 .nr-card:hover {
   border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 40px rgba(10, 10, 10, 0.4);
 }
 
 /* KPI: верхняя акцент-полоса по наведению (цвет статуса через --ac) */
@@ -256,7 +290,7 @@ html {
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--ac, #00d4aa);
+  background: var(--ac, #1e3a8a);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -281,8 +315,8 @@ html {
 }
 .nr-savings {
   padding: 10px 13px;
-  background: rgba(0, 212, 170, 0.1);
-  border: 1px solid rgba(0, 212, 170, 0.2);
+  background: rgba(30, 58, 138, 0.1);
+  border: 1px solid rgba(30, 58, 138, 0.2);
   border-radius: 8px;
 }
 
@@ -291,7 +325,7 @@ html {
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #9a9ab5;
+  color: rgba(255, 255, 255, 0.72);
   padding: 11px 16px;
   text-align: left;
   font-weight: 600;
@@ -317,7 +351,7 @@ html {
   top: 8px;
   bottom: 8px;
   width: 1px;
-  background: linear-gradient(to bottom, #00d4aa, #5b9cf6, #c084fc);
+  background: linear-gradient(to bottom, #1e3a8a, #1e3a8a, #1e3a8a);
 }
 .nr-ti {
   position: relative;
@@ -333,9 +367,9 @@ html {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: #00d4aa;
-  border: 2px solid #0d0d0f;
-  box-shadow: 0 0 10px #00d4aa;
+  background: #1e3a8a;
+  border: 2px solid #0a0a0a;
+  box-shadow: 0 0 10px #1e3a8a;
 }
 
 /* ── Гипотезы (раскрывающиеся карточки) ────────────────────────────────────── */
@@ -344,11 +378,11 @@ html {
   width: 100%;
 }
 .nr-hc.nr-hc-open {
-  border-color: #00d4aa;
+  border-color: #1e3a8a;
 }
 .nr-chev {
   margin-left: auto;
-  color: #44445a;
+  color: #525252;
   font-size: 18px;
   line-height: 1;
   flex-shrink: 0;
@@ -373,8 +407,8 @@ html {
   text-align: center;
   padding: 56px 44px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #1c1c24 0%, rgba(0, 212, 170, 0.05) 100%);
-  border: 1px solid rgba(0, 212, 170, 0.22);
+  background: linear-gradient(135deg, #0a0a0a 0%, rgba(30, 58, 138, 0.05) 100%);
+  border: 1px solid rgba(30, 58, 138, 0.22);
 }
 .nr-cta-hint {
   display: inline-flex;
@@ -382,20 +416,20 @@ html {
   gap: 8px;
   padding: 12px 28px;
   border-radius: 8px;
-  background: #00d4aa;
-  color: #0d0d0f;
+  background: #1e3a8a;
+  color: #ffffff;
   font-weight: 700;
   font-size: 15px;
 }
 .nr-btn-primary {
-  background: #00d4aa;
-  color: #0d0d0f;
+  background: #1e3a8a;
+  color: #ffffff;
   transition: all 0.2s;
 }
 .nr-btn-primary:hover {
-  background: #00f5c4;
+  background: #1e3a8a;
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3);
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.3);
 }
 
 /* ── Reveal-on-scroll ──────────────────────────────────────────────────────── */
@@ -421,13 +455,13 @@ html {
     display: none !important;
   }
   .neon-report {
-    background: #fff !important;
-    color: #111 !important;
+    background: #ffffff !important;
+    color: #0a0a0a !important;
   }
   .neon-report .nr-card,
   .neon-report .nr-cta {
     background: #fafafa !important;
-    border: 1px solid #ddd !important;
+    border: 1px solid rgba(10, 10, 10, 0.1) !important;
     box-shadow: none !important;
     transform: none !important;
     break-inside: avoid;
@@ -435,18 +469,18 @@ html {
   }
   .neon-report .nr-grad {
     background: none !important;
-    -webkit-text-fill-color: #0a7d66 !important;
-    color: #0a7d66 !important;
+    -webkit-text-fill-color: #1e3a8a !important;
+    color: #1e3a8a !important;
   }
   .neon-report h1,
   .neon-report h2,
   .neon-report h3 {
-    color: #111 !important;
+    color: #0a0a0a !important;
   }
   .neon-report .nr-eyebrow,
   .neon-report .nr-th,
   .neon-report .nr-td {
-    color: #444 !important;
+    color: #525252 !important;
   }
   .neon-report .nr-hbody {
     max-height: none !important;

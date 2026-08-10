@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         <h1 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] leading-[1.1] mb-3">
           Политика обработки персональных данных
         </h1>
-        <p className="text-sm text-[#6b7280] mb-12">
+        <p className="text-sm text-[#525252] mb-12">
           Действует с {EFFECTIVE_DATE}.
         </p>
 
@@ -227,8 +227,8 @@ export default function PrivacyPage() {
       </article>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-[#e5e5e5]">
-        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#6b7280]">
+      <footer className="border-t border-black/10">
+        <div className="max-w-3xl mx-auto px-6 py-10 flex items-center justify-between text-xs text-[#525252]">
           <p>© {new Date().getFullYear()} AI-Стратег</p>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">
@@ -256,10 +256,10 @@ function Section({
   return (
     <section className="mb-12">
       <h2 className="text-xl font-bold tracking-[-0.015em] mb-5 text-[#0a0a0a]">
-        <span className="text-[#1e3a8a] mr-3 font-mono">{n}.</span>
+        <span className="text-[#1e3a8a] mr-3 font-sans tabular-nums">{n}.</span>
         {title}
       </h2>
-      <div className="space-y-4 text-[15px] text-[#374151] leading-[1.7]">
+      <div className="space-y-4 text-[15px] text-[#1e3a8a] leading-[1.7]">
         {children}
       </div>
     </section>

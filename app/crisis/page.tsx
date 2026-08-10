@@ -46,7 +46,7 @@ export default function CrisisHome() {
             Получить отчёт за 9 999 ₽
             <span aria-hidden>→</span>
           </CTALink>
-          <p className="text-sm text-[#6b7280] mt-5">
+          <p className="text-sm text-[#525252] mt-5">
             Анкета 5 минут. Оплата по СБП. Отчёт через 10 минут на email.
           </p>
           <CTALink href="/intake" goal="open_intake" className="text-sm text-[#1e3a8a] hover:underline mt-4 inline-block">
@@ -56,7 +56,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Pain section — три боли в кризис ──────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="border-t border-black/10">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow lp-eyebrow-warm mb-4">Знакомо?</p>
@@ -82,7 +82,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Who benefits ──────────────────────────────────────────────────── */}
-      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+      <section className="bg-[#fafafa] border-t border-black/10">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Для кого</p>
@@ -118,7 +118,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Три value-props (метод по сути) ───────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="border-t border-black/10">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Что вы получите</p>
@@ -142,7 +142,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Тарифы ────────────────────────────────────────────────────────── */}
-      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+      <section className="bg-[#fafafa] border-t border-black/10">
         <div className="max-w-6xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Тарифы</p>
@@ -167,9 +167,9 @@ export default function CrisisHome() {
                 <h3 className="text-2xl font-bold tracking-[-0.015em] mb-2">{t.name}</h3>
                 <p className="text-sm text-[#525252] mb-7 leading-relaxed">{t.subtitle}</p>
 
-                <div className="mb-7 pb-7 border-b border-[#e5e5e5]">
+                <div className="mb-7 pb-7 border-b border-black/10">
                   <p className="text-3xl font-bold tracking-[-0.02em]">{t.price}</p>
-                  <p className="text-xs text-[#6b7280] mt-1.5">{t.priceHint}</p>
+                  <p className="text-xs text-[#525252] mt-1.5">{t.priceHint}</p>
                 </div>
 
                 <ul className="space-y-3 mb-8 flex-1">
@@ -194,7 +194,7 @@ export default function CrisisHome() {
                 </CTALink>
 
                 {t.note && (
-                  <p className="text-xs text-[#6b7280] mt-4 leading-[1.55]">{t.note}</p>
+                  <p className="text-xs text-[#525252] mt-4 leading-[1.55]">{t.note}</p>
                 )}
               </article>
             ))}
@@ -203,7 +203,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Об основателях ─────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="border-t border-black/10">
         <div className="max-w-6xl mx-auto px-6 py-24">
           <div className="mb-12 max-w-2xl">
             <p className="lp-eyebrow mb-4">Команда AI-Стратег</p>
@@ -223,7 +223,7 @@ export default function CrisisHome() {
                 />
                 <div className="p-7 flex-1 flex flex-col">
                   <h3 className="text-xl font-bold mb-1 tracking-[-0.015em]">{f.name}</h3>
-                  <p className="text-sm text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-5">
+                  <p className="text-sm text-[#525252] uppercase tracking-[0.08em] font-semibold mb-5">
                     {f.role}
                   </p>
                   <ul className="space-y-3">
@@ -242,13 +242,13 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Главное обещание приложения ────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5] bg-[#0a0a0a] text-white">
+      <section className="border-t border-black/10 bg-[#0a0a0a] text-white">
         <div className="max-w-4xl mx-auto px-6 py-28 text-center">
-          <p className="text-xs font-semibold text-[#fbbf24] uppercase tracking-[0.16em] mb-6">
+          <p className="text-xs font-semibold text-[#1e3a8a] uppercase tracking-[0.16em] mb-6">
             Зачем мы создали AI-Стратег
           </p>
           <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.025em] leading-[1.15] mb-8">
-            Увеличить вашу выручку <span className="text-[#fbbf24]">в&nbsp;1,5&nbsp;раза</span> при снижении затрат <span className="text-[#fbbf24]">в&nbsp;2&nbsp;раза</span>
+            Увеличить вашу выручку <span className="text-[#1e3a8a]">в&nbsp;1,5&nbsp;раза</span> при снижении затрат <span className="text-[#1e3a8a]">в&nbsp;2&nbsp;раза</span>
           </h2>
           <p className="text-lg sm:text-xl text-white/75 leading-[1.6] max-w-2xl mx-auto">
             За счёт анализа вашего маркетинга и бизнес-процессов. AI-Стратег делает за 10 минут то, на что у директора по маркетингу уходят недели.
@@ -257,7 +257,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Окупаемость (после Об основателе) ─────────────────────────────── */}
-      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+      <section className="bg-[#fafafa] border-t border-black/10">
         <div className="max-w-5xl mx-auto px-6 py-20">
           <div className="mb-12 max-w-2xl">
             <p className="lp-eyebrow mb-4">Окупаемость</p>
@@ -280,7 +280,7 @@ export default function CrisisHome() {
                 <p className="text-3xl font-bold tracking-[-0.025em] text-[#0a0a0a] mb-1">
                   {ex.metric}
                 </p>
-                <p className="text-xs text-[#6b7280] uppercase tracking-[0.08em] font-semibold mb-4">
+                <p className="text-xs text-[#525252] uppercase tracking-[0.08em] font-semibold mb-4">
                   {ex.metricLabel}
                 </p>
                 <p className="text-[14px] text-[#525252] leading-[1.6]">{ex.payback}</p>
@@ -291,7 +291,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Сравнение ─────────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="border-t border-black/10">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-3xl">
             <p className="lp-eyebrow mb-4">Сравнение</p>
@@ -304,7 +304,7 @@ export default function CrisisHome() {
           <div className="hidden md:block lp-card bg-[#fafafa] overflow-hidden">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-[#e5e5e5]">
+                <tr className="border-b border-black/10">
                   <th className="lp-cmp-th"></th>
                   <th className="lp-cmp-th">Без AI-Стратега</th>
                   <th className="lp-cmp-th text-[#1e3a8a]">С AI-Стратегом</th>
@@ -312,7 +312,7 @@ export default function CrisisHome() {
               </thead>
               <tbody>
                 {COMPARISON.map((row, i) => (
-                  <tr key={i} className="border-t border-[#e5e5e5]">
+                  <tr key={i} className="border-t border-black/10">
                     <td className="lp-cmp-td font-semibold text-[#0a0a0a] w-1/3">
                       {row.label}
                     </td>
@@ -335,12 +335,12 @@ export default function CrisisHome() {
                 </p>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-[11px] text-[#6b7280] uppercase tracking-[0.1em] mb-1 font-semibold">
+                    <p className="text-[11px] text-[#525252] uppercase tracking-[0.1em] mb-1 font-semibold">
                       Без AI-Стратега
                     </p>
                     <p className="text-sm text-[#525252] leading-[1.55]">{row.them}</p>
                   </div>
-                  <div className="pt-3 border-t border-[#e5e5e5]">
+                  <div className="pt-3 border-t border-black/10">
                     <p className="text-[11px] text-[#1e3a8a] uppercase tracking-[0.1em] mb-1 font-bold">
                       С AI-Стратегом
                     </p>
@@ -356,7 +356,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+      <section className="bg-[#fafafa] border-t border-black/10">
         <div className="max-w-3xl mx-auto px-6 py-24">
           <div className="mb-12 max-w-2xl">
             <p className="lp-eyebrow mb-4">Вопросы и ответы</p>
@@ -365,9 +365,9 @@ export default function CrisisHome() {
             </h2>
           </div>
 
-          <div className="border-t border-[#e5e5e5]">
+          <div className="border-t border-black/10">
             {FAQ.map((f, i) => (
-              <details key={i} className="group border-b border-[#e5e5e5] py-6">
+              <details key={i} className="group border-b border-black/10 py-6">
                 <summary className="flex items-start justify-between gap-6 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                   <h3 className="text-lg font-bold tracking-[-0.01em] text-[#0a0a0a] leading-snug">
                     {f.q}
@@ -384,7 +384,7 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Финальный CTA ─────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className="border-t border-black/10">
         <div className="max-w-3xl mx-auto px-6 py-28 text-center">
           <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.025em] leading-[1.1] mb-6">
             Получите стратегию выхода из кризиса за 10 минут
@@ -397,7 +397,7 @@ export default function CrisisHome() {
             Получить отчёт за 9 999 ₽
             <span aria-hidden>→</span>
           </CTALink>
-          <p className="text-sm text-[#6b7280] mt-5">
+          <p className="text-sm text-[#525252] mt-5">
             Анкета 5 минут. Оплата по СБП. Готовый отчёт — через 10 минут на email.
           </p>
           <CTALink href="/intake" goal="open_intake" className="text-sm text-[#1e3a8a] hover:underline mt-4 inline-block">
@@ -407,13 +407,13 @@ export default function CrisisHome() {
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-[#e5e5e5]">
+      <footer className="border-t border-black/10">
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-[#6b7280] text-center sm:text-left">
+          <p className="text-xs text-[#525252] text-center sm:text-left">
             © {new Date().getFullYear()} AI-Стратег. Стратегический анализ для
             российских компаний.
           </p>
-          <div className="flex gap-5 text-xs text-[#6b7280]">
+          <div className="flex gap-5 text-xs text-[#525252]">
             <Link href="/privacy" className="hover:text-[#0a0a0a]">
               Политика обработки данных
             </Link>

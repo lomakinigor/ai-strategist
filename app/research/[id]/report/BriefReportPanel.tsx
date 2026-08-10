@@ -7,7 +7,7 @@ export function BriefReportPanel({ artifactId }: { artifactId: string }) {
         href={`/brief/${artifactId}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-indigo-300 bg-indigo-50 text-indigo-800 text-sm font-medium hover:bg-indigo-100 active:bg-indigo-200 transition-colors select-none"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1e3a8a]/30 bg-[#1e3a8a]/10 text-[#1e3a8a] text-sm font-medium hover:bg-[#1e3a8a]/10 active:bg-[#1e3a8a]/10 transition-colors select-none"
       >
         Краткий отчёт
         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 opacity-60" viewBox="0 0 20 20" fill="currentColor">

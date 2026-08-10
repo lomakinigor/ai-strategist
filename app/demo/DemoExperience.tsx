@@ -2,23 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Instrument_Serif, Manrope } from 'next/font/google'
 import { DEMO_SNAPSHOT } from '@/lib/demo/snapshot'
 import type { DemoReportBlock, EvidenceKind } from '@/lib/demo/types'
 import styles from './demo.module.css'
-
-const manrope = Manrope({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-demo-sans',
-})
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  variable: '--font-demo-serif',
-})
 
 type DemoStep = 'input' | 'research' | 'interactive' | 'report'
 
@@ -104,7 +90,7 @@ export default function DemoExperience() {
 
   return (
     <main
-      className={`${styles.demo} ${manrope.variable} ${instrumentSerif.variable}`}
+      className={styles.demo}
       data-theme={theme}
     >
       <header className={styles.topbar}>
