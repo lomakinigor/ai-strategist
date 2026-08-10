@@ -25,6 +25,7 @@ AI-провайдеры по этапам: OpenAI gpt-4o-mini + web_search (rese
 - Не строить весь продукт сразу, предпочитать MVP-решения
 - Не добавлять функциональность сверх задачи
 - Суммы — в рублях
+- Публичный UI следует [docs/brand/DESIGN.md](docs/brand/DESIGN.md); оригинал — [docs/brand/ai-brand-book-pomelli.pdf](docs/brand/ai-brand-book-pomelli.pdf)
 
 ## opusplan-стратегия (экономия токенов)
 

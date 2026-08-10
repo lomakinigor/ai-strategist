@@ -5,7 +5,6 @@
   --home-gray: #525252;
   --home-border: rgba(10, 10, 10, 0.1);
   --home-blue: #1e3a8a;
-  --home-blue-dark: #172554;
   min-height: 100vh;
   padding-top: 80px;
   overflow-x: clip;
@@ -126,7 +125,7 @@
 .heroEyebrow {
   display: inline-block;
   margin-bottom: 1.25rem;
-  color: #b9c9f5;
+  color: rgba(255, 255, 255, 0.72);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -145,7 +144,7 @@
 }
 
 .heroAccent {
-  color: #c8d6ff;
+  color: var(--home-white);
 }
 
 .heroLead {
@@ -282,8 +281,9 @@
 .navLinks a:focus-visible,
 .logo:focus-visible,
 .freeLink:focus-visible {
-  outline: 3px solid #93c5fd;
+  outline: 3px solid var(--home-blue);
   outline-offset: 3px;
+  box-shadow: 0 0 0 5px var(--home-white);
 }
 
 @keyframes fadeIn {

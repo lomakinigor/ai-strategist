@@ -6,6 +6,8 @@ const root = process.cwd()
 const homepage = readFileSync(resolve(root, 'app/page.tsx'), 'utf8')
 const cssPath = resolve(root, 'app/home.module.css')
 const css = existsSync(cssPath) ? readFileSync(cssPath, 'utf8') : ''
+const designPath = resolve(root, 'docs/brand/DESIGN.md')
+const design = existsSync(designPath) ? readFileSync(designPath, 'utf8') : ''
 
 describe('Pomelli design contract для главной', () => {
   it('использует scoped дизайн с fixed glass-header и тёмным hero', () => {
@@ -28,5 +30,22 @@ describe('Pomelli design contract для главной', () => {
   it('адаптируется к mobile и reduced motion', () => {
     expect(css).toContain('@media (max-width: 768px)')
     expect(css).toContain('@media (prefers-reduced-motion: reduce)')
+  })
+
+  it('следует canonical палитре и brand voice из бренд-бука', () => {
+    expect(design).toContain('#FFFFFF')
+    expect(design).toContain('#1E3A8A')
+    expect(design).toContain('#0A0A0A')
+    expect(design).toContain('#525252')
+    expect(design).toContain('#FAFAFA')
+    expect(design).toContain('Fact-based accuracy')
+
+    expect(homepage).not.toContain('lp-eyebrow-warm')
+
+    const allowedHex = new Set(['#ffffff', '#1e3a8a', '#0a0a0a', '#525252', '#fafafa'])
+    const usedHex = Array.from(`${homepage}\n${css}`.matchAll(/#[0-9a-f]{6}/gi)).map(([hex]) =>
+      hex.toLowerCase(),
+    )
+    expect(Array.from(new Set(usedHex)).filter((hex) => !allowedHex.has(hex))).toEqual([])
   })
 })
