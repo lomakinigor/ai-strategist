@@ -813,6 +813,10 @@
 }
 .metric {
   min-height: 165px;
+  display: grid;
+  grid-template-rows: 64px auto 1fr;
+  align-content: start;
+  row-gap: 12px;
   padding: 20px;
   border-right: 1px solid var(--line);
   border-top: 3px solid #1e3a8a;
@@ -838,11 +842,12 @@
 }
 .metric strong {
   display: block;
-  margin: 14px 0 12px;
+  margin: 0;
   color: var(--navy);
   font-family: var(--font-inter);
   font-size: 34px;
   font-weight: 400;
+  line-height: 1;
 }
 .metric p {
   margin: 0;
@@ -1361,6 +1366,7 @@
     grid-template-columns: 1fr;
   }
   .metric {
+    grid-template-rows: auto auto auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }

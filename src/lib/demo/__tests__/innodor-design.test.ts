@@ -11,6 +11,11 @@ describe('Demo report design contract', () => {
     expect(css).toMatch(/\.auditMetrics strong\s*\{[\s\S]*?color:\s*var\(--color-text\)/)
   })
 
+  it('aligns metric titles, values and notes on shared visual rows', () => {
+    expect(css).toMatch(/\.metric\s*\{[\s\S]*?grid-template-rows:\s*64px auto 1fr/)
+    expect(css).toMatch(/\.metric strong\s*\{[\s\S]*?margin:\s*0/)
+  })
+
   it('использует Pomelli tokens и сохраняет размеры рабочего отчёта', () => {
     expect(css).toContain('--color-bg: #fafafa')
     expect(css).toContain('--color-primary: #1e3a8a')
