@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 const root = process.cwd()
 const css = readFileSync(resolve(root, 'app/demo/demo.module.css'), 'utf8')
 const component = readFileSync(resolve(root, 'app/demo/DemoExperience.tsx'), 'utf8')
+const contactAdmin = readFileSync(resolve(root, 'src/components/ContactAdminButton.tsx'), 'utf8')
 
 describe('Demo report design contract', () => {
   it('keeps technical audit values readable in light and dark themes', () => {
@@ -14,6 +15,12 @@ describe('Demo report design contract', () => {
   it('aligns metric titles, values and notes on shared visual rows', () => {
     expect(css).toMatch(/\.metric\s*\{[\s\S]*?grid-template-rows:\s*64px auto 1fr/)
     expect(css).toMatch(/\.metric strong\s*\{[\s\S]*?margin:\s*0/)
+  })
+
+  it('uses sentence case in the report name and no question mark in the contact button', () => {
+    expect(css).toMatch(/\.demoBadge\s*\{[\s\S]*?text-transform:\s*none/)
+    expect(contactAdmin).not.toContain('<span aria-hidden>?</span>')
+    expect(contactAdmin).toContain('<span>Написать админу</span>')
   })
 
   it('использует Pomelli tokens и сохраняет размеры рабочего отчёта', () => {

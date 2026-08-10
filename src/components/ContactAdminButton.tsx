@@ -90,11 +90,10 @@ export function ContactAdminButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="no-print fixed bottom-6 right-6 z-40 bg-[#1e3a8a] text-white rounded-full shadow-lg hover:bg-[#1e3a8a] transition-colors px-5 py-3 flex items-center gap-2 text-sm font-medium"
+        className="no-print fixed bottom-6 right-6 z-40 bg-[#1e3a8a] text-white rounded-full shadow-lg hover:bg-[#1e3a8a] transition-colors px-5 py-3 flex items-center text-sm font-medium"
         aria-label="Написать админу"
       >
-        <span aria-hidden>?</span>
-        <span className="hidden sm:inline">Написать админу</span>
+        <span>Написать админу</span>
       </button>
 
       {/* Скрытая админ-ссылка — bottom-left, неприметная для клиента.
