@@ -1,0 +1,359 @@
+.page {
+  --home-white: #ffffff;
+  --home-offwhite: #fafafa;
+  --home-black: #0a0a0a;
+  --home-gray: #525252;
+  --home-border: rgba(10, 10, 10, 0.1);
+  --home-blue: #1e3a8a;
+  --home-blue-dark: #172554;
+  min-height: 100vh;
+  padding-top: 80px;
+  overflow-x: clip;
+  background: var(--home-white);
+  color: var(--home-black);
+}
+
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--home-border);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.nav {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.logo {
+  flex: none;
+  color: var(--home-black);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.logo span {
+  color: var(--home-blue);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  color: var(--home-gray);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.navLinks a,
+.footer a {
+  transition: color 0.2s ease;
+}
+
+.navLinks a:hover,
+.footer a:hover {
+  color: var(--home-blue);
+}
+
+.headerCta,
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  border: 2px solid transparent;
+  font-weight: 700;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.headerCta {
+  flex: none;
+  padding: 0.75rem 1.5rem;
+  background: var(--home-blue);
+  color: var(--home-white);
+  font-size: 0.95rem;
+}
+
+.headerCta:hover,
+.primaryButton:hover {
+  border-color: var(--home-blue);
+  background: var(--home-white);
+  color: var(--home-blue);
+  transform: translateY(-1px);
+}
+
+.hero {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  background-color: var(--home-black);
+  background-image: linear-gradient(90deg, rgba(10, 10, 10, 0.94) 0%, rgba(10, 10, 10, 0.78) 46%, rgba(30, 58, 138, 0.58) 100%),
+    url('/strategist-hero.png');
+  background-position: center;
+  background-size: cover;
+  color: var(--home-white);
+}
+
+.heroInner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 7rem 2rem;
+}
+
+.heroContent {
+  max-width: 820px;
+  animation: fadeIn 0.8s ease both;
+}
+
+.heroEyebrow {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  color: #b9c9f5;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  max-width: 780px;
+  margin-bottom: 1.75rem;
+  color: var(--home-white);
+  font-size: clamp(2.5rem, 5vw, 4.75rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.heroAccent {
+  color: #c8d6ff;
+}
+
+.heroLead {
+  max-width: 660px;
+  margin-bottom: 2.5rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 54px;
+  padding: 0.875rem 1.75rem;
+}
+
+.primaryButton {
+  border-color: var(--home-blue);
+  background: var(--home-blue);
+  color: var(--home-white);
+}
+
+.secondaryButton {
+  border-color: rgba(255, 255, 255, 0.64);
+  color: var(--home-white);
+}
+
+.secondaryButton:hover {
+  border-color: var(--home-white);
+  background: var(--home-white);
+  color: var(--home-black);
+  transform: translateY(-1px);
+}
+
+.heroMeta {
+  margin-top: 1.25rem;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.875rem;
+}
+
+.freeLink {
+  display: inline-block;
+  margin-top: 0.875rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.freeLink:hover {
+  color: var(--home-white);
+}
+
+.page section[id] {
+  scroll-margin-top: 96px;
+}
+
+.page :global(.lp-card) {
+  border-radius: 0;
+  border-color: var(--home-border);
+  box-shadow: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.page :global(.lp-card:hover) {
+  border-color: rgba(30, 58, 138, 0.4);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(10, 10, 10, 0.06);
+}
+
+.page :global(.lp-btn-primary),
+.page :global(.lp-btn-secondary),
+.page :global(.lp-btn-ghost) {
+  border-radius: 0;
+}
+
+.page :global(.lp-btn-primary) {
+  border: 2px solid var(--home-blue);
+}
+
+.page :global(.lp-btn-primary:hover) {
+  background: transparent;
+  color: var(--home-blue);
+}
+
+.page :global(.lp-btn-secondary) {
+  border-width: 2px;
+}
+
+.page :global(.lp-eyebrow) {
+  letter-spacing: 0.12em;
+}
+
+.productsSection :global(.lp-card) {
+  border-top: 4px solid var(--home-blue);
+  background: var(--home-offwhite);
+}
+
+.darkStatement {
+  position: relative;
+  overflow: hidden;
+}
+
+.darkStatement::after {
+  position: absolute;
+  inset: auto -15% -75% auto;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: rgba(30, 58, 138, 0.36);
+  content: '';
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.finalCta {
+  background: var(--home-offwhite);
+}
+
+.footer {
+  border-top: 1px solid var(--home-border);
+  background: var(--home-white);
+}
+
+.headerCta:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.navLinks a:focus-visible,
+.logo:focus-visible,
+.freeLink:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding-top: 72px;
+  }
+
+  .header {
+    height: 72px;
+  }
+
+  .nav {
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+
+  .navLinks {
+    display: none;
+  }
+
+  .headerCta {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.82rem;
+  }
+
+  .hero {
+    min-height: calc(100svh - 72px);
+    background-position: 62% center;
+  }
+
+  .heroInner {
+    padding: 5rem 1.5rem;
+  }
+
+  .heroActions {
+    flex-direction: column;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroContent {
+    animation: none;
+  }
+
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

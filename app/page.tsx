@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import CTALink from './CTALink'
+import styles from './home.module.css'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-strategist-bice.vercel.app'
 
@@ -136,7 +137,7 @@ const JSON_LD = {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-[#0a0a0a]">
+    <main className={styles.page}>
       {/* JSON-LD structured data для AI-краулеров (ChatGPT, Claude, Perplexity)
           и поисковиков (Yandex, Google rich snippets). */}
       <script
@@ -144,44 +145,52 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
       {/* ── Навигация ─────────────────────────────────────────────────────── */}
-      <nav className="max-w-5xl mx-auto px-6 pt-8">
-        <Link href="/" className="text-base font-bold tracking-tight">
-          AI-Стратег
-        </Link>
-      </nav>
+      <header className={styles.header}>
+        <nav className={styles.nav} aria-label="Основная навигация">
+          <Link href="/" className={styles.logo}>
+            AI<span>-Стратег</span>
+          </Link>
+          <div className={styles.navLinks}>
+            <Link href="#method">Как это работает</Link>
+            <Link href="#proof">Пример работы</Link>
+            <Link href="#pricing">Тарифы</Link>
+            <Link href="#team">Команда</Link>
+          </div>
+          <CTALink href="/intake?tier=paid" goal="paywall_click" className={styles.headerCta}>
+            Получить отчёт
+          </CTALink>
+        </nav>
+      </header>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-6 pt-28 pb-32 text-center">
-        <p className="lp-eyebrow mb-8">Для российских компаний</p>
-
-        <h1 className="text-[2.25rem] sm:text-6xl md:text-7xl font-bold tracking-[-0.03em] leading-[1.05] sm:leading-[1.02] mb-8 break-words">
-          Стратегический отчёт о вашем рынке —
-          <br />
-          за 10 минут. <span className="text-[#1e3a8a]">9 999 ₽.</span>
-        </h1>
-
-        <p className="text-lg sm:text-xl text-[#525252] max-w-2xl mx-auto leading-[1.55] mb-12">
-          Глубокий анализ 4–6 конкурентов, разбор слабых точек вашего бизнеса,
-          3 готовых варианта УТП и план на 30/60/90 дней. Без интервью,
-          с источниками и оценкой достоверности каждого факта.
-        </p>
-
-        <div className="flex flex-col items-center">
-          <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
-            <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary justify-center">
-              Получить отчёт за 9 999 ₽
-              <span aria-hidden>→</span>
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroContent}>
+            <p className={styles.heroEyebrow}>Стратегия, основанная на данных</p>
+            <h1 className={styles.heroTitle}>
+              Стратегический отчёт о вашем рынке —{' '}
+              <span className={styles.heroAccent}>за 10 минут.</span>
+            </h1>
+            <p className={styles.heroLead}>
+              Анализ 4–6 конкурентов, слабые точки бизнеса, 3 варианта УТП и план
+              на 30/60/90 дней. Каждый факт — с источником и оценкой достоверности.
+            </p>
+            <div className={styles.heroActions}>
+              <CTALink href="/intake?tier=paid" goal="paywall_click" className={styles.primaryButton}>
+                Получить отчёт за 9 999 ₽
+                <span aria-hidden>→</span>
+              </CTALink>
+              <Link href="/demo" className={styles.secondaryButton}>
+                Посмотреть пример отчёта
+              </Link>
+            </div>
+            <p className={styles.heroMeta}>
+              Анкета 5 минут · оплата по СБП · отчёт через 10 минут на email
+            </p>
+            <CTALink href="/intake" goal="open_intake" className={styles.freeLink}>
+              Попробовать бесплатный пробник →
             </CTALink>
-            <Link href="/demo" className="lp-btn-secondary">
-              Посмотреть пример отчёта
-            </Link>
           </div>
-          <p className="text-sm text-[#6b7280] mt-5">
-            Анкета 5 минут. Оплата по СБП. Отчёт через 10 минут на email.
-          </p>
-          <CTALink href="/intake" goal="open_intake" className="text-sm text-[#1e3a8a] hover:underline mt-4 inline-block">
-            или попробовать бесплатный пробник →
-          </CTALink>
         </div>
       </section>
 
@@ -250,7 +259,7 @@ export default function Home() {
       </section>
 
       {/* ── Тарифы ────────────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5] bg-[#fafafa]">
+      <section id="pricing" className={`${styles.productsSection} border-t border-[#e5e5e5] bg-[#fafafa]`}>
         <div className="max-w-6xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Тарифы</p>
@@ -311,7 +320,7 @@ export default function Home() {
       </section>
 
       {/* ── 3 шага метода ─────────────────────────────────────────────────── */}
-      <section className="bg-[#fafafa] border-t border-[#e5e5e5]">
+      <section id="method" className="bg-[#fafafa] border-t border-[#e5e5e5]">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Как это работает</p>
@@ -342,7 +351,7 @@ export default function Home() {
       </section>
 
       {/* ── Social proof: примеры находок в первом разборе ─────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section id="proof" className="border-t border-[#e5e5e5]">
         <div className="max-w-5xl mx-auto px-6 py-24">
           <div className="mb-14 max-w-2xl">
             <p className="lp-eyebrow mb-4">Пример работы</p>
@@ -389,7 +398,7 @@ export default function Home() {
       </section>
 
       {/* ── Об основателях ─────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section id="team" className="border-t border-[#e5e5e5]">
         <div className="max-w-6xl mx-auto px-6 py-24">
           <div className="mb-12 max-w-2xl">
             <p className="lp-eyebrow mb-4">Команда AI-Стратег</p>
@@ -428,7 +437,7 @@ export default function Home() {
       </section>
 
       {/* ── Главное обещание приложения ────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5] bg-[#0a0a0a] text-white">
+      <section className={`${styles.darkStatement} border-t border-[#e5e5e5] bg-[#0a0a0a] text-white`}>
         <div className="max-w-4xl mx-auto px-6 py-28 text-center">
           <p className="text-xs font-semibold text-[#fbbf24] uppercase tracking-[0.16em] mb-6">
             Зачем мы создали AI-Стратег
@@ -627,7 +636,7 @@ export default function Home() {
       </section>
 
       {/* ── Финальный CTA ─────────────────────────────────────────────────── */}
-      <section className="border-t border-[#e5e5e5]">
+      <section className={`${styles.finalCta} border-t border-[#e5e5e5]`}>
         <div className="max-w-3xl mx-auto px-6 py-28 text-center">
           <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.025em] leading-[1.1] mb-6">
             Готовы получить полную стратегию по рынку?
@@ -650,7 +659,7 @@ export default function Home() {
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-[#e5e5e5]">
+      <footer className={styles.footer}>
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-[#6b7280] text-center sm:text-left">
             © {new Date().getFullYear()} AI-Стратег. Стратегический анализ для
