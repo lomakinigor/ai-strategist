@@ -180,16 +180,16 @@ export default function Home() {
                 Получить отчёт за 9 999 ₽
                 <span aria-hidden>→</span>
               </CTALink>
-              <Link href="/demo" className={styles.secondaryButton}>
-                Посмотреть пример отчёта
-              </Link>
+              <CTALink href="/intake" goal="open_intake" className={styles.secondaryButton}>
+                Попробовать бесплатный пробник
+              </CTALink>
             </div>
             <p className={styles.heroMeta}>
               Анкета 5 минут · оплата по СБП · отчёт через 10 минут на email
             </p>
-            <CTALink href="/intake" goal="open_intake" className={styles.freeLink}>
-              Попробовать бесплатный пробник →
-            </CTALink>
+            <Link href="/demo" className={styles.freeLink}>
+              Посмотреть пример отчёта →
+            </Link>
           </div>
         </div>
       </section>

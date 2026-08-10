@@ -5,8 +5,12 @@ import { describe, expect, it } from 'vitest'
 const homepage = readFileSync(resolve(process.cwd(), 'app/page.tsx'), 'utf8')
 
 describe('demo CTA на главной', () => {
-  it('ведёт с hero на публичный пример отчёта', () => {
-    expect(homepage).toContain('href="/demo"')
-    expect(homepage).toContain('Посмотреть пример отчёта')
+  it('разделяет бесплатный пробник и публичный пример в hero', () => {
+    expect(homepage).toMatch(
+      /<CTALink href="\/intake" goal="open_intake" className=\{styles\.secondaryButton\}>\s*Попробовать бесплатный пробник\s*<\/CTALink>/,
+    )
+    expect(homepage).toMatch(
+      /<Link href="\/demo" className=\{styles\.freeLink\}>\s*Посмотреть пример отчёта →\s*<\/Link>/,
+    )
   })
 })
