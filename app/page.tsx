@@ -156,9 +156,9 @@ export default function Home() {
             <Link href="#pricing">Тарифы</Link>
             <Link href="#team">Команда</Link>
           </div>
-          <CTALink href="/intake?tier=paid" goal="paywall_click" className={styles.headerCta}>
-            Получить отчёт
-          </CTALink>
+          <Link href="/demo" className={styles.headerCta}>
+            Посмотреть пример отчёта
+          </Link>
         </nav>
       </header>
 
@@ -645,16 +645,18 @@ export default function Home() {
             Назовите конкурентов или найдём сами. Через 10&nbsp;минут после оплаты —
             полный отчёт с источниками и планом действий на 30/60/90 дней.
           </p>
-          <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary">
-            Получить отчёт за 9 999 ₽
-            <span aria-hidden>→</span>
-          </CTALink>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+            <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary">
+              Получить полный отчёт — 9 999 ₽
+              <span aria-hidden>→</span>
+            </CTALink>
+            <CTALink href="/intake" goal="open_intake" className="lp-btn-secondary">
+              Получить краткий отчёт бесплатно
+            </CTALink>
+          </div>
           <p className="text-sm text-[#525252] mt-5">
             Анкета 5 минут. Оплата по СБП. Готовый отчёт — через 10 минут на email.
           </p>
-          <CTALink href="/intake" goal="open_intake" className="text-sm text-[#1e3a8a] hover:underline mt-4 inline-block">
-            или попробовать бесплатный пробник →
-          </CTALink>
         </div>
       </section>
 

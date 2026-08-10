@@ -27,6 +27,19 @@ describe('Pomelli design contract для главной', () => {
     expect(homepage).toContain('href="/demo"')
   })
 
+  it('разделяет пример, полный и бесплатный краткий отчёты в CTA', () => {
+    expect(homepage).toMatch(
+      /<Link href="\/demo" className=\{styles\.headerCta\}>\s*Посмотреть пример отчёта/,
+    )
+    expect(homepage).toMatch(
+      /<CTALink href="\/intake\?tier=paid"[\s\S]*?>\s*Получить полный отчёт — 9 999 ₽/,
+    )
+    expect(homepage).toMatch(
+      /<CTALink href="\/intake"[\s\S]*?>\s*Получить краткий отчёт бесплатно/,
+    )
+    expect(homepage).not.toContain('или попробовать бесплатный пробник')
+  })
+
   it('адаптируется к mobile и reduced motion', () => {
     expect(css).toContain('@media (max-width: 768px)')
     expect(css).toContain('@media (prefers-reduced-motion: reduce)')
