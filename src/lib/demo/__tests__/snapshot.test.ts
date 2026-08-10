@@ -7,10 +7,22 @@ describe('DEMO_SNAPSHOT', () => {
     expect(DEMO_SNAPSHOT.research.streams).toHaveLength(5)
     expect(DEMO_SNAPSHOT.research.factCount).toBe(48)
     expect(DEMO_SNAPSHOT.research.sourceCount).toBe(22)
+    expect(DEMO_SNAPSHOT.company.proof).toEqual([
+      { value: '20+ лет', label: 'юридической практики' },
+      { value: '1+ млрд ₽', label: 'взыскано в интересах клиентов' },
+      { value: '5–10', label: 'новых клиентов в месяц' },
+    ])
 
     expect(DEMO_SNAPSHOT.interactive.position.metrics.length).toBeGreaterThanOrEqual(3)
     expect(DEMO_SNAPSHOT.interactive.bottlenecks).toHaveLength(2)
     expect(DEMO_SNAPSHOT.interactive.actions).toHaveLength(3)
+    expect(DEMO_SNAPSHOT.interactive.digitalAudit).toEqual({
+      measuredAt: '24 июня 2026',
+      performance: 42,
+      lcpSeconds: 27.3,
+      fcpSeconds: 6.1,
+      note: 'Контрольный мобильный замер. Более ранние значения в демо не смешиваются с этим срезом.',
+    })
     expect(DEMO_SNAPSHOT.fullReport.sections.map((section) => section.id)).toEqual([
       'summary',
       'diagnosis',
@@ -22,6 +34,15 @@ describe('DEMO_SNAPSHOT', () => {
       'risks',
       'sources',
     ])
+  })
+
+  it('использует согласованный срез фактов без старых конфликтующих замеров', () => {
+    const serialized = JSON.stringify(DEMO_SNAPSHOT)
+    expect(
+      DEMO_SNAPSHOT.research.reliability.reduce((sum, item) => sum + item.count, 0),
+    ).toBe(DEMO_SNAPSHOT.research.factCount)
+    expect(serialized).not.toContain('16,2')
+    expect(serialized).not.toContain('48/100')
   })
 
   it('содержит безопасные CTA', () => {

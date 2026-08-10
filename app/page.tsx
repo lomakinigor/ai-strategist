@@ -167,10 +167,15 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col items-center">
-          <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary">
-            Получить отчёт за 9 999 ₽
-            <span aria-hidden>→</span>
-          </CTALink>
+          <div className="flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+            <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary justify-center">
+              Получить отчёт за 9 999 ₽
+              <span aria-hidden>→</span>
+            </CTALink>
+            <Link href="/demo" className="lp-btn-secondary">
+              Посмотреть пример отчёта
+            </Link>
+          </div>
           <p className="text-sm text-[#6b7280] mt-5">
             Анкета 5 минут. Оплата по СБП. Отчёт через 10 минут на email.
           </p>

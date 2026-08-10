@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Instrument_Serif, Manrope } from 'next/font/google'
 import { DEMO_SNAPSHOT } from '@/lib/demo/snapshot'
@@ -75,7 +75,27 @@ function ReportBlock({ block }: { block: DemoReportBlock }) {
 
 export default function DemoExperience() {
   const [step, setStep] = useState<DemoStep>('input')
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [actionsOnly, setActionsOnly] = useState(false)
+  const [progress, setProgress] = useState(0)
   const activeIndex = STEPS.findIndex((item) => item.id === step)
+  const reportSections = actionsOnly
+    ? DEMO_SNAPSHOT.fullReport.sections.filter((section) =>
+        ['summary', 'automation', 'roadmap', 'tests'].includes(section.id),
+      )
+    : DEMO_SNAPSHOT.fullReport.sections
+
+  useEffect(() => {
+    const updateProgress = () => {
+      const root = document.documentElement
+      const available = root.scrollHeight - window.innerHeight
+      setProgress(available > 0 ? Math.min(100, Math.round((window.scrollY / available) * 100)) : 0)
+    }
+
+    updateProgress()
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    return () => window.removeEventListener('scroll', updateProgress)
+  }, [step])
 
   const moveTo = (next: DemoStep) => {
     setStep(next)
@@ -83,16 +103,45 @@ export default function DemoExperience() {
   }
 
   return (
-    <main className={`${styles.demo} ${manrope.variable} ${instrumentSerif.variable}`}>
+    <main
+      className={`${styles.demo} ${manrope.variable} ${instrumentSerif.variable}`}
+      data-theme={theme}
+    >
       <header className={styles.topbar}>
         <Link href="/" className={styles.brand} aria-label="AI-Стратег — на главную">
           <span className={styles.brandMark}>AI</span>
           <span>Стратег</span>
         </Link>
-        <div className={styles.demoBadge}>Демонстрационный режим</div>
-        <Link href={DEMO_SNAPSHOT.cta.paidHref} className={styles.headerCta}>
-          Исследовать мою компанию
-        </Link>
+        <div className={styles.demoBadge}>Обезличенный рабочий отчёт</div>
+        <div className={styles.topActions}>
+          <div className={styles.viewToggle} aria-label="Режим просмотра">
+            <button
+              type="button"
+              className={!actionsOnly ? styles.viewActive : ''}
+              onClick={() => setActionsOnly(false)}
+            >
+              Полный
+            </button>
+            <button
+              type="button"
+              className={actionsOnly ? styles.viewActive : ''}
+              onClick={() => setActionsOnly(true)}
+            >
+              Только действия
+            </button>
+          </div>
+          <button
+            type="button"
+            className={styles.utilityButton}
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            aria-label="Сменить тему"
+          >
+            {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+          </button>
+          <button type="button" className={styles.utilityButton} onClick={() => window.print()}>
+            Печать / PDF
+          </button>
+        </div>
       </header>
 
       <div className={styles.shell}>
@@ -116,6 +165,15 @@ export default function DemoExperience() {
             <span>Обезличенный пример</span>
             <p>Результат реального исследования без названий, контактов и персональных данных.</p>
           </div>
+          <div className={styles.progressSection}>
+            <div className={styles.progressLabel}>
+              <span>Прочитано</span>
+              <span>{progress}%</span>
+            </div>
+            <div className={styles.progressBar} aria-hidden="true">
+              <span style={{ width: `${progress}%` }} />
+            </div>
+          </div>
         </aside>
 
         <section className={styles.workspace}>
@@ -133,6 +191,15 @@ export default function DemoExperience() {
               </div>
 
               <div className={styles.notice}>{DEMO_SNAPSHOT.notice}</div>
+
+              <div className={styles.heroProof}>
+                {DEMO_SNAPSHOT.company.proof.map((item) => (
+                  <div key={item.label}>
+                    <strong>{item.value}</strong>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
 
               <div className={styles.inputLayout}>
                 <div className={styles.formPanel}>
@@ -294,15 +361,46 @@ export default function DemoExperience() {
                     {DEMO_SNAPSHOT.company.industry} · {DEMO_SNAPSHOT.company.region}
                   </p>
                 </div>
-                <span className={styles.reportStamp}>Demo snapshot</span>
+                <span className={styles.reportStamp}>Демо-отчёт</span>
               </div>
 
-              <section className={styles.thesis}>
-                <span className={styles.aiLabel}>AI-резюме · на основе 48 фактов</span>
-                <p>{DEMO_SNAPSHOT.interactive.thesis}</p>
+              <section className={styles.digitalAudit}>
+                <div>
+                  <p className={styles.kicker}>Факт · технический замер</p>
+                  <h2>Сайт находят, но не успевают увидеть</h2>
+                  <p>
+                    Контрольный мобильный замер от {DEMO_SNAPSHOT.interactive.digitalAudit.measuredAt}.
+                    Значения относятся к одному срезу и не смешиваются с ранними измерениями.
+                  </p>
+                </div>
+                <div className={styles.auditMetrics}>
+                  <div>
+                    <strong>{DEMO_SNAPSHOT.interactive.digitalAudit.performance}/100</strong>
+                    <span>Performance</span>
+                  </div>
+                  <div>
+                    <strong>{DEMO_SNAPSHOT.interactive.digitalAudit.lcpSeconds} сек</strong>
+                    <span>LCP</span>
+                  </div>
+                  <div>
+                    <strong>{DEMO_SNAPSHOT.interactive.digitalAudit.fcpSeconds} сек</strong>
+                    <span>FCP</span>
+                  </div>
+                </div>
+                <small>{DEMO_SNAPSHOT.interactive.digitalAudit.note}</small>
               </section>
 
-              <section className={styles.contentSection}>
+              <details className={styles.thesis}>
+                <summary>
+                  <span className={styles.aiLabel}>AI-резюме · на основе 48 фактов</span>
+                  <strong>Показать интерпретацию</strong>
+                </summary>
+                <p>{DEMO_SNAPSHOT.interactive.thesis}</p>
+              </details>
+
+              <section
+                className={`${styles.contentSection} ${actionsOnly ? styles.hiddenInActions : ''}`}
+              >
                 <div className={styles.sectionNumber}>01</div>
                 <div className={styles.sectionBody}>
                   <p className={styles.kicker}>Позиция</p>
@@ -348,7 +446,9 @@ export default function DemoExperience() {
                 </div>
               </section>
 
-              <section className={styles.contentSection}>
+              <section
+                className={`${styles.contentSection} ${actionsOnly ? styles.hiddenInActions : ''}`}
+              >
                 <div className={styles.sectionNumber}>03</div>
                 <div className={styles.sectionBody}>
                   <p className={styles.kicker}>Конкурентное поле</p>
@@ -394,6 +494,12 @@ export default function DemoExperience() {
                 </div>
               </section>
 
+              <p className={styles.methodologyNote}>
+                Структура отчёта спроектирована по framing-aware принципу: сначала проверяемые
+                факты, затем явно маркированная AI-интерпретация. Это помогает принимать решения
+                по данным, а не по формулировкам.
+              </p>
+
               <div className={styles.stageAction}>
                 <button
                   type="button"
@@ -424,7 +530,7 @@ export default function DemoExperience() {
               </div>
 
               <nav className={styles.reportIndex} aria-label="Содержание полного отчёта">
-                {DEMO_SNAPSHOT.fullReport.sections.map((section) => (
+                {reportSections.map((section) => (
                   <a key={section.id} href={`#demo-${section.id}`}>
                     <span>{section.number}</span>
                     {section.title}
@@ -433,7 +539,7 @@ export default function DemoExperience() {
               </nav>
 
               <div className={styles.reportSections}>
-                {DEMO_SNAPSHOT.fullReport.sections.map((section) => (
+                {reportSections.map((section) => (
                   <section
                     id={`demo-${section.id}`}
                     className={styles.reportSection}
@@ -454,6 +560,11 @@ export default function DemoExperience() {
                   </section>
                 ))}
               </div>
+
+              <p className={styles.methodologyNote}>
+                Структура отчёта спроектирована по framing-aware принципу: факты и источники
+                отделены от AI-интерпретации, а гипотезы не выдаются за подтверждённые выводы.
+              </p>
 
               <section className={styles.finalCta}>
                 <p className={styles.kicker}>Следующий шаг</p>

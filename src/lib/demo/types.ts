@@ -59,6 +59,10 @@ export interface DemoSnapshot {
     region: string
     goal: string
     description: string
+    proof: Array<{
+      value: string
+      label: string
+    }>
     services: string[]
     channels: string[]
     competitors: string[]
@@ -79,6 +83,13 @@ export interface DemoSnapshot {
   }
   interactive: {
     thesis: string
+    digitalAudit: {
+      measuredAt: string
+      performance: number
+      lcpSeconds: number
+      fcpSeconds: number
+      note: string
+    }
     position: {
       title: string
       summary: string

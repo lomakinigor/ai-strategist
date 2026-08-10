@@ -52,6 +52,14 @@
 - [ ] Автоматический тест анонимизации проходит.
 - [ ] Desktop и mobile проверены визуально.
 
+### A7. Дизайн-система Innodor
+
+- [ ] Единственный визуальный источник правды — `innodor-report.html` от 24 июня 2026 года.
+- [ ] Используются его токены: тёплый фон `#f8f7f4`, primary `#1a5c54`, `Instrument Serif` + `Manrope`.
+- [ ] Сохранены sidebar 240 px, content max-width 860 px, зелёная hero-обложка и плотность карточек Innodor.
+- [ ] Работают light/dark theme, прогресс чтения, режим «Только действия», раскрывающиеся точки потерь и print layout.
+- [ ] Дизайн `gpk-reputaciya-report.html` не используется.
+
 ## Affected files/modules
 
 - `app/demo/page.tsx` — metadata и server page.
@@ -60,6 +68,13 @@
 - `src/lib/demo/snapshot.ts` — статический обезличенный контент.
 - `src/lib/demo/types.ts` — контракт snapshot.
 - `src/lib/demo/__tests__/snapshot.test.ts` — безопасность/структура.
+
+## Content sources
+
+- Полный PDF ГПК «Репутация» от 22 июня 2026 года — содержательная глубина и источники.
+- Бесплатная карточка от 22 июня 2026 года — логика пробника и граница раскрытия.
+- `gpk-reputaciya-report.html` от 24 июня 2026 года — отбор executive-выводов, но не дизайн.
+- Все факты проходят повторную сверку; конфликтующие замеры не смешиваются.
 
 ## Data model changes
 
