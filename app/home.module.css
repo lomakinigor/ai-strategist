@@ -249,6 +249,35 @@
   background: var(--home-offwhite);
 }
 
+.tariffGrid,
+.tariffCard {
+  min-width: 0;
+}
+
+.tariffCard {
+  width: 100%;
+}
+
+.tariffCta {
+  width: 100%;
+  min-height: 56px;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.finalActions {
+  align-items: stretch;
+}
+
+.finalActions > a {
+  min-height: 56px;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.35;
+}
+
 .darkStatement {
   position: relative;
   overflow: hidden;
@@ -308,11 +337,14 @@
 
   .nav {
     padding: 0 1rem;
-    gap: 1rem;
+    min-width: 0;
+    gap: 0.625rem;
   }
 
   .logo {
-    font-size: 1.2rem;
+    min-width: 0;
+    font-size: clamp(0.95rem, 5.2vw, 1.2rem);
+    white-space: nowrap;
   }
 
   .navLinks {
@@ -320,8 +352,14 @@
   }
 
   .headerCta {
-    padding: 0.65rem 0.9rem;
-    font-size: 0.82rem;
+    min-width: 0;
+    max-width: 10.5rem;
+    padding: 0.55rem 0.65rem;
+    font-size: clamp(0.68rem, 3.35vw, 0.8rem);
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .hero {
@@ -330,7 +368,18 @@
   }
 
   .heroInner {
-    padding: 5rem 1.5rem;
+    padding: 4.5rem 1.25rem;
+  }
+
+  .heroContent,
+  .heroTitle {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .heroTitle {
+    font-size: clamp(2rem, 9.6vw, 2.5rem);
+    overflow-wrap: anywhere;
   }
 
   .heroActions {
@@ -339,6 +388,25 @@
 
   .primaryButton,
   .secondaryButton {
+    width: 100%;
+    min-height: 80px;
+  }
+
+  .tariffGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tariffCard {
+    padding: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  .tariffCta,
+  .finalActions > a {
+    min-height: 80px;
+  }
+
+  .finalActions > a {
     width: 100%;
   }
 }

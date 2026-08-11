@@ -268,11 +268,11 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className={`${styles.tariffGrid} grid gap-6 md:grid-cols-3`}>
             {TARIFFS.map((t, i) => (
               <article
                 key={i}
-                className={`lp-card p-8 flex flex-col ${
+                className={`${styles.tariffCard} lp-card p-8 flex flex-col ${
                   t.featured ? 'border-2 border-[#1e3a8a]' : ''
                 }`}
               >
@@ -304,7 +304,9 @@ export default function Home() {
                 <CTALink
                   href={t.href}
                   goal={t.goal}
-                  className={t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'}
+                  className={`${styles.tariffCta} ${
+                    t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'
+                  }`}
                 >
                   {t.cta}
                   <span aria-hidden>→</span>
@@ -645,7 +647,7 @@ export default function Home() {
             Назовите конкурентов или найдём сами. Через 10&nbsp;минут после оплаты —
             полный отчёт с источниками и планом действий на 30/60/90 дней.
           </p>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+          <div className={`${styles.finalActions} flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3`}>
             <CTALink href="/intake?tier=paid" goal="paywall_click" className="lp-btn-primary">
               Получить полный отчёт — 9 999 ₽
               <span aria-hidden>→</span>

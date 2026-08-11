@@ -45,6 +45,17 @@ describe('Pomelli design contract для главной', () => {
     expect(css).toContain('@media (prefers-reduced-motion: reduce)')
   })
 
+  it('не допускает mobile overflow и выравнивает CTA', () => {
+    for (const className of ['tariffGrid', 'tariffCard', 'tariffCta', 'finalActions']) {
+      expect(homepage).toContain(`styles.${className}`)
+    }
+    expect(css).toContain('min-width: 0')
+    expect(css).toContain('overflow-wrap: anywhere')
+    expect(css).toMatch(/\.tariffCta[\s\S]*min-height: 80px/)
+    expect(css).toMatch(/\.primaryButton,[\s\S]*\.secondaryButton[\s\S]*min-height: 80px/)
+    expect(css).toMatch(/\.finalActions[\s\S]*align-items: stretch/)
+  })
+
   it('следует canonical палитре и brand voice из бренд-бука', () => {
     expect(design).toContain('#FFFFFF')
     expect(design).toContain('#1E3A8A')
