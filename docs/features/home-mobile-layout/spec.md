@@ -16,6 +16,8 @@
 4. CTA внутри тарифных карточек и две CTA финального блока имеют `width: 100%` и одинаковый `min-height` на mobile.
 5. На ширине больше 768 px текущая desktop-композиция сохраняется.
 6. Canonical palette, Inter, focus-state и reduced motion сохраняются.
+7. Слово «Стратегический» не разрывается внутри слова на 320–412 px.
+8. Слово «Записаться» в tariff CTA не разрывается внутри слова; перенос возможен только между словами.
 
 ## Affected files
 
@@ -29,10 +31,10 @@
 
 ## Test plan
 
-- Contract-тест проверяет наличие scoped mobile hooks и ключевых CSS-ограничений.
+- Contract-тест проверяет наличие scoped mobile hooks, отдельные text spans и ключевые CSS-ограничения.
 - `npm test` для home contract.
 - `npm run build`.
-- Визуальная проверка локальной страницы на mobile viewport.
+- Browser-проверка локальной страницы на 320, 360, 375, 390 и 412 px с измерением text ranges.
 
 ## Rollback plan
 

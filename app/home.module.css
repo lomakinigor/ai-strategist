@@ -147,6 +147,10 @@
   color: var(--home-white);
 }
 
+.heroKeyword {
+  white-space: nowrap;
+}
+
 .heroLead {
   max-width: 660px;
   margin-bottom: 2.5rem;
@@ -267,6 +271,13 @@
   white-space: normal;
 }
 
+.tariffCtaLabel {
+  min-width: 0;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
 .finalActions {
   align-items: stretch;
 }
@@ -378,8 +389,10 @@
   }
 
   .heroTitle {
-    font-size: clamp(2rem, 9.6vw, 2.5rem);
-    overflow-wrap: anywhere;
+    font-size: clamp(1.75rem, 8.8vw, 2.25rem);
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
   }
 
   .heroActions {

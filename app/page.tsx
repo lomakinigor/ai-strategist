@@ -168,7 +168,7 @@ export default function Home() {
           <div className={styles.heroContent}>
             <p className={styles.heroEyebrow}>Стратегия, основанная на данных</p>
             <h1 className={styles.heroTitle}>
-              Стратегический отчёт о вашем рынке —{' '}
+              <span className={styles.heroKeyword}>Стратегический</span> отчёт о вашем рынке —{' '}
               <span className={styles.heroAccent}>за 10 минут.</span>
             </h1>
             <p className={styles.heroLead}>
@@ -308,7 +308,7 @@ export default function Home() {
                     t.featured ? 'lp-btn-primary justify-center' : 'lp-btn-secondary'
                   }`}
                 >
-                  {t.cta}
+                  <span className={styles.tariffCtaLabel}>{t.cta}</span>
                   <span aria-hidden>→</span>
                 </CTALink>
 

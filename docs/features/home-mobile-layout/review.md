@@ -6,6 +6,8 @@
 - Hero H1 получил mobile font clamp, безопасную ширину и перенос длинных слов.
 - Тарифный grid/card получил `min-width: 0`; карточки центрированы в одном `minmax(0, 1fr)` столбце.
 - Hero, tariff и final CTA на mobile имеют общую ширину и `min-height: 80px`.
+- Hero keyword вынесен в неделимый span, а mobile font clamp уменьшен до диапазона, который помещает слово «Стратегический» на 320 px.
+- Tariff CTA label получил локальный запрет на внутрисловный перенос; «Записаться» переносится только целиком.
 
 ## Verification evidence
 
@@ -15,6 +17,7 @@
 - Hero CTA, все tariff CTA и final CTA: одинаковая высота 80 px внутри каждой группы.
 - `npm.cmd run build` — success; compile, lint/typecheck, 21/21 static pages и build traces завершены.
 - `git diff --check` — passed.
+- Follow-up browser check: на 320/360/375/390/412 px hero keyword имеет один rect и находится внутри viewport; text range «Записаться» также имеет один rect; horizontal overflow отсутствует.
 
 ## Известные проверки вне scope
 

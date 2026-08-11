@@ -46,11 +46,23 @@ describe('Pomelli design contract для главной', () => {
   })
 
   it('не допускает mobile overflow и выравнивает CTA', () => {
-    for (const className of ['tariffGrid', 'tariffCard', 'tariffCta', 'finalActions']) {
+    for (const className of [
+      'heroKeyword',
+      'tariffGrid',
+      'tariffCard',
+      'tariffCta',
+      'tariffCtaLabel',
+      'finalActions',
+    ]) {
       expect(homepage).toContain(`styles.${className}`)
     }
+    expect(homepage).toContain('<span className={styles.heroKeyword}>Стратегический</span>')
     expect(css).toContain('min-width: 0')
     expect(css).toContain('overflow-wrap: anywhere')
+    expect(css).toMatch(/\.heroKeyword[\s\S]*white-space: nowrap/)
+    expect(css).toMatch(/\.tariffCtaLabel[\s\S]*overflow-wrap: normal/)
+    expect(css).toMatch(/\.tariffCtaLabel[\s\S]*word-break: normal/)
+    expect(css).toContain('font-size: clamp(1.75rem, 8.8vw, 2.25rem)')
     expect(css).toMatch(/\.tariffCta[\s\S]*min-height: 80px/)
     expect(css).toMatch(/\.primaryButton,[\s\S]*\.secondaryButton[\s\S]*min-height: 80px/)
     expect(css).toMatch(/\.finalActions[\s\S]*align-items: stretch/)

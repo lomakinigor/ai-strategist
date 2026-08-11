@@ -8,3 +8,7 @@
 - [x] Прогнать production build.
 - [x] Проверить mobile viewport визуально.
 - [x] Выполнить self-review diff.
+- [x] Добавить failing contract для неделимых слов «Стратегический» и «Записаться».
+- [x] Исправить наследуемый `overflow-wrap: anywhere` для H1 и tariff CTA label.
+- [x] Проверить text ranges на 320, 360, 375, 390 и 412 px.
+- [x] Зафиксировать повторяемую проверку в project skill `/mobile-word-wrap-audit`.
