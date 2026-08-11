@@ -309,7 +309,12 @@ export default function Home() {
                   }`}
                 >
                   <span className={styles.tariffCtaLabel}>{t.cta}</span>
-                  <span aria-hidden>→</span>
+                  <span
+                    className={t.goal === 'open_intake' ? styles.trialCtaArrow : undefined}
+                    aria-hidden
+                  >
+                    →
+                  </span>
                 </CTALink>
 
                 {t.note && (

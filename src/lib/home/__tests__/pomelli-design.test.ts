@@ -52,6 +52,7 @@ describe('Pomelli design contract для главной', () => {
       'tariffCard',
       'tariffCta',
       'tariffCtaLabel',
+      'trialCtaArrow',
       'finalActions',
     ]) {
       expect(homepage).toContain(`styles.${className}`)
@@ -62,6 +63,8 @@ describe('Pomelli design contract для главной', () => {
     expect(css).toMatch(/\.heroKeyword[\s\S]*white-space: nowrap/)
     expect(css).toMatch(/\.tariffCtaLabel[\s\S]*overflow-wrap: normal/)
     expect(css).toMatch(/\.tariffCtaLabel[\s\S]*word-break: normal/)
+    expect(homepage).toContain("t.goal === 'open_intake' ? styles.trialCtaArrow : undefined")
+    expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*\.trialCtaArrow[\s\S]*display: none/)
     expect(css).toContain('font-size: clamp(1.75rem, 8.8vw, 2.25rem)')
     expect(css).toMatch(/\.tariffCta[\s\S]*min-height: 80px/)
     expect(css).toMatch(/\.primaryButton,[\s\S]*\.secondaryButton[\s\S]*min-height: 80px/)

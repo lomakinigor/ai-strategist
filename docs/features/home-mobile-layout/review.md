@@ -18,6 +18,7 @@
 - `npm.cmd run build` — success; compile, lint/typecheck, 21/21 static pages и build traces завершены.
 - `git diff --check` — passed.
 - Follow-up browser check: на 320/360/375/390/412 px hero keyword имеет один rect и находится внутри viewport; text range «Записаться» также имеет один rect; horizontal overflow отсутствует.
+- CTA «Попробовать»: на 360 px arrow `display: none`, на 1024 px `display: inline`; mobile horizontal overflow отсутствует.
 
 ## Известные проверки вне scope
 

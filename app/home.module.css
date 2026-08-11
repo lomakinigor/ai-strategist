@@ -419,6 +419,10 @@
     min-height: 80px;
   }
 
+  .trialCtaArrow {
+    display: none;
+  }
+
   .finalActions > a {
     width: 100%;
   }
